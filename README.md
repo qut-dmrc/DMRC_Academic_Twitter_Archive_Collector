@@ -14,6 +14,7 @@ This program is intended for researchers at the Digital Media Research Centre wh
 1. Python 3.9 or later
 2. A valid Twitter Academic API bearer token
 3. A valid Google service account and json key
+4. Up to xGB free on your local drive *specify*
 <br>
 
 ### To Use
@@ -21,14 +22,14 @@ This program is intended for researchers at the Digital Media Research Centre wh
 ####
 2. Install venv requirements from <b>requirements.txt</b>. 
 ####
-3. Paste your Google BigQuery service key json file into the <b>DATA_collector/access_key</b> directory, or set your Google environment variables.
+3. Place your Google BigQuery service key json file into the <b>DATA_collector/access_key</b> directory, or set your Google environment variables.
 ####
 4. Open <b>DATA_collector/config/config_template.py</b>.
       1. Set your query parameters:
          * <b>query:</b> e.g. 'netflix OR stan'
          * <b>start_date:</b> the earliest date to search, in UTC time.
          * <b>end_date:</b> the latest date to search, in UTC time.
-         * <b>interval_days:</b> the number of days covered per json file; default 1
+         * <b>interval_days:</b> the number of days covered per json file; default 1*
       ####
       2. Add your bearer token:
          * <b>bearer_token</b>: your Twitter Academic API bearer token.
