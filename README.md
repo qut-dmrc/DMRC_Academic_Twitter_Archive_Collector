@@ -42,9 +42,9 @@ This program is intended for researchers at the Digital Media Research Centre wh
       ####
       5. Choose your <b>schema type</b> (DATA, TCAT, TweetQuery), e.g. DATA = True
 ####
-7. Rename <b>config_template.py</b> to <b>config.py</b>
+5. Rename <b>config_template.py</b> to <b>config.py</b>
 ####
-8. Run <b>run.py</b>.
+6. Run <b>run.py</b>.
 <br>
 <br>
 
