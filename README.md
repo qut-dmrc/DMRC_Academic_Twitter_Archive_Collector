@@ -66,11 +66,11 @@ This tool is intended for researchers at the Digital Media Research Centre who w
       4. Enter your email address:
          * <b>user_email:</b> your email address, to notify you by email of the search's completion.
       ####
-      5. Choose your <b>schema type</b> (DATA, TCAT, TweetQuery), e.g. DATA = True. Schema details here(link).
+      5. Choose your <b>schema type</b> (DATA, TCAT, TweetQuery). DATA = True by default. Refer to <b>Output</b>, below, for schema details.
 ####
 5. Rename `config_template.py` to `config.py`.
 ####
-6. In your termina, run `python ./run.py`.
+6. In your terminal, run `python ./run.py`.
 ####
 After you run `run.py`, you will be prompted to verify your query config details. If everything is correct, type 'y', otherwise, type 'n' to exit and change your input.
 <br>
@@ -86,7 +86,6 @@ Depending on the schema type selected, the tool will produce data as shown below
 | DATA        | Standalone archive data analysis, where it is not necessary to append archive data to existing tables. | 11       | annotations<br/>author_description<br/>author_urls<br/>context_annotations<br/>hashtags<br/>interactions<br/>media<br/>mentions<br/>poll_options<br/>tweets<br/>urls |
 | TCAT        | Backfill/append archive data to an existing TCAT table                                                 | 3        | hashtags<br/>mentions<br/>tweets                                                                                                                                     |
 | TweetQuery  | Backfill/append archive data to an existing TweetQuery table                                           | 3        | hashtags<br/>mentions<br/>tweets                                                                                                                                     |
-
 
 
 A detailed overview of the tables and fields can be located here (TBC - provide link)

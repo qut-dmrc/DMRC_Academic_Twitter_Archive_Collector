@@ -7,6 +7,7 @@ import humanfriendly
 from humanfriendly import format_timespan
 import traceback
 import re
+import pytz
 
 from twarc import Twarc2, expansions
 from google.cloud import bigquery
@@ -29,6 +30,71 @@ warnings.simplefilter(action='ignore', category=pd.errors.PerformanceWarning)
 
 # Functions
 # ---------
+def validate_search_parameters(query, bearer_token, start_date, end_date, project, dataset):
+    utc = pytz.UTC
+
+    print("""
+    \n 
+    Validating your config...
+    \n
+    """)
+
+    if len(query) in range(1, 1024):
+        query = query
+    elif len(query) < 1:
+        print('Please enter a search query.')
+        query = None
+    else:
+        query = None
+        print(f'Query is too long ({len(query)} characters). Please shorten it to 1024 characters or less and retry.')
+
+    if len(bearer_token) >1:
+        bearer_token = bearer_token
+    else:
+        bearer_token = None
+        print('Please enter a bearer token for Twitter API access.')
+
+    if start_date < end_date:
+        start_date = start_date
+    elif start_date > utc.localize(dt.datetime.now()):
+        start_date = None
+        print('Start date cannot be in the future.')
+    else:
+        start_date = None
+        print('Start date cannot be after end date.')
+
+    if end_date < utc.localize(dt.datetime.now()):
+        end_date = end_date
+    else:
+        end_date = None
+        print('End date cannot be in the future.')
+
+    if len(project) > 1:
+        project = project
+    else:
+        project = None
+        print('Please enter a project.')
+
+    if len(dataset) > 1:
+        dataset = dataset
+    else:
+        dataset = None
+        print('Please enter a dataset.')
+
+    if None in [query, bearer_token, start_date, end_date, project, dataset]:
+        print("""
+        \n 
+        Exiting...
+        \n""")
+        exit()
+    else:
+        print("""
+        \n
+        Config input valid!
+        \n""")
+
+        return query, bearer_token, start_date, end_date, project, dataset
+
 def get_pre_search_counts(client, query, start_date, end_date, project, dataset, schematype):
     # Run counts_all search
     count_tweets = client.counts_all(query=query, start_time=start_date, end_time=end_date)
@@ -69,9 +135,9 @@ def get_pre_search_counts(client, query, start_date, end_date, project, dataset,
 
     user_proceed = input('>>>')
 
-    return user_proceed
+    return archive_search_counts, user_proceed
 
-def collect_archive_data(bq, dataset, to_collect, expected_files, client, query, start_date, end_date, csv_filepath):
+def collect_archive_data(bq, dataset, to_collect, expected_files, client, query, start_date, end_date, csv_filepath, archive_search_counts):
     logging.info('Commencing data collection...')
     logging.info('-----------------------------------------------------------------------------------------')
     # Collect archive data one interval at a time using the Twarc search_all endpoint
@@ -101,13 +167,13 @@ def collect_archive_data(bq, dataset, to_collect, expected_files, client, query,
                     logging.info(f'Processing tweet data...')
 
                     # For each interval (file), process json
-                    process_json_data(a_file, csv_filepath, bq, dataset, query, start_date, end_date)
+                    process_json_data(a_file, csv_filepath, bq, dataset, query, start_date, end_date, archive_search_counts)
 
 
     #     table = 'table_placeholder'
     # return table
 
-def process_json_data(a_file, csv_filepath, bq, dataset, query, start_date, end_date):
+def process_json_data(a_file, csv_filepath, bq, dataset, query, start_date, end_date, archive_search_counts):
     for chunk in pd.read_json(a_file, lines=True, chunksize=10000):
         tweets = chunk
 
@@ -246,7 +312,7 @@ def process_json_data(a_file, csv_filepath, bq, dataset, query, start_date, end_
 
         # Proceed according to schema chosen
         # ----------------------------------
-        list_of_dataframes, list_of_csv, list_of_tablenames, list_of_schema = get_schema_type(list_of_dataframes)
+        list_of_dataframes, list_of_csv, list_of_tablenames, list_of_schema, tweet_count = get_schema_type(list_of_dataframes)
 
 
         # For each processed json, write to temp csv
@@ -255,6 +321,9 @@ def process_json_data(a_file, csv_filepath, bq, dataset, query, start_date, end_
 
         # Write temp csv files to BigQuery tables
         push_processed_tables_to_bq(bq, dataset, list_of_tablenames, csv_filepath, list_of_csv, query, start_date, end_date, list_of_schema)
+
+        percent_collected = tweet_count/archive_search_counts*100
+        logging.info(f'{tweet_count} of {archive_search_counts} tweets collected ({percent_collected}%)')
 
 def flatten_top_tweet_level(tweets):
     logging.info('Flattening one-to-one nested columns...')
@@ -870,7 +939,6 @@ def extract_entities_data(TWEETS):
         if entities_mentions[column].dtype == float:
             entities_mentions[column] = entities_mentions[column].fillna(value=0)
             entities_mentions[column] = entities_mentions[column].astype('int32')
-    logging.info('entities_mentions extracted')
     return entities_mentions
 
 def build_mentions_table(entities_mentions):
@@ -978,18 +1046,21 @@ def get_schema_type(list_of_dataframes):
         list_of_csv = DATA_schema.list_of_csv
         list_of_tablenames = DATA_schema.list_of_tablenames
         list_of_schema = DATA_schema.list_of_schema
+        tweet_count = len(list_of_dataframes[0])
     elif Schematype.TCAT == True:
         list_of_dataframes = transform_DATA_to_TCAT(list_of_dataframes)
         list_of_csv = TCAT_schema.list_of_csv
         list_of_tablenames = TCAT_schema.list_of_tablenames
         list_of_schema = TCAT_schema.list_of_schema
+        tweet_count = len(list_of_dataframes[0])
     else:
         list_of_dataframes = []
         list_of_csv = TweetQuery_schema.list_of_csv
         list_of_tablenames = TweetQuery_schema.list_of_tablenames
         list_of_schema = TweetQuery_schema.list_of_schema
+        tweet_count = len(list_of_dataframes[0])
 
-    return list_of_dataframes, list_of_csv, list_of_tablenames, list_of_schema
+    return list_of_dataframes, list_of_csv, list_of_tablenames, list_of_schema, tweet_count
 
 def transform_DATA_to_TCAT(list_of_dataframes):
     # ------------------------------------------------------------------------------------------------------
@@ -1189,12 +1260,13 @@ def run_DATA():
     # -----------------
     query = Query.query
     bearer_token = Tokens.bearer_token
-
     start_date = Query.start_date
     end_date = Query.end_date
-
     project = GBQ.project_id
     dataset = GBQ.dataset
+
+    # Validate search parameters
+    query, bearer_token, start_date, end_date, project, dataset = validate_search_parameters(query, bearer_token, start_date, end_date, project, dataset)
 
     if Schematype.DATA == True:
         schematype = 'DATA'
@@ -1207,7 +1279,7 @@ def run_DATA():
     client = Twarc2(bearer_token=bearer_token)
 
     # Pre-search archive counts
-    user_proceed = get_pre_search_counts(client, query, start_date, end_date, project, dataset, schematype)
+    archive_search_counts, user_proceed = get_pre_search_counts(client, query, start_date, end_date, project, dataset, schematype)
 
     if user_proceed == 'y':
         sleep(3)
@@ -1246,7 +1318,7 @@ def run_DATA():
                 to_collect, expected_files = set_up_expected_files(start_date, end_date, json_filepath)
 
                 # Call function collect_archive_data()
-                collect_archive_data(bq, dataset, to_collect, expected_files, client, query, start_date, end_date, csv_filepath)
+                collect_archive_data(bq, dataset, to_collect, expected_files, client, query, start_date, end_date, csv_filepath, archive_search_counts)
                 table = 1
                 search_end_time = datetime.now()
                 search_duration = (search_end_time - search_start_time)
