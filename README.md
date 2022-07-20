@@ -5,12 +5,26 @@ This program uses the Twarc Python library to pull tweets from Twitter's archive
 <br>
 <br>
 
-### Who is this for?
-This program is intended for researchers at the Digital Media Research Centre who wish to collect Twitter data from the archive (more than one week in the past).
-<br>
+
+### Overview
+
+------------------------------------
+Overview here... To be completed
+
 <br>
 
+
+### Who is this for?
+
+------------------------------------
+This program is intended for researchers at the Digital Media Research Centre who wish to collect Twitter data from the archive (more than one week in the past), and have these data pushed automatically to Google BigQuery.
+
+<br>
+
+
 ### What You Will Need
+
+------------------------------------
 1. Python 3.9 or later
 2. A valid [Twitter Academic API bearer token](https://developer.twitter.com/en/products/twitter-api/academic-research)
 3. A valid [Google service account and json key](https://cloud.google.com/iam/docs/creating-managing-service-account-keys)
@@ -23,11 +37,12 @@ This program is intended for researchers at the Digital Media Research Centre wh
 | 1,000,000  | 4 - 5     |
 | 5,000,000  | 16 - 18   |
 | 10,000,000 | 30 - 35   |
-
 <br>
 
 ### To Use
-1. Clone this repository to a location with enough memory to download tweets (refer to <b>What You Will Need</b> section, above).
+
+------------------------------------
+1. Clone this repository to a location with enough space to download tweets (refer to <b>What You Will Need</b> section, above).
 ####
 2. Install venv requirements:`pip install -r requirements.txt`
 ####
@@ -56,10 +71,14 @@ This program is intended for researchers at the Digital Media Research Centre wh
 5. Rename `config_template.py` to `config.py`.
 ####
 6. Run `run.py`.
+####
+After you run `run.py`, you will be prompted to verify your query config details. If everything is correct, type 'y', otherwise, type 'n' to exit and change your input.
 <br>
 <br>
-
+<br>
 ### Output
+
+------------------------------------
 Depending on the schema type selected, the tool will produce data as shown below:
 
 | Schema Type | Purpose                                                                                                | n Tables | Table Names                                                                                                                                                          |
@@ -77,12 +96,16 @@ On successful completion of an archive search, you will receive an email from th
 <br>
 <br>
 <br>
---------------------------
 
 ### How to Build a Query
+
+------------------------------------
+####
+#### Query string
 Your query string should follow Twitter's rules for [How to Build a Query](https://developer.twitter.com/en/docs/twitter-api/tweets/search/integrate/build-a-query#build).
 ####
 Queries may be up to 1024 characters long.
+####
 Queries are case insensitive.
 
 <br>
@@ -90,12 +113,12 @@ Queries are case insensitive.
 
 #### Operator logic
 
-| Operator        | Logic    | Example                                   | What it does                                                                            |
-|-----------------|----------|-------------------------------------------|-----------------------------------------------------------------------------------------|
-| '&nbsp;&nbsp;'  | AND      | frosty snowman                            | searches for tweets that contain keywords 'frosty' AND 'snowman'                        |
-| 'OR'            | OR       | frosty OR snowman                         | searches for tweets that contain keywords 'frosty' OR 'snowman'                         |
-| '-'             | NOT      | frosty -snowman                           | searches for tweets that contain keywords 'frosty', but NOT 'snowman'                   |
-| (&nbsp;&nbsp;)  | Grouping | (frosty OR snowman) AND (carrot AND nose) | searches for tweets that contain keywords 'frosty' or 'snowman' AND 'carrot' AND 'nose' |                                                       
+| Operator        | Logic    | Example                           | What it does                                                                            |
+|-----------------|----------|-----------------------------------|-----------------------------------------------------------------------------------------|
+| '&nbsp;&nbsp;'  | AND      | frosty snowman                    | searches for tweets that contain keywords 'frosty' AND 'snowman'                        |
+| 'OR'            | OR       | frosty OR snowman                 | searches for tweets that contain keywords 'frosty' OR 'snowman'                         |
+| '-'             | NOT      | frosty -snowman                   | searches for tweets that contain keywords 'frosty', but NOT 'snowman'                   |
+| (&nbsp;&nbsp;)  | Grouping | (frosty OR snowman) (carrot nose) | searches for tweets that contain keywords 'frosty' or 'snowman' AND 'carrot' AND 'nose' |                                                       
 
 <br>
 
