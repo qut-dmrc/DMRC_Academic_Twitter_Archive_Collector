@@ -1161,7 +1161,6 @@ def run_DATA():
 
     start_date = Query.start_date
     end_date = Query.end_date
-    interval_days = Query.interval_days
 
     project = GBQ.project_id
     dataset = GBQ.dataset

@@ -11,7 +11,7 @@ from DATA_collector.config.config import *
 cwd = str(os.getcwd()).replace('\\', '/')
 
 dataset = 'rebelwilson'
-dataset = Query.dataset
+dataset = GBQ.dataset
 folder = dataset
 new_dir = folder + '/'
 dir_name = str(f'{cwd}/{new_dir}')
