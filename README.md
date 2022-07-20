@@ -70,7 +70,7 @@ This tool is intended for researchers at the Digital Media Research Centre who w
 ####
 5. Rename `config_template.py` to `config.py`.
 ####
-6. Run `run.py`.
+6. In your termina, run `python ./run.py`.
 ####
 After you run `run.py`, you will be prompted to verify your query config details. If everything is correct, type 'y', otherwise, type 'n' to exit and change your input.
 <br>

@@ -1,5 +1,5 @@
 import requests
-from DATA_collector.config.config import *
+from config.config import *
 
 
 mailgun_domain = 'sandbox878e4b17425b43b18b208fb54533aafa.mailgun.org'

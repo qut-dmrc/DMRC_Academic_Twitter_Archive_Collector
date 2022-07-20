@@ -1,4 +1,4 @@
-from DATA_collector.scripts.DATA import *
+from scripts.DATA import *
 
 
 if __name__ == "__main__":

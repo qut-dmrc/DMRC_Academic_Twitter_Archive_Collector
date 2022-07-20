@@ -3,8 +3,8 @@ import os.path
 import glob
 
 
-from DATA_collector.scripts.logging_archive_search import *
-from DATA_collector.config.config import *
+from scripts.logging_archive_search import *
+from config.config import *
 
 # get current working directory
 # -----------------------------

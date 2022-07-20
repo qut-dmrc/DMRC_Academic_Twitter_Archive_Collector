@@ -13,10 +13,10 @@ from google.cloud import bigquery
 from google.cloud.bigquery.client import Client
 from google.cloud.exceptions import NotFound
 
-from DATA_collector.scripts.BQ_schema import DATA_schema, TCAT_schema
-from DATA_collector.scripts.emails import *
-from DATA_collector.scripts.fields import DATA_fields, TCAT_fields
-from DATA_collector.scripts.set_up_directories import *
+from scripts.BQ_schema import DATA_schema, TCAT_schema
+from scripts.emails import *
+from scripts.fields import DATA_fields, TCAT_fields
+from scripts.set_up_directories import *
 
 pd.options.mode.chained_assignment = None
 import warnings
