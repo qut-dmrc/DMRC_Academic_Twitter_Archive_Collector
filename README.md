@@ -14,7 +14,7 @@ This program is intended for researchers at the Digital Media Research Centre wh
 1. Python 3.9 or later
 2. A valid [Twitter Academic API bearer token](https://developer.twitter.com/en/products/twitter-api/academic-research)
 3. A valid [Google service account and json key](https://cloud.google.com/iam/docs/creating-managing-service-account-keys)
-4. xGB free on your local drive for json file storage (the following are estimates and may vary depending on size of tweets, and you can store these elsewhere after collection):
+4. `xGB` free on your local drive for json file storage (the following are estimates and may vary depending on size of tweets, and you can store these files elsewhere after collection):
       
 | n Tweets   | Size (GB) |
 |------------|-----------|
@@ -24,20 +24,18 @@ This program is intended for researchers at the Digital Media Research Centre wh
 | 5,000,000  | 16 - 18   |
 | 10,000,000 | 30 - 35   |
 
-
-
 <br>
 
 ### To Use
-1. Clone this repository to a location with enough memory to download tweets(see <b>What You Will Need</b> section above).
+1. Clone this repository to a location with enough memory to download tweets (refer to <b>What You Will Need</b> section, above).
 ####
-2. Install venv requirements from <b>requirements.txt</b>. 
+2. Install venv requirements:`pip install -r requirements.txt`
 ####
-3. Place your Google BigQuery service key json file into the <b>DATA_collector/access_key</b> directory, or set your Google environment variables.
+3. Place your Google BigQuery service key json file into the `DATA_collector/access_key` directory, or set your Google environment variables.
 ####
-4. Open <b>DATA_collector/config/config_template.py</b>.
+4. Open `DATA_collector/config/config_template.py`.
       1. Set your query parameters:
-         * <b>query:</b> e.g. 'netflix OR stan'
+         * <b>query:</b> string containing keyword(s) and/or phrase(s), e.g. 'winter OR cold'
          * <b>start_date:</b> the earliest date to search, in UTC time.
          * <b>end_date:</b> the latest date to search, in UTC time.
          * <b>interval_days:</b> the number of days covered per json file; default 1*
@@ -46,39 +44,70 @@ This program is intended for researchers at the Digital Media Research Centre wh
          * <b>bearer_token</b>: your Twitter Academic API bearer token.
       ####
       3. Set your Google BigQuery project and dataset:
-         * <b>project_id:</b> name of the relevant Google BigQuery billing project.
-         * <b>dataset:</b> the name of your intended dataset. If it exists, the data will be appended to the existing dataset; if it does not exist, a new dataset will be created.
+         * <b>gbq_creds:</b> path to your Google service key json file, or link to environment variable.
+         * <b>project_id:</b> name of the relevant Google BigQuery billing project, e.g. 'dmrc-data'.
+         * <b>dataset:</b> the name of your intended dataset, e.g. 'winter2022'. If it already exists, the data will be appended to the existing dataset; if it does not exist, a new dataset will be created.
       ####
       4. Add your email address:
          * <b>user_email:</b> your email address, if you would like to receive an email to nofity you of the search's completion.
       ####
-      5. Choose your <b>schema type</b> (DATA, TCAT, TweetQuery), e.g. DATA = True
+      5. Choose your <b>schema type</b> (DATA, TCAT, TweetQuery), e.g. DATA = True. Schema details here(link).
 ####
-5. Rename <b>config_template.py</b> to <b>config.py</b>
+5. Rename `config_template.py` to `config.py`.
 ####
-6. Run <b>run.py</b>.
+6. Run `run.py`.
 <br>
 <br>
 
 ### Output
-This tool produces 11 tables:
-   * annotations
-   * author_description
-   * author_urls
-   * context_annotations
-   * hashtags
-   * interactions
-   * media
-   * mentions
-   * poll_options
-   * tweets
-   * urls
+Depending on the schema type selected, the tool will produce data as shown below:
+
+| Schema Type | Purpose                                                                                                | n Tables | Table Names                                                                                                                                                          |
+|-------------|--------------------------------------------------------------------------------------------------------|----------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| DATA        | Standalone archive data analysis, where it is not necessary to append archive data to existing tables. | 11       | annotations<br/>author_description<br/>author_urls<br/>context_annotations<br/>hashtags<br/>interactions<br/>media<br/>mentions<br/>poll_options<br/>tweets<br/>urls |
+| TCAT        | Backfill/append archive data to an existing TCAT table                                                 | 3        | hashtags<br/>mentions<br/>tweets                                                                                                                                     |
+| TweetQuery  | Backfill/append archive data to an existing TweetQuery table                                           | 3        | hashtags<br/>mentions<br/>tweets                                                                                                                                     |
+
+
 
 A detailed overview of the tables and fields can be located here (TBC)
 <br>
+
+On successful completion of an archive search, you will receive an email from the DMRC Academic Twitter App, containing details of your search, including your search query, location of your data, the number of tweets collected and the time taken to perform the search.
 <br>
+<br>
+<br>
+--------------------------
 
 ### How to Build a Query
-TBC
+Your query string should follow Twitter's rules for [How to Build a Query](https://developer.twitter.com/en/docs/twitter-api/tweets/search/integrate/build-a-query#build).
+####
+Queries may be up to 1024 characters long.
+Queries are case insensitive.
+
+<br>
+
+
+#### Operator logic
+
+| Operator        | Logic    | Example                                   | What it does                                                                            |
+|-----------------|----------|-------------------------------------------|-----------------------------------------------------------------------------------------|
+| '&nbsp;&nbsp;'  | AND      | frosty snowman                            | searches for tweets that contain keywords 'frosty' AND 'snowman'                        |
+| 'OR'            | OR       | frosty OR snowman                         | searches for tweets that contain keywords 'frosty' OR 'snowman'                         |
+| '-'             | NOT      | frosty -snowman                           | searches for tweets that contain keywords 'frosty', but NOT 'snowman'                   |
+| (&nbsp;&nbsp;)  | Grouping | (frosty OR snowman) AND (carrot AND nose) | searches for tweets that contain keywords 'frosty' or 'snowman' AND 'carrot' AND 'nose' |                                                       
+
+<br>
+
+#### Order of operations
+AND operators are evaluated before OR operators. For example, 'frosty OR snowman carrot' will be evaluated as 'frosty OR (snowman AND carrot)'.
+####
+
+
+
+
+
+
+
 <br>
 <br>
