@@ -1164,7 +1164,7 @@ def run_DATA():
     interval_days = Query.interval_days
 
     project = GBQ.project_id
-    dataset = Query.dataset
+    dataset = GBQ.dataset
 
 
     # Initiate a Twarc client instance

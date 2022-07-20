@@ -10,15 +10,26 @@ This program is intended for researchers at the Digital Media Research Centre wh
 <br>
 <br>
 
-### You Will Need
+### What You Will Need
 1. Python 3.9 or later
-2. A valid Twitter Academic API bearer token
-3. A valid Google service account and json key
-4. Up to xGB free on your local drive *specify*
+2. A valid [Twitter Academic API bearer token](https://developer.twitter.com/en/products/twitter-api/academic-research)
+3. A valid [Google service account and json key](https://cloud.google.com/iam/docs/creating-managing-service-account-keys)
+4. xGB free on your local drive for json file storage (the following are estimates and may vary depending on size of tweets, and you can store these elsewhere after collection):
+      
+| n Tweets   | Size (GB) |
+|------------|-----------|
+| 250,000    | ~ 1.25    |
+| 500,000    | 2 - 2.5   |
+| 1,000,000  | 4 - 5     |
+| 5,000,000  | 16 - 18   |
+| 10,000,000 | 30 - 35   |
+
+
+
 <br>
 
 ### To Use
-1. Clone this repository.
+1. Clone this repository to a location with enough memory to download tweets(see <b>What You Will Need</b> section above).
 ####
 2. Install venv requirements from <b>requirements.txt</b>. 
 ####

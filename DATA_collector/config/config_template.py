@@ -6,7 +6,6 @@ class Query():
     start_date = dt.datetime(2022, 1, 1, 0, 0, 0, 0, tzinfo=dt.timezone.utc)
     end_date = dt.datetime(2022, 2, 1, 0, 0, 0, 0, tzinfo=dt.timezone.utc)
     interval_days = 1
-    dataset = ''
 
 class Tokens():
     bearer_token = ''
@@ -14,6 +13,7 @@ class Tokens():
 class GBQ():
     gbq_creds = ''
     project_id = ''
+    dataset = ''
 
 class Emails():
     user_email = ''
