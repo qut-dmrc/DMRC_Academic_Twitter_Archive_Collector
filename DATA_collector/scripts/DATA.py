@@ -137,16 +137,15 @@ def get_pre_search_counts(client, query, start_date, end_date, project, dataset,
 
     return archive_search_counts, user_proceed
 
-def collect_archive_data(bq, dataset, to_collect, expected_files, client, query, start_date, end_date, csv_filepath, archive_search_counts):
+def collect_archive_data(bq, dataset, to_collect, expected_files, client, query, start_date, end_date, csv_filepath, archive_search_counts, tweet_count):
     logging.info('Commencing data collection...')
-    logging.info('-----------------------------------------------------------------------------------------')
+
     # Collect archive data one interval at a time using the Twarc search_all endpoint
     if len(to_collect) > 0:
         for a_file in to_collect:
-
-            logging.info(f"Collecting file {a_file}")
+            logging.info('-----------------------------------------------------------------------------------------')
+            logging.info(f'Collecting file {a_file}')
             start, end = expected_files[a_file]
-
             search_results = client.search_all(query=query, start_time=start, end_time=end, max_results=100)
 
             for page in search_results:
@@ -155,7 +154,6 @@ def collect_archive_data(bq, dataset, to_collect, expected_files, client, query,
                     json_object = (json.dumps(tweet))
                     with open(a_file, "a") as f:
                         f.write(json_object + "\n")
-
 
             tweetsList = []
             if os.path.isfile(a_file):
@@ -167,17 +165,14 @@ def collect_archive_data(bq, dataset, to_collect, expected_files, client, query,
                     logging.info(f'Processing tweet data...')
 
                     # For each interval (file), process json
-                    process_json_data(a_file, csv_filepath, bq, dataset, query, start_date, end_date, archive_search_counts)
+                    tweet_count = process_json_data(a_file, csv_filepath, bq, dataset, query, start_date, end_date, archive_search_counts, tweet_count)
 
 
-    #     table = 'table_placeholder'
-    # return table
 
-def process_json_data(a_file, csv_filepath, bq, dataset, query, start_date, end_date, archive_search_counts):
+def process_json_data(a_file, csv_filepath, bq, dataset, query, start_date, end_date, archive_search_counts, tweet_count):
     for chunk in pd.read_json(a_file, lines=True, chunksize=10000):
         tweets = chunk
 
-        logging.info(f'chunk tweets: {len(tweets)}')
         # Rename 'id' field for clarity
         tweets = tweets.rename(columns={'id': 'tweet_id'})
         tweets['tweet_id'] = tweets['tweet_id'].astype(object)
@@ -312,18 +307,20 @@ def process_json_data(a_file, csv_filepath, bq, dataset, query, start_date, end_
 
         # Proceed according to schema chosen
         # ----------------------------------
-        list_of_dataframes, list_of_csv, list_of_tablenames, list_of_schema, tweet_count = get_schema_type(list_of_dataframes)
+        list_of_dataframes, list_of_csv, list_of_tablenames, list_of_schema, tweet_count = get_schema_type(list_of_dataframes, tweet_count)
 
 
         # For each processed json, write to temp csv
         for tweetframe, csv_file in zip(list_of_dataframes, list_of_csv):
             write_processed_data_to_csv(tweetframe, csv_file, csv_filepath)
 
-        # Write temp csv files to BigQuery tables
-        push_processed_tables_to_bq(bq, dataset, list_of_tablenames, csv_filepath, list_of_csv, query, start_date, end_date, list_of_schema)
+        percent_collected = tweet_count / archive_search_counts * 100
+        logging.info(f'{tweet_count} of {archive_search_counts} tweets collected ({round(percent_collected, 1)}%)')
 
-        percent_collected = tweet_count/archive_search_counts*100
-        logging.info(f'{tweet_count} of {archive_search_counts} tweets collected ({percent_collected}%)')
+        # Write temp csv files to BigQuery tables
+        push_processed_tables_to_bq(bq, dataset, list_of_tablenames, csv_filepath, list_of_csv, query, start_date, end_date, list_of_schema, list_of_dataframes)
+
+        return tweet_count
 
 def flatten_top_tweet_level(tweets):
     logging.info('Flattening one-to-one nested columns...')
@@ -571,7 +568,7 @@ def build_author_description_table(TWEETS, entities_mentions):
         AUTHOR_DESCRIPTION['author_description_urls_display_url'] = np.nan
         AUTHOR_DESCRIPTION = AUTHOR_DESCRIPTION \
             .reset_index(drop=True) \
-            .reindex(columns=author_description_column_order) \
+            .reindex(columns=DATA_fields.author_description_column_order) \
             .drop_duplicates() \
             .reset_index(drop=True)
 
@@ -716,7 +713,6 @@ def build_author_description_table(TWEETS, entities_mentions):
     return AUTHOR_DESCRIPTION
 
 def build_author_urls_table(TWEETS, entities_mentions):
-    logging.info('build_author_urls_table function successfully called')
     if 'author_entities_url_urls' in TWEETS.columns:
         author_urls = TWEETS[['author_id', 'author_entities_url_urls']].dropna() \
             .set_index(['author_id'])['author_entities_url_urls'] \
@@ -739,7 +735,6 @@ def build_author_urls_table(TWEETS, entities_mentions):
                                             'author_urls_url',
                                             'author_urls_expanded_url',
                                             'author_urls_display_url'])
-    logging.info('author urls step 1 - author_urls')
     if 'tweet_mentions_author_entities_url_urls' in entities_mentions.columns:
         mentioned_author_urls = entities_mentions[
             ['tweet_mentions_author_id', 'tweet_mentions_author_entities_url_urls']] \
@@ -761,7 +756,6 @@ def build_author_urls_table(TWEETS, entities_mentions):
                                                       'mentioned_author_urls_url',
                                                       'mentioned_author_urls_expanded_url',
                                                       'mentioned_author_urls_display_url'])
-    logging.info('author urls step 2 - mentioned_author_urls')
     if 'in_reply_to_user_entities_url_urls' in TWEETS.columns:
         in_reply_to_user_urls = TWEETS[['in_reply_to_user_id', 'in_reply_to_user_entities_url_urls']] \
             .dropna() \
@@ -783,13 +777,10 @@ def build_author_urls_table(TWEETS, entities_mentions):
                                                       'in_reply_to_user_urls_url',
                                                       'in_reply_to_user_urls_expanded_url',
                                                       'in_reply_to_user_urls_display_url'])
-    logging.info('author urls step 3 - in_reply_to_user_urls')
     author_urls_colnames = AUTHOR_URLS.columns
     IN_REPLY_TO_USER_URLS.columns = author_urls_colnames
     MENTIONED_AUTHOR_URLS.columns = author_urls_colnames
-    logging.info('author urls step 4 -doing colnames')
     AUTHOR_URLS = pd.concat([AUTHOR_URLS, IN_REPLY_TO_USER_URLS, MENTIONED_AUTHOR_URLS])
-    logging.info('author urls step 5 - concatting all author urls dfs')
     logging.info('AUTHOR_URLS table built')
     return AUTHOR_URLS
 
@@ -1040,25 +1031,25 @@ def build_interactions_table(TWEETS, URLS, MENTIONS):
 
     return INTERACTIONS
 
-def get_schema_type(list_of_dataframes):
+def get_schema_type(list_of_dataframes, tweet_count):
     if Schematype.DATA == True:
         list_of_dataframes = list_of_dataframes
         list_of_csv = DATA_schema.list_of_csv
         list_of_tablenames = DATA_schema.list_of_tablenames
         list_of_schema = DATA_schema.list_of_schema
-        tweet_count = len(list_of_dataframes[0])
+        tweet_count = len(list_of_dataframes[0].loc[list_of_dataframes[0]['reference_level'] == '0']) + tweet_count
     elif Schematype.TCAT == True:
         list_of_dataframes = transform_DATA_to_TCAT(list_of_dataframes)
         list_of_csv = TCAT_schema.list_of_csv
         list_of_tablenames = TCAT_schema.list_of_tablenames
         list_of_schema = TCAT_schema.list_of_schema
-        tweet_count = len(list_of_dataframes[0])
+        tweet_count = len(list_of_dataframes[0]) + tweet_count
     else:
         list_of_dataframes = []
         list_of_csv = TweetQuery_schema.list_of_csv
         list_of_tablenames = TweetQuery_schema.list_of_tablenames
         list_of_schema = TweetQuery_schema.list_of_schema
-        tweet_count = len(list_of_dataframes[0])
+        tweet_count = len(list_of_dataframes[0]) + tweet_count
 
     return list_of_dataframes, list_of_csv, list_of_tablenames, list_of_schema, tweet_count
 
@@ -1163,7 +1154,8 @@ def write_processed_data_to_csv(tweetframe, csv_file, csv_filepath):
                           escapechar='|',
                           header=header)
 
-def push_processed_tables_to_bq(bq, dataset, list_of_tablenames, csv_filepath, list_of_csv, query, start_date, end_date, list_of_schema):
+def push_processed_tables_to_bq(bq, dataset, list_of_tablenames, csv_filepath, list_of_csv, query, start_date, end_date, list_of_schema, list_of_dataframes):
+
     logging.info('Pushing tables to Google BigQuery database.')
 
     tweet_dataset = f"dmrc-data.{dataset}"
@@ -1172,7 +1164,6 @@ def push_processed_tables_to_bq(bq, dataset, list_of_tablenames, csv_filepath, l
     # Create dataset if one does not exist
     try:
         bq.get_dataset(tweet_dataset)
-        logging.info(f"Dataset {tweet_dataset} already exists.")
 
     except NotFound:
         logging.info(f"Dataset {tweet_dataset} is not found.")
@@ -1207,7 +1198,7 @@ def push_processed_tables_to_bq(bq, dataset, list_of_tablenames, csv_filepath, l
                 job.result()
 
             table = bq.get_table(table_id)
-            logging.info(f"Loaded {table.num_rows} rows and {len(table.schema)} columns "
+            logging.info(f"Loaded {len(list_of_dataframes[i])} rows and {len(table.schema)} columns "
                          f"to {table.project}.{table.dataset_id}.{table.table_id}")
 
     fileList = glob.glob(csv_filepath + '*csv')
@@ -1229,16 +1220,16 @@ def query_total_record_count(table, bq):
             FROM `{table.project}.{table.dataset_id}.tweets`
             WHERE reference_level = '0'
             """
-        tweet_count = (bq.query(counts_query_string).result()).total_rows
+        total_rows_tweet_count = (bq.query(counts_query_string).result()).total_rows
     else:
         counts_query_string = f"""
             SELECT
             *
             FROM `{table.project}.{table.dataset_id}.tweets`
             """
-        tweet_count = (bq.query(counts_query_string).result()).total_rows
+        total_rows_tweet_count = (bq.query(counts_query_string).result()).total_rows
 
-    return tweet_count
+    return total_rows_tweet_count
 
 def capture_error_string(error, error_filepath):
     error_string = repr(error)
@@ -1308,7 +1299,9 @@ def run_DATA():
 
         # Set table variable to none, if it gets a value it can be queried
         table = 0
+        tweet_count = 0
 
+        # TODO: why two try/excepts here?
         try:
             try:
                 # Get current datetime for calculating duration
@@ -1316,9 +1309,8 @@ def run_DATA():
 
                 # to_collect, expected files tell the program what to collect and what has already been collected
                 to_collect, expected_files = set_up_expected_files(start_date, end_date, json_filepath)
-
                 # Call function collect_archive_data()
-                collect_archive_data(bq, dataset, to_collect, expected_files, client, query, start_date, end_date, csv_filepath, archive_search_counts)
+                collect_archive_data(bq, dataset, to_collect, expected_files, client, query, start_date, end_date, csv_filepath, archive_search_counts, tweet_count)
                 table = 1
                 search_end_time = datetime.now()
                 search_duration = (search_end_time - search_start_time)
@@ -1327,9 +1319,9 @@ def run_DATA():
                 if table > 0:
                     table_id = bigquery.Table(f'{project}.{dataset}.tweets')
                     table = bq.get_table(table_id)
-                    tweet_count = query_total_record_count(table, bq)
+                    total_rows_tweet_count = query_total_record_count(table, bq)
                     time.sleep(30)
-                    send_completion_email(mailgun_domain, mailgun_key, query, start_date, end_date, tweet_count,
+                    send_completion_email(mailgun_domain, mailgun_key, query, start_date, end_date, total_rows_tweet_count,
                                           search_start_time, search_end_time, readable_duration, num_rows=table.num_rows,
                                           project=table.project, dataset=table.dataset_id)
                     logging.info('Completion email sent to user.')
