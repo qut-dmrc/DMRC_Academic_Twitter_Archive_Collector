@@ -1,6 +1,6 @@
 # DMRC Academic Twitter Archive Collector
 
-This program uses the Twarc Python library to pull tweets from Twitter's archive, via the API 2.0. It then processes the resulting json files and pushes the data to a designated Google BigQuery database.
+The DMRC Academic Twitter Archive Collector uses the Twarc Python library to pull tweets from Twitter's archive, via the API 2.0. It then processes the resulting json files and pushes the data to a designated Google BigQuery database.
 <br>
 <br>
 <br>
@@ -17,7 +17,7 @@ Overview here... To be completed
 ### Who is this for?
 
 ------------------------------------
-This program is intended for researchers at the Digital Media Research Centre who wish to collect Twitter data from the archive (more than one week in the past), and have these data pushed automatically to Google BigQuery.
+This tool is intended for researchers at the Digital Media Research Centre who wish to collect data from the Twitter archive (more than one week in the past), and have these data pushed automatically to Google BigQuery.
 
 <br>
 
@@ -25,10 +25,10 @@ This program is intended for researchers at the Digital Media Research Centre wh
 ### What You Will Need
 
 ------------------------------------
-1. Python 3.9 or later
+1. Python 3.10 or later
 2. A valid [Twitter Academic API bearer token](https://developer.twitter.com/en/products/twitter-api/academic-research)
 3. A valid [Google service account and json key](https://cloud.google.com/iam/docs/creating-managing-service-account-keys)
-4. `xGB` free on your local drive for json file storage (the following are estimates and may vary depending on size of tweets, and you can store these files elsewhere after collection):
+4. `xGB` free on your local drive for json file storage (the following are estimates and may differ depending on the data collected; you can store these files elsewhere after collection):
       
 | n Tweets   | Size (GB) |
 |------------|-----------|
@@ -55,7 +55,7 @@ This program is intended for researchers at the Digital Media Research Centre wh
          * <b>end_date:</b> the latest date to search, in UTC time.
          * <b>interval_days:</b> the number of days covered per json file; default 1*
       ####
-      2. Add your bearer token:
+      2. Enter your bearer token:
          * <b>bearer_token</b>: your Twitter Academic API bearer token.
       ####
       3. Set your Google BigQuery project and dataset:
@@ -63,7 +63,7 @@ This program is intended for researchers at the Digital Media Research Centre wh
          * <b>project_id:</b> name of the relevant Google BigQuery billing project, e.g. 'dmrc-data'.
          * <b>dataset:</b> the name of your intended dataset, e.g. 'winter2022'. If it already exists, the data will be appended to the existing dataset; if it does not exist, a new dataset will be created.
       ####
-      4. Add your email address:
+      4. Enter your email address:
          * <b>user_email:</b> your email address, to notify you by email of the search's completion.
       ####
       5. Choose your <b>schema type</b> (DATA, TCAT, TweetQuery), e.g. DATA = True. Schema details here(link).
