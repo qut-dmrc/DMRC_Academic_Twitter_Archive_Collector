@@ -2,7 +2,9 @@ import json
 import pandas as pd
 import numpy as np
 import time
+from time import sleep
 import humanfriendly
+from humanfriendly import format_timespan
 import traceback
 import re
 
@@ -27,6 +29,48 @@ warnings.simplefilter(action='ignore', category=pd.errors.PerformanceWarning)
 
 # Functions
 # ---------
+def get_pre_search_counts(client, query, start_date, end_date, project, dataset, schematype):
+    # Run counts_all search
+    count_tweets = client.counts_all(query=query, start_time=start_date, end_time=end_date)
+
+    # Append each page of data to list
+    tweet_counts_data = []
+    for page in count_tweets:
+        tweet_counts_data.append(page)
+
+    # Combine all ["meta"]["total_tweet_count"] and sum for total tweets
+    tweet_counts = []
+    for i in range(len(tweet_counts_data)):
+        total = (tweet_counts_data[i]["meta"]["total_tweet_count"])
+        tweet_counts.append(total)
+
+    # Get total tweet counts
+    archive_search_counts = sum(tweet_counts)
+
+    time_estimate = (archive_search_counts*0.0012379*60)
+    readable_time_estimate = format_timespan(time_estimate)
+
+    print(f"""
+    \n
+    Thank you for using the DMRC Academic Twitter Archive (DATA) Collector!
+    Please check the below details carefully, and ensure you have enough room in your bearer token quota!
+    \n
+    Your query: {query}
+    Start_date: {start_date}
+    End_date: {end_date}
+    Destination database: {project}.{dataset}
+    Schema type: {schematype}
+    \n
+    Your archive search will collect approximately {archive_search_counts} tweets (upper estimate).
+    This could take around {readable_time_estimate}.
+    \n 
+    \n
+    Proceed? y/n""")
+
+    user_proceed = input('>>>')
+
+    return user_proceed
+
 def collect_archive_data(bq, dataset, to_collect, expected_files, client, query, start_date, end_date, csv_filepath):
     logging.info('Commencing data collection...')
     logging.info('-----------------------------------------------------------------------------------------')
@@ -1140,19 +1184,6 @@ def capture_error_string(error, error_filepath):
 # ----------------------------------------------------------------------------------------------------------------------
 
 def run_DATA():
-    # Set directories and file paths
-    # ------------------------------
-    set_up_logging(logfile_filepath)
-    set_directory(dir_name, folder)
-    set_json_path(json_filepath, folder)
-    set_csv_path(csv_filepath, folder)
-    set_error_log_path(error_filepath, folder)
-    set_log_file_path(logfile_filepath, folder)
-
-    # Access BigQuery
-    # ---------------
-    os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = GBQ.gbq_creds
-    bq = Client(project=GBQ.project_id)
 
     # Search parameters
     # -----------------
@@ -1165,52 +1196,88 @@ def run_DATA():
     project = GBQ.project_id
     dataset = GBQ.dataset
 
+    if Schematype.DATA == True:
+        schematype = 'DATA'
+    elif Schematype.TCAT == True:
+        schematype = 'TCAT'
+    else:
+        schematype = 'TweetQuery'
 
     # Initiate a Twarc client instance
     client = Twarc2(bearer_token=bearer_token)
 
+    # Pre-search archive counts
+    user_proceed = get_pre_search_counts(client, query, start_date, end_date, project, dataset, schematype)
 
-    # Set table variable to none, if it gets a value it can be queried
-    table = 0
+    if user_proceed == 'y':
+        sleep(3)
+        # Set directories and file paths
+        # ------------------------------
+        set_up_logging(logfile_filepath)
+        sleep(1)
+        set_directory(dir_name, folder)
+        sleep(1)
+        set_json_path(json_filepath, folder)
+        sleep(1)
+        set_csv_path(csv_filepath, folder)
+        sleep(1)
+        set_error_log_path(error_filepath, folder)
+        sleep(1)
+        set_log_file_path(logfile_filepath, folder)
+        sleep(1)
 
-    try:
+        # Access BigQuery
+        # ---------------
+        os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = GBQ.gbq_creds
+        bq = Client(project=GBQ.project_id)
+
+
+
+
+        # Set table variable to none, if it gets a value it can be queried
+        table = 0
+
         try:
-            # Get current datetime for calculating duration
-            search_start_time = datetime.now()
+            try:
+                # Get current datetime for calculating duration
+                search_start_time = datetime.now()
 
-            # to_collect, expected files tell the program what to collect and what has already been collected
-            to_collect, expected_files = set_up_expected_files(start_date, end_date, json_filepath)
+                # to_collect, expected files tell the program what to collect and what has already been collected
+                to_collect, expected_files = set_up_expected_files(start_date, end_date, json_filepath)
 
-            # Call function collect_archive_data()
-            collect_archive_data(bq, dataset, to_collect, expected_files, client, query, start_date, end_date, csv_filepath)
-            table = 1
-            search_end_time = datetime.now()
-            search_duration = (search_end_time - search_start_time)
-            readable_duration = humanfriendly.format_timespan(search_duration)
+                # Call function collect_archive_data()
+                collect_archive_data(bq, dataset, to_collect, expected_files, client, query, start_date, end_date, csv_filepath)
+                table = 1
+                search_end_time = datetime.now()
+                search_duration = (search_end_time - search_start_time)
+                readable_duration = humanfriendly.format_timespan(search_duration)
 
-            if table > 0:
-                table_id = bigquery.Table(f'{project}.{dataset}.tweets')
-                table = bq.get_table(table_id)
-                tweet_count = query_total_record_count(table, bq)
-                time.sleep(30)
-                send_completion_email(mailgun_domain, mailgun_key, query, start_date, end_date, tweet_count,
-                                      search_start_time, search_end_time, readable_duration, num_rows=table.num_rows,
-                                      project=table.project, dataset=table.dataset_id)
-                logging.info('Completion email sent to user.')
-            else:
-                time.sleep(30)
-                send_no_results_email(mailgun_domain, mailgun_key, query, start_date, end_date)
-                logging.info('No results email sent to user.')
+                if table > 0:
+                    table_id = bigquery.Table(f'{project}.{dataset}.tweets')
+                    table = bq.get_table(table_id)
+                    tweet_count = query_total_record_count(table, bq)
+                    time.sleep(30)
+                    send_completion_email(mailgun_domain, mailgun_key, query, start_date, end_date, tweet_count,
+                                          search_start_time, search_end_time, readable_duration, num_rows=table.num_rows,
+                                          project=table.project, dataset=table.dataset_id)
+                    logging.info('Completion email sent to user.')
+                else:
+                    time.sleep(30)
+                    send_no_results_email(mailgun_domain, mailgun_key, query, start_date, end_date)
+                    logging.info('No results email sent to user.')
 
-            logging.info('Archive search complete!')
+                logging.info('Archive search complete!')
+
+            except Exception as error:
+
+                traceback_info = capture_error_string(error, error_filepath)
+                send_error_email(mailgun_domain, mailgun_key, dataset, traceback_info)
+                logging.info('Error email sent to admin.')
 
         except Exception as error:
-
             traceback_info = capture_error_string(error, error_filepath)
             send_error_email(mailgun_domain, mailgun_key, dataset, traceback_info)
             logging.info('Error email sent to admin.')
 
-    except Exception as error:
-        traceback_info = capture_error_string(error, error_filepath)
-        send_error_email(mailgun_domain, mailgun_key, dataset, traceback_info)
-        logging.info('Error email sent to admin.')
+    else:
+        exit()

@@ -49,7 +49,7 @@ This program is intended for researchers at the Digital Media Research Centre wh
          * <b>dataset:</b> the name of your intended dataset, e.g. 'winter2022'. If it already exists, the data will be appended to the existing dataset; if it does not exist, a new dataset will be created.
       ####
       4. Add your email address:
-         * <b>user_email:</b> your email address, if you would like to receive an email to nofity you of the search's completion.
+         * <b>user_email:</b> your email address, to notify you by email of the search's completion.
       ####
       5. Choose your <b>schema type</b> (DATA, TCAT, TweetQuery), e.g. DATA = True. Schema details here(link).
 ####
@@ -70,7 +70,7 @@ Depending on the schema type selected, the tool will produce data as shown below
 
 
 
-A detailed overview of the tables and fields can be located here (TBC)
+A detailed overview of the tables and fields can be located here (TBC - provide link)
 <br>
 
 On successful completion of an archive search, you will receive an email from the DMRC Academic Twitter App, containing details of your search, including your search query, location of your data, the number of tweets collected and the time taken to perform the search.
