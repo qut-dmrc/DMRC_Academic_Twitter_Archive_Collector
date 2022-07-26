@@ -1289,8 +1289,9 @@ def run_DATA():
                                   |     |
                               -----m---m-----
                               |  Thank You! |
-                              ---------------   
-						            \/      
+                              ---------------
+                                    \/   
+
     \n
     Thank you for using the DMRC Academic Twitter Archive (DATA) Collector!
     \n
