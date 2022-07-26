@@ -44,7 +44,7 @@ This tool is intended for researchers at the Digital Media Research Centre who w
 ------------------------------------
 1. Clone this repository to a location with enough space to download tweets (refer to <b>What You Will Need</b> section, above).
 ####
-2. Install venv requirements:`pip install -r requirements.txt`
+2. Install venv requirements: `python -m pip install -r requirements.txt`
 ####
 3. Place your Google BigQuery service key json file into the `DATA_collector/access_key` directory.
 ####
