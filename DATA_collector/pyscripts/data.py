@@ -138,8 +138,8 @@ def get_pre_search_counts(client, query, start_date, end_date, project, dataset,
     Please check the below details carefully, and ensure you have enough room in your bearer token quota!
     \n
     Your query: {query}
-    Start_date: {start_date}
-    End_date: {end_date}
+    Start date: {start_date}
+    End date: {end_date}
     Destination database: {project}.{dataset}
     Schema type: {schematype}
     Intervals (days): {interval}
