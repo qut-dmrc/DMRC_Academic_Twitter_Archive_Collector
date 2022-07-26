@@ -30,15 +30,15 @@ warnings.simplefilter(action='ignore', category=pd.errors.PerformanceWarning)
 
 # Functions
 # ---------
-def validate_search_parameters(query, bearer_token, start_date, end_date, project, dataset):
+def validate_search_parameters(query, bearer_token, access_key, start_date, end_date, project, dataset, interval):
+
     utc = pytz.UTC
 
     print("""
-    \n 
     Validating your config...
-    \n
     """)
 
+    # Search query length
     if len(query) in range(1, 1024):
         query = query
     elif len(query) < 1:
@@ -48,12 +48,21 @@ def validate_search_parameters(query, bearer_token, start_date, end_date, projec
         query = None
         print(f'Query is too long ({len(query)} characters). Please shorten it to 1024 characters or less and retry.')
 
-    if len(bearer_token) >1:
+    # Bearer token entered
+    if len(bearer_token) > 0:
         bearer_token = bearer_token
     else:
         bearer_token = None
-        print('Please enter a bearer token for Twitter API access.')
+        print('Please enter a valid bearer token for Twitter API access.')
 
+    # Google access key entered
+    if glob.glob(f'{cwd}/access_key/*.json'):
+        access_key = access_key
+    else:
+        access_key = None
+        print('Please enter a valid Google service account access key')
+
+    # Start date in the past
     if start_date < end_date:
         start_date = start_date
     elif start_date > utc.localize(dt.datetime.now()):
@@ -63,25 +72,34 @@ def validate_search_parameters(query, bearer_token, start_date, end_date, projec
         start_date = None
         print('Start date cannot be after end date.')
 
+    # End date in the past, but after start date
     if end_date < utc.localize(dt.datetime.now()):
         end_date = end_date
     else:
         end_date = None
         print('End date cannot be in the future.')
 
-    if len(project) > 1:
+    # Project name entered
+    if len(project) > 0:
         project = project
     else:
         project = None
-        print('Please enter a project.')
+        print('Please enter a Google BigQuery billing project.')
 
-    if len(dataset) > 1:
+    # Dataset name entered
+    if len(dataset) > 0:
         dataset = dataset
     else:
         dataset = None
-        print('Please enter a dataset.')
+        print('Please enter a name for your desired dataset.')
 
-    if None in [query, bearer_token, start_date, end_date, project, dataset]:
+    # Interval
+    if interval != '0':
+        interval = interval
+    else:
+        interval = 1
+
+    if None in [query, bearer_token, access_key, start_date, end_date, project, dataset]:
         print("""
         \n 
         Exiting...
@@ -93,9 +111,9 @@ def validate_search_parameters(query, bearer_token, start_date, end_date, projec
         Config input valid!
         \n""")
 
-        return query, bearer_token, start_date, end_date, project, dataset
+        return query, bearer_token, access_key, start_date, end_date, project, dataset, interval
 
-def get_pre_search_counts(client, query, start_date, end_date, project, dataset, schematype):
+def get_pre_search_counts(client, query, start_date, end_date, project, dataset, schematype, interval):
     # Run counts_all search
     count_tweets = client.counts_all(query=query, start_time=start_date, end_time=end_date)
 
@@ -117,8 +135,6 @@ def get_pre_search_counts(client, query, start_date, end_date, project, dataset,
     readable_time_estimate = format_timespan(time_estimate)
 
     print(f"""
-    \n
-    Thank you for using the DMRC Academic Twitter Archive (DATA) Collector!
     Please check the below details carefully, and ensure you have enough room in your bearer token quota!
     \n
     Your query: {query}
@@ -126,6 +142,7 @@ def get_pre_search_counts(client, query, start_date, end_date, project, dataset,
     End_date: {end_date}
     Destination database: {project}.{dataset}
     Schema type: {schematype}
+    Intervals (days): {interval}
     \n
     Your archive search will collect approximately {archive_search_counts} tweets (upper estimate).
     This could take around {readable_time_estimate}.
@@ -1246,18 +1263,41 @@ def capture_error_string(error, error_filepath):
 # ----------------------------------------------------------------------------------------------------------------------
 
 def run_DATA():
+    print("""
+                                ___________
+                                  |_____|  \  
+                                  | o o |   *
+                                   \ V / 
+                                   /   \ 
+                                  |     |
+                                  |     |
+                              -----m---m-----
+                              |  Thank You! |
+                              ---------------         
+    \n
+    Thank you for using the DMRC Academic Twitter Archive (DATA) Collector!
+    \n
+    If you use this tool to collect data for a publication, please cite me as: 
+    'DMRC Academic Twitter Archive (DATA) Collector, version 1 (Beta)
+    Digital Media Research Centre, Queensland University of Technology, 2022'.
 
+    Twarc2 ?????
+    --------------------------------------------------------------------------
+    \n""")
+    time.sleep(5)
     # Search parameters
     # -----------------
     query = Query.query
     bearer_token = Tokens.bearer_token
+    access_key = GBQ.gbq_creds
     start_date = Query.start_date
     end_date = Query.end_date
     project = GBQ.project_id
     dataset = GBQ.dataset
+    interval = Query.interval_days
 
     # Validate search parameters
-    query, bearer_token, start_date, end_date, project, dataset = validate_search_parameters(query, bearer_token, start_date, end_date, project, dataset)
+    query, bearer_token, access_key, start_date, end_date, project, dataset, interval = validate_search_parameters(query, bearer_token, access_key, start_date, end_date, project, dataset, interval)
 
     if Schematype.DATA == True:
         schematype = 'DATA'
@@ -1270,7 +1310,7 @@ def run_DATA():
     client = Twarc2(bearer_token=bearer_token)
 
     # Pre-search archive counts
-    archive_search_counts, user_proceed = get_pre_search_counts(client, query, start_date, end_date, project, dataset, schematype)
+    archive_search_counts, user_proceed = get_pre_search_counts(client, query, start_date, end_date, project, dataset, schematype, interval)
 
     if user_proceed == 'y':
         sleep(3)

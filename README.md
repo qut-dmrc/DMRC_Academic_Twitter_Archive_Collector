@@ -53,7 +53,8 @@ This tool is intended for researchers at the Digital Media Research Centre who w
          * <b>query:</b> string containing keyword(s) and/or phrase(s), e.g. 'winter OR cold'
          * <b>start_date:</b> the earliest date to search, in UTC time.
          * <b>end_date:</b> the latest date to search, in UTC time.
-         * <b>interval_days:</b> the number of days covered per json file; default 1*
+         * <b>interval_days:</b> the number of days covered per json file collected; default 1*
+           * Increasing the interval to 7 = one week at a time, 30 = one month at a time, etc. Increasing the interval can speed up collection where volume of tweets is low relative to the duration of the search.
       ####
       2. Enter your bearer token:
          * <b>bearer_token</b>: your Twitter Academic API bearer token.
