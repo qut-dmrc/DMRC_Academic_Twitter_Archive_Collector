@@ -46,7 +46,7 @@ This tool is intended for researchers at the Digital Media Research Centre who w
 ####
 2. Install venv requirements:`pip install -r requirements.txt`
 ####
-3. Place your Google BigQuery service key json file into the `DATA_collector/access_key` directory, or set your Google environment variables.
+3. Place your Google BigQuery service key json file into the `DATA_collector/access_key` directory.
 ####
 4. Open `DATA_collector/config/config_template.py`.
       1. Set your query parameters:
@@ -60,7 +60,6 @@ This tool is intended for researchers at the Digital Media Research Centre who w
          * <b>bearer_token</b>: your Twitter Academic API bearer token.
       ####
       3. Set your Google BigQuery project and dataset:
-         * <b>gbq_creds:</b> path to your Google service key json file, or link to environment variable.
          * <b>project_id:</b> name of the relevant Google BigQuery billing project, e.g. 'dmrc-data'.
          * <b>dataset:</b> the name of your intended dataset, e.g. 'winter2022'. If it already exists, the data will be appended to the existing dataset; if it does not exist, a new dataset will be created.
       ####

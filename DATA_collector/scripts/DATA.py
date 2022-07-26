@@ -30,7 +30,7 @@ warnings.simplefilter(action='ignore', category=pd.errors.PerformanceWarning)
 
 # Functions
 # ---------
-def validate_search_parameters(query, bearer_token, access_key, start_date, end_date, project, dataset, interval):
+def validate_search_parameters(query, bearer_token, start_date, end_date, project, dataset, interval):
 
     utc = pytz.UTC
 
@@ -57,7 +57,7 @@ def validate_search_parameters(query, bearer_token, access_key, start_date, end_
 
     # Google access key entered
     if glob.glob(f'{cwd}/access_key/*.json'):
-        access_key = access_key
+        access_key = glob.glob(f'{cwd}/access_key/*.json')
     else:
         access_key = None
         print('Please enter a valid Google service account access key')
@@ -1289,7 +1289,6 @@ def run_DATA():
     # -----------------
     query = Query.query
     bearer_token = Tokens.bearer_token
-    access_key = GBQ.gbq_creds
     start_date = Query.start_date
     end_date = Query.end_date
     project = GBQ.project_id
@@ -1297,7 +1296,7 @@ def run_DATA():
     interval = Query.interval_days
 
     # Validate search parameters
-    query, bearer_token, access_key, start_date, end_date, project, dataset, interval = validate_search_parameters(query, bearer_token, access_key, start_date, end_date, project, dataset, interval)
+    query, bearer_token, access_key, start_date, end_date, project, dataset, interval = validate_search_parameters(query, bearer_token, start_date, end_date, project, dataset, interval)
 
     if Schematype.DATA == True:
         schematype = 'DATA'
@@ -1331,8 +1330,8 @@ def run_DATA():
 
         # Access BigQuery
         # ---------------
-        os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = GBQ.gbq_creds
-        bq = Client(project=GBQ.project_id)
+        os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = access_key[0]
+        bq = Client(project=project)
 
 
 
