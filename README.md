@@ -48,7 +48,7 @@ This tool is intended for researchers at the Digital Media Research Centre who w
 ####
 3. Place your Google BigQuery service key json file into the `DATA_collector/access_key` directory.
 ####
-4. Open `DATA_collector/config/config_template.py`.
+4. Open `DATA_collector/config/config_template.yml`.
       1. Set your query parameters:
          * <b>query:</b> string containing keyword(s) and/or phrase(s), e.g. 'winter OR cold' 
          * <b>start_date:</b> the earliest date to search, in UTC time.
@@ -68,7 +68,7 @@ This tool is intended for researchers at the Digital Media Research Centre who w
       ####
       5. Choose your <b>schema type</b> (DATA, TCAT, TweetQuery). DATA = True by default. Refer to <b>Output</b>, below, for schema details.
 ####
-5. Rename `config_template.py` to `config.py`.
+5. Rename `config_template.yml` to `config.yml`.
 ####
 6. In your terminal, navigate to `cd .\DATA_collector\` and run `python ./run.py`.
 ####
