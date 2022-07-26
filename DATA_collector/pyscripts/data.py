@@ -58,11 +58,8 @@ def validate_search_parameters(query, bearer_token, start_date, end_date, projec
     # Google access key entered
     if glob.glob(f'{cwd}/access_key/*.json'):
         access_key = glob.glob(f'{cwd}/access_key/*.json')
-        print(f'{cwd}/access_key/*.json')
     else:
         access_key = None
-        print(f'{cwd}/access_key/*.json')
-        print(glob.glob(f'{cwd}/access_key/*.json'))
         print('Please enter a valid Google service account access key')
 
     # Start date in the past
@@ -476,6 +473,8 @@ def move_referenced_tweet_data_up(reference_levels_list, up_a_level_column_list)
         combined_level.reset_index(drop=True, inplace=True)
         combined_levels.append(combined_level)
 
+
+
     if len(combined_levels) > 1:
     # Concat everything in combined_levels
         concatted = pd.concat(combined_levels)
@@ -489,6 +488,7 @@ def move_referenced_tweet_data_up(reference_levels_list, up_a_level_column_list)
                  'replied_to': 'reply',
                  'quoted': 'quote'})
     else:
+
         TWEETS = combined_level
 
         if 'tweet_type' in TWEETS.columns:
@@ -506,16 +506,28 @@ def move_referenced_tweet_data_up(reference_levels_list, up_a_level_column_list)
 
     # if tweet_type == 'retweet', then entities_hashtags/mentions/urls/annotations = referenced_tweet_entities_hashtags/mentions/urls/annotations
     if 'referenced_tweet_hashtags' in TWEETS.columns:
-        TWEETS['entities_hashtags'] = np.where(TWEETS['tweet_type'] == 'retweet', TWEETS['referenced_tweet_hashtags'], TWEETS['entities_hashtags'])
+        if 'entities_hashtags' in TWEETS.columns:
+            TWEETS['entities_hashtags'] = np.where(TWEETS['tweet_type'] == 'retweet', TWEETS['referenced_tweet_hashtags'], TWEETS['entities_hashtags'])
+        else:
+            TWEETS['entities_hashtags'] = np.where(TWEETS['tweet_type'] == 'retweet', TWEETS['referenced_tweet_hashtags'], np.nan)
 
     if 'referenced_tweet_mentions' in TWEETS.columns:
-        TWEETS['entities_mentions'] = np.where(TWEETS['tweet_type'] == 'retweet', TWEETS['referenced_tweet_mentions'], TWEETS['entities_mentions'])
+        if 'entities_mentions' in TWEETS.columns:
+            TWEETS['entities_mentions'] = np.where(TWEETS['tweet_type'] == 'retweet', TWEETS['referenced_tweet_mentions'], TWEETS['entities_mentions'])
+        else:
+            TWEETS['entities_mentions'] = np.where(TWEETS['tweet_type'] == 'retweet', TWEETS['referenced_tweet_mentions'], np.nan)
 
     if 'referenced_tweet_urls' in TWEETS.columns:
-        TWEETS['entities_urls'] = np.where(TWEETS['tweet_type'] == 'retweet', TWEETS['referenced_tweet_urls'], TWEETS['entities_urls'])
+        if 'entities_urls' in TWEETS.columns:
+            TWEETS['entities_urls'] = np.where(TWEETS['tweet_type'] == 'retweet', TWEETS['referenced_tweet_urls'], TWEETS['entities_urls'])
+        else:
+            TWEETS['entities_urls'] = np.where(TWEETS['tweet_type'] == 'retweet', TWEETS['referenced_tweet_urls'], np.nan)
 
     if 'referenced_tweet_annotations' in TWEETS.columns:
-        TWEETS['entities_annotations'] = np.where(TWEETS['tweet_type'] == 'retweet', TWEETS['referenced_tweet_annotations'], TWEETS['entities_annotations'])
+        if 'entities_annotations' in TWEETS.columns:
+            TWEETS['entities_annotations'] = np.where(TWEETS['tweet_type'] == 'retweet', TWEETS['referenced_tweet_annotations'], TWEETS['entities_annotations'])
+        else:
+            TWEETS['entities_annotations'] = np.where(TWEETS['tweet_type'] == 'retweet', TWEETS['referenced_tweet_annotations'], np.nan)
 
     return TWEETS
 
@@ -1276,7 +1288,8 @@ def run_DATA():
                                   |     |
                               -----m---m-----
                               |  Thank You! |
-                              ---------------         
+                              ---------------   
+						            \/      
     \n
     Thank you for using the DMRC Academic Twitter Archive (DATA) Collector!
     \n

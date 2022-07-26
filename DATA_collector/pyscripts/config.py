@@ -1,23 +1,31 @@
 import datetime as dt
-# Enter your Twitter Academic API, Mailgun and Google BiqQuery access tokens and rename this file to 'config.py'
+import os
+import yaml
+
+wd = os.getcwd()
+
+with open(f'{wd}/config/config.yml') as f:
+    config = yaml.load(f, Loader=yaml.FullLoader)
 
 class Query():
-    query = 'masterchefau'
-    start_date = dt.datetime(2022, 4, 11, 0, 0, 0, 0, tzinfo=dt.timezone.utc)
-    end_date = dt.datetime(2022, 7, 19, 0, 0, 0, 0, tzinfo=dt.timezone.utc)
-    interval_days = 1
+    query = config['query']
+    # start_date = config['start_date']
+    start_date = dt.datetime.fromisoformat(config['start_date'])
+    # end_date = config['end_date']
+    end_date = dt.datetime.fromisoformat(config['end_date'])
+    interval_days = config['interval_days']
 
 class Tokens():
-    bearer_token = 'AAAAAAAAAAAAAAAAAAAAAIFuUAEAAAAAePHReHjdSnm%2Fn27vtEP8wCZR%2F7o%3DkahBo4Qdqz5ApNJf3tsHdnY4gihoNKZdBxbfamf71rXnLYDTuS'
+    bearer_token = config['bearer_token']
 
 class GBQ():
-    project_id = 'dmrc-data'
-    dataset = 'lv_test'
+    project_id = config['project_id']
+    dataset = config['dataset']
 
 class Emails():
-    user_email = 'laura.vodden@outlook.com'
+    user_email = config['user_email']
 
 class Schematype():
-    DATA = True
-    TCAT = False
-    TweetQuery = False
+    DATA = config['DATA']
+    TCAT = config['TCAT']
+    TweetQuery = config['TweetQuery']
