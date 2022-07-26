@@ -11,7 +11,6 @@ class Tokens():
     bearer_token = ''
 
 class GBQ():
-    gbq_creds = ''
     project_id = ''
     dataset = ''
 

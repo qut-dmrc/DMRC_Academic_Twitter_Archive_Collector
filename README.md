@@ -50,7 +50,7 @@ This tool is intended for researchers at the Digital Media Research Centre who w
 ####
 4. Open `DATA_collector/config/config_template.py`.
       1. Set your query parameters:
-         * <b>query:</b> string containing keyword(s) and/or phrase(s), e.g. 'winter OR cold'
+         * <b>query:</b> string containing keyword(s) and/or phrase(s), e.g. 'winter OR cold' 
          * <b>start_date:</b> the earliest date to search, in UTC time.
          * <b>end_date:</b> the latest date to search, in UTC time.
          * <b>interval_days:</b> the number of days covered per json file collected; default 1*
