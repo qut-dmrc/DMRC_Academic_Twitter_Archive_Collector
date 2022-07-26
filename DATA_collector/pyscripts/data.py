@@ -962,6 +962,7 @@ def extract_entities_data(TWEETS):
         if entities_mentions[column].dtype == float:
             entities_mentions[column] = entities_mentions[column].fillna(value=0)
             entities_mentions[column] = entities_mentions[column].astype('int32')
+
     return entities_mentions
 
 def build_mentions_table(entities_mentions):

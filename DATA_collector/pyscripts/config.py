@@ -7,6 +7,7 @@ wd = os.getcwd()
 with open(f'{wd}/config/config.yml') as f:
     config = yaml.load(f, Loader=yaml.FullLoader)
 
+
 class Query():
     query = config['query']
     # start_date = config['start_date']
