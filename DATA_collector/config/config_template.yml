@@ -3,7 +3,7 @@
 query: "string"
 start_date: "2022-04-23 00:00:00+00:00"                 # "yyyy-mm-dd hh:mm:ss+hh:mm"
 end_date: "2022-07-19 00:00:00+00:00"
-interval_days : 1
+interval_days: 1
 
 bearer_token: "twitteracademicapibearertoken"
 
