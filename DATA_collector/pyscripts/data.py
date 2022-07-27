@@ -337,7 +337,7 @@ def process_json_data(a_file, csv_filepath, bq, project, dataset, query, start_d
         # Write temp csv files to BigQuery tables
         push_processed_tables_to_bq(bq, project, dataset, list_of_tablenames, csv_filepath, list_of_csv, query, start_date, end_date, list_of_schema, list_of_dataframes)
 
-        return tweet_count
+    return tweet_count
 
 def flatten_top_tweet_level(tweets):
     logging.info('Flattening one-to-one nested columns...')
