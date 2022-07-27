@@ -154,7 +154,7 @@ def get_pre_search_counts(client, query, start_date, end_date, project, dataset,
 
     return archive_search_counts, user_proceed
 
-def collect_archive_data(bq, dataset, to_collect, expected_files, client, query, start_date, end_date, csv_filepath, archive_search_counts, tweet_count):
+def collect_archive_data(bq, project, dataset, to_collect, expected_files, client, query, start_date, end_date, csv_filepath, archive_search_counts, tweet_count):
     logging.info('Commencing data collection...')
 
     # Collect archive data one interval at a time using the Twarc search_all endpoint
@@ -182,11 +182,11 @@ def collect_archive_data(bq, dataset, to_collect, expected_files, client, query,
                     logging.info(f'Processing tweet data...')
 
                     # For each interval (file), process json
-                    tweet_count = process_json_data(a_file, csv_filepath, bq, dataset, query, start_date, end_date, archive_search_counts, tweet_count)
+                    tweet_count = process_json_data(a_file, csv_filepath, bq, project, dataset, query, start_date, end_date, archive_search_counts, tweet_count)
 
 
 
-def process_json_data(a_file, csv_filepath, bq, dataset, query, start_date, end_date, archive_search_counts, tweet_count):
+def process_json_data(a_file, csv_filepath, bq, project, dataset, query, start_date, end_date, archive_search_counts, tweet_count):
     for chunk in pd.read_json(a_file, lines=True, chunksize=10000):
         tweets = chunk
 
@@ -335,7 +335,7 @@ def process_json_data(a_file, csv_filepath, bq, dataset, query, start_date, end_
         logging.info(f'{tweet_count} of {archive_search_counts} tweets collected ({round(percent_collected, 1)}%)')
 
         # Write temp csv files to BigQuery tables
-        push_processed_tables_to_bq(bq, dataset, list_of_tablenames, csv_filepath, list_of_csv, query, start_date, end_date, list_of_schema, list_of_dataframes)
+        push_processed_tables_to_bq(bq, project, dataset, list_of_tablenames, csv_filepath, list_of_csv, query, start_date, end_date, list_of_schema, list_of_dataframes)
 
         return tweet_count
 
@@ -1187,11 +1187,11 @@ def write_processed_data_to_csv(tweetframe, csv_file, csv_filepath):
                           escapechar='|',
                           header=header)
 
-def push_processed_tables_to_bq(bq, dataset, list_of_tablenames, csv_filepath, list_of_csv, query, start_date, end_date, list_of_schema, list_of_dataframes):
+def push_processed_tables_to_bq(bq, project, dataset, list_of_tablenames, csv_filepath, list_of_csv, query, start_date, end_date, list_of_schema, list_of_dataframes):
 
     logging.info('Pushing tables to Google BigQuery database.')
 
-    tweet_dataset = f"dmrc-data.{dataset}"
+    tweet_dataset = f"{project}.{dataset}"
     num_tables = len(list_of_tablenames)
     # TODO check this description stuff
     # Create dataset if one does not exist
@@ -1368,7 +1368,7 @@ def run_DATA():
                 # to_collect, expected files tell the program what to collect and what has already been collected
                 to_collect, expected_files = set_up_expected_files(start_date, end_date, json_filepath)
                 # Call function collect_archive_data()
-                collect_archive_data(bq, dataset, to_collect, expected_files, client, query, start_date, end_date, csv_filepath, archive_search_counts, tweet_count)
+                collect_archive_data(bq, project, dataset, to_collect, expected_files, client, query, start_date, end_date, csv_filepath, archive_search_counts, tweet_count)
                 table = 1
                 search_end_time = datetime.now()
                 search_duration = (search_end_time - search_start_time)
