@@ -1297,10 +1297,11 @@ def run_DATA():
     Thank you for using the DMRC Academic Twitter Archive (DATA) Collector!
     \n
     If you use this tool to collect data for a publication, please cite me as: 
-    'DMRC Academic Twitter Archive (DATA) Collector, version 1 (Beta)
-    Digital Media Research Centre, Queensland University of Technology, 2022'.
+    \n
+    Vodden, Laura. (2022). DMRC Academic Twitter Archive (DATA) Collector. Version 1 
+    (Beta). Brisbane: Digital Media Research Centre, Queensland University of Technology. 
+    https://github.com/qut-dmrc/DMRC_Academic_Twitter_Archive_Collector.git
 
-    Twarc2 ?????
     --------------------------------------------------------------------------
     \n""")
     time.sleep(5)
