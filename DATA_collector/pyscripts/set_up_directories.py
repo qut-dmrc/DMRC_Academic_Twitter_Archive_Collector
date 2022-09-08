@@ -111,6 +111,20 @@ def set_up_expected_files(start_date, end_date, json_filepath):
         )
         current_date += window_length
 
+    # TODO make this a bit nicer - this is a bit makeshift. The idea is to change the last end date in the dict to the end date in the config. It is based on the window length so sometimes the end date is wrong.
+    kvps = list(expected_files.items())
+    kvps_list = list(kvps[-1])
+    kvps_list_list = list(kvps_list[-1])
+    kvps_list_list[-1] = Query.end_date
+    kvps_list_list = tuple(kvps_list_list)
+    kvps_list[-1] = kvps_list_list
+    kvps[-1] = tuple(kvps_list)
+
+    expected_files = dict(kvps)
+
+
+
+
     collected_files = glob.glob(saved_search_path + "*jsonl")
     collected_files = set([filename.replace('\\', '/') for filename in collected_files])
     to_collect = set(expected_files) - collected_files
