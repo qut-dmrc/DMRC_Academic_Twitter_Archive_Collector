@@ -42,6 +42,8 @@ This tool is intended for researchers at the Digital Media Research Centre who w
 ### To Use
 
 ------------------------------------
+
+#### If you HAVEN'T already cloned this repository:
 1. Clone this repository to a location with enough space to download tweets (refer to <b>What You Will Need</b> section, above).
 ####
 2. Install venv requirements: `python -m pip install -r requirements.txt`
@@ -73,6 +75,12 @@ This tool is intended for researchers at the Digital Media Research Centre who w
 6. In your terminal, navigate to `cd .\DATA_collector\` and run `python ./run.py`.
 ####
 After you run `run.py`, you will be prompted to verify your query config details. If everything is correct, type 'y', otherwise, type 'n' to exit and change your input.
+<br>
+<br>
+<br>
+#### !!! If you HAVE already cloned this repository:
+There is a very good chance that (beneficial!) changes have been made to this repository. Remember to update before you use DATA using 
+`git pull origin main`!
 <br>
 <br>
 <br>
