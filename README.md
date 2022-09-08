@@ -112,12 +112,13 @@ Queries are case insensitive.
 
 #### Operator logic
 
-| Operator        | Logic    | Example                           | What it does                                                                            |
-|-----------------|----------|-----------------------------------|-----------------------------------------------------------------------------------------|
-| '&nbsp;&nbsp;'  | AND      | frosty snowman                    | searches for tweets that contain keywords 'frosty' AND 'snowman'                        |
-| 'OR'            | OR       | frosty OR snowman                 | searches for tweets that contain keywords 'frosty' OR 'snowman'                         |
-| '-'             | NOT      | frosty -snowman                   | searches for tweets that contain keywords 'frosty', but NOT 'snowman'                   |
-| (&nbsp;&nbsp;)  | Grouping | (frosty OR snowman) (carrot nose) | searches for tweets that contain keywords 'frosty' or 'snowman' AND 'carrot' AND 'nose' |                                                       
+| Operator    | Logic    | Example                           | What it does                                                                            |
+|-------------|----------|-----------------------------------|-----------------------------------------------------------------------------------------|
+|   | AND      | frosty snowman                    | searches for tweets that contain keywords 'frosty' AND 'snowman'                        |
+| OR          | OR       | frosty OR snowman                 | searches for tweets that contain keywords 'frosty' OR 'snowman'                         |
+| -           | NOT      | frosty -snowman                   | searches for tweets that contain keywords 'frosty', but NOT 'snowman'                   |
+| (&nbsp;&nbsp;) | Grouping | (frosty OR snowman) (carrot nose) | searches for tweets that contain keywords 'frosty' or 'snowman' AND 'carrot' AND 'nose' |  
+| " "       | Exact string | "frosty the snowman" | searches for the exact string as a keyword, e.g. "frosty the snowman" OR carrot |
 
 <br>
 
