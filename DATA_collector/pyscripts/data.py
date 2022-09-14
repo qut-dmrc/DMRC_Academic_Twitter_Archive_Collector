@@ -187,7 +187,7 @@ def collect_archive_data(bq, project, dataset, to_collect, expected_files, clien
 
 
 def process_json_data(a_file, csv_filepath, bq, project, dataset, query, start_date, end_date, archive_search_counts, tweet_count):
-    for chunk in pd.read_json(a_file, lines=True, chunksize=10000):
+    for chunk in pd.read_json(a_file, lines=True, dtype=False, chunksize=10000):
         tweets = chunk
 
         # Rename 'id' field for clarity
