@@ -59,7 +59,7 @@ def set_csv_path(csv_filepath, folder):
     try:
         os.mkdir(csv_filepath)
         logging.info('Path does not yet exist')
-        logging.info(f"Created new CSV file directory names {folder} at location {csv_filepath}")
+        logging.info(f"Created new CSV file directory named {folder} at location {csv_filepath}")
     except OSError as error:
         logging.info(f"CSV file directory already exists at location {csv_filepath}")
         logging.info(f"csv files will be written to this existing location")
@@ -122,12 +122,22 @@ def set_up_expected_files(start_date, end_date, json_filepath):
 
     expected_files = dict(kvps)
 
-
-
-
     collected_files = glob.glob(saved_search_path + "*jsonl")
     collected_files = set([filename.replace('\\', '/') for filename in collected_files])
     to_collect = set(expected_files) - collected_files
     to_collect = sorted(to_collect)
 
     return to_collect, expected_files
+
+
+def get_json_input_files():
+    # json_input_filepath = f'{cwd}/json_input_files/'
+    # json_input_files = glob.glob(json_input_filepath + "*jsonl")
+    json_input_filepath = '//rstore.qut.edu.au/projects/cif/auspubsphere/dmrc_DATA_collection/unfriend/done/'
+    json_input_files = glob.glob(json_input_filepath + "*jsonl")
+
+    # json_input_filepath = 'C:/Users/vodden/PycharmProjects/AWS_boto/pulled_files/done/'
+    # json_input_files = glob.glob(json_input_filepath + "*jsonl")
+
+    return json_input_files
+
