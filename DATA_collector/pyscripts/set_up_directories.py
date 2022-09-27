@@ -97,19 +97,39 @@ def set_log_file_path(logfile_filepath, folder):
 
 # Construct a range of datetimes to use to collect Tweets in specified n_day intervals (1 interval = 1 json file)
 # ---------------------------------------------------------------------------------------------------------------
-def set_up_expected_files(start_date, end_date, json_filepath):
+def set_up_expected_files(start_date, end_date, json_filepath, option_selection, query):
     window_length = dt.timedelta(days=Query.interval_days)
     expected_files = dict()
     current_date = start_date
     saved_search_path = json_filepath
 
-    # Generate dictionary of file names, start date and end date
-    while current_date < end_date:
-        expected_files[saved_search_path + f"{current_date.isoformat()}_tweets.jsonl".replace(":", "")] = (
-            current_date,
-            current_date + window_length
-        )
-        current_date += window_length
+    if option_selection == "1":
+        # Generate dictionary of file names, start date and end date
+        while current_date < end_date:
+            expected_files[saved_search_path + f"{current_date.isoformat()}_tweets.jsonl".replace(":", "")] = (
+                current_date,
+                current_date + window_length
+            )
+            current_date += window_length
+
+    else:
+        # Generating dictionary of file names and start and end dates
+
+
+
+        while current_date < end_date:
+            expected_files[
+                saved_search_path + f"{query}_{current_date.isoformat()}_tweets.jsonl".replace(":", "")] = (
+                current_date,
+                current_date + window_length
+            )
+            current_date += window_length
+
+
+
+
+
+
 
     # TODO make this a bit nicer - this is a bit makeshift. The idea is to change the last end date in the dict to the end date in the config. It is based on the window length so sometimes the end date is wrong.
     kvps = list(expected_files.items())
@@ -131,10 +151,10 @@ def set_up_expected_files(start_date, end_date, json_filepath):
 
 
 def get_json_input_files():
-    # json_input_filepath = f'{cwd}/json_input_files/'
-    # json_input_files = glob.glob(json_input_filepath + "*jsonl")
-    json_input_filepath = '//rstore.qut.edu.au/projects/cif/auspubsphere/dmrc_DATA_collection/unfriend/done/'
+    json_input_filepath = f'{cwd}/json_input_files/'
     json_input_files = glob.glob(json_input_filepath + "*jsonl")
+    # json_input_filepath = '//rstore.qut.edu.au/projects/cif/auspubsphere/dmrc_DATA_collection/unfriend/done/'
+    # json_input_files = glob.glob(json_input_filepath + "*jsonl")
 
     # json_input_filepath = 'C:/Users/vodden/PycharmProjects/AWS_boto/pulled_files/done/'
     # json_input_files = glob.glob(json_input_filepath + "*jsonl")

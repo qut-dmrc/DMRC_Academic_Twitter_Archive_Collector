@@ -286,7 +286,7 @@ class DATA_schema:
 
     # AUTHOR_DESCRIPTION schema
     author_description_schema = [
-        bigquery.SchemaField("author_id", "STRING", mode="REQUIRED",
+        bigquery.SchemaField("author_id", "STRING", mode="NULLABLE",
                              description="Unique ID for this author (from Twitter)"),
         bigquery.SchemaField("author_description_hashtags_start", "STRING", mode="NULLABLE",
                              description=""),
