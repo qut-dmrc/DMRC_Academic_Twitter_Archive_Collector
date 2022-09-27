@@ -15,6 +15,7 @@ class Query():
     # end_date = config['end_date']
     end_date = dt.datetime.fromisoformat(config['end_date'])
     interval_days = config['interval_days']
+    query_list = config['query_list']
 
 class Tokens():
     bearer_token = config['bearer_token']
