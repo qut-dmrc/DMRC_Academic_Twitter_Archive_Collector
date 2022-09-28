@@ -1553,11 +1553,11 @@ def run_DATA():
                             table = bq.get_table(table_id)
                             total_rows_tweet_count = query_total_record_count(table, bq)
                             time.sleep(30)
-                            send_completion_email(mailgun_domain, mailgun_key, query, start_date, end_date,
+                            send_completion_email(mailgun_domain, mailgun_key, start_date, end_date,
                                                   total_rows_tweet_count,
                                                   search_start_time, search_end_time, readable_duration,
                                                   num_rows=table.num_rows,
-                                                  project=table.project, dataset=table.dataset_id)
+                                                  project=table.project, dataset=table.dataset_id, query=subquery)
                             logging.info('Completion email sent to user.')
                         else:
                             time.sleep(30)
