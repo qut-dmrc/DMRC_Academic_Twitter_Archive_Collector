@@ -1301,16 +1301,16 @@ def query_total_record_count(table, bq):
             FROM `{table.project}.{table.dataset_id}.tweets`
             WHERE reference_level = '0'
             """
-        total_rows_tweet_count = (bq.query(counts_query_string).result()).total_rows
+        lv0_tweet_count = (bq.query(counts_query_string).result()).total_rows
     else:
         counts_query_string = f"""
             SELECT
             *
             FROM `{table.project}.{table.dataset_id}.tweets`
             """
-        total_rows_tweet_count = (bq.query(counts_query_string).result()).total_rows
+        lv0_tweet_count = (bq.query(counts_query_string).result()).total_rows
 
-    return total_rows_tweet_count
+    return lv0_tweet_count
 
 def capture_error_string(error, error_filepath):
     error_string = repr(error)
@@ -1440,20 +1440,14 @@ def run_DATA():
                     if table > 0:
                         table_id = bigquery.Table(f'{project}.{dataset}.tweets')
                         table = bq.get_table(table_id)
-                        total_rows_tweet_count = query_total_record_count(table, bq)
+                        lv0_tweet_count = query_total_record_count(table, bq)
                         time.sleep(30)
-                        try:
-                            send_completion_email(mailgun_domain, mailgun_key, query, start_date, end_date, total_rows_tweet_count,
-                                                  search_start_time, search_end_time, readable_duration, num_rows=table.num_rows,
-                                                  project=table.project, dataset=table.dataset_id)
-                            logging.info('Completion email sent to user.')
-                        except:
-                            send_completion_email(mailgun_domain, mailgun_key, query, start_date, end_date,
-                                                  total_rows_tweet_count,
-                                                  search_start_time, search_end_time, readable_duration,
-                                                  num_rows=0,
-                                                  project=table.project, dataset=table.dataset_id)
-                            logging.info('Completion email sent to user.')
+
+                        send_completion_email(mailgun_domain, mailgun_key, query, start_date, end_date, lv0_tweet_count,
+                                              search_start_time, search_end_time, readable_duration, number_rows=table.num_rows,
+                                              project_name=table.project, dataset_name=table.dataset_id)
+                        logging.info('Completion email sent to user.')
+
 
                     else:
                         time.sleep(30)

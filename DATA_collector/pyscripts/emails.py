@@ -6,7 +6,7 @@ mailgun_domain = 'sandbox878e4b17425b43b18b208fb54533aafa.mailgun.org'
 mailgun_key = 'key-e281f7193b94d71f446b26b0f7875122'
 
 
-def send_completion_email(mailgun_domain, mailgun_key, start_date, end_date, lv0_tweet_count, search_start_time, search_end_time, readable_duration, num_rows, project, dataset, query):
+def send_completion_email(mailgun_domain, mailgun_key, query, start_date, end_date, lv0_tweet_count, search_start_time, search_end_time, readable_duration, number_rows, project_name, dataset_name):
     requests.post(
         f"https://api.mailgun.net/v3/{mailgun_domain}/messages",
         auth=("api", mailgun_key),
@@ -25,10 +25,10 @@ Your DATA search is complete. Please find details relating to your search below:
     Query end: {end_date}
 
     Tweets matching search criteria: {lv0_tweet_count}
-    Total tweets in dataset (including referenced tweets): {num_rows}
+    Total tweets in dataset (including referenced tweets): {number_rows}
 
-    Dataset: {dataset}
-    Data location: {project}.{dataset}
+    Dataset: {dataset_name}
+    Data location: {project_name}.{dataset_name}
     ----------------
 
 
@@ -73,13 +73,13 @@ The DMRC Academic Twitter App (DATA) \U0001F916
     """})
 
 
-def send_error_email(mailgun_domain, mailgun_key, dataset, traceback_info):
+def send_error_email(mailgun_domain, mailgun_key, dataset_name, traceback_info):
     requests.post(
         f"https://api.mailgun.net/v3/{mailgun_domain}/messages",
         auth=("api", mailgun_key),
         data={"from": f"DMRC Academic Twitter App <mailgun@{mailgun_domain}>",
               "to": ["laura.vodden@outlook.com"],
               "subject": "Error encountered",
-              "text": f"""Your {dataset} DATA search has encountered the following error: 
+              "text": f"""Your {dataset_name} DATA search has encountered the following error: 
 
     {traceback_info}"""})
