@@ -1357,7 +1357,7 @@ def run_DATA():
     print("""
     Please make a selection from the following options:
     \n
-        1 - Search Archive (using single query)
+        1 - Search Archive
         2 - Process JSON File(s)
         
     """)
@@ -1442,10 +1442,19 @@ def run_DATA():
                         table = bq.get_table(table_id)
                         total_rows_tweet_count = query_total_record_count(table, bq)
                         time.sleep(30)
-                        send_completion_email(mailgun_domain, mailgun_key, query, start_date, end_date, total_rows_tweet_count,
-                                              search_start_time, search_end_time, readable_duration, num_rows=table.num_rows,
-                                              project=table.project, dataset=table.dataset_id)
-                        logging.info('Completion email sent to user.')
+                        try:
+                            send_completion_email(mailgun_domain, mailgun_key, query, start_date, end_date, total_rows_tweet_count,
+                                                  search_start_time, search_end_time, readable_duration, num_rows=table.num_rows,
+                                                  project=table.project, dataset=table.dataset_id)
+                            logging.info('Completion email sent to user.')
+                        except:
+                            send_completion_email(mailgun_domain, mailgun_key, query, start_date, end_date,
+                                                  total_rows_tweet_count,
+                                                  search_start_time, search_end_time, readable_duration,
+                                                  num_rows=0,
+                                                  project=table.project, dataset=table.dataset_id)
+                            logging.info('Completion email sent to user.')
+
                     else:
                         time.sleep(30)
                         send_no_results_email(mailgun_domain, mailgun_key, query, start_date, end_date)
