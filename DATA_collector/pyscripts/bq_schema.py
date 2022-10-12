@@ -457,5 +457,99 @@ class TCAT_schema:
                           'mentions']
 
 class TweetQuery_schema:
-    none = None
+    # SCHEMA
+    # ------
 
+    # TWEET schema
+    tweet_schema = [
+        bigquery.SchemaField("coordinates_coordinates_0", "FLOAT", mode="NULLABLE", description=""),
+        bigquery.SchemaField("coordinates_coordinates_1", "FLOAT", mode="NULLABLE", description=""),
+        bigquery.SchemaField("coordinates_type", "STRING", mode="NULLABLE", description=""),
+        bigquery.SchemaField("created_at", "TIMESTAMP", mode="NULLABLE", description=""),
+        bigquery.SchemaField("entities_polls", "STRING", mode="NULLABLE", description=""),
+        bigquery.SchemaField("entities_symbols", "STRING", mode="NULLABLE", description=""),
+        bigquery.SchemaField("favorite_count", "STRING", mode="NULLABLE", description=""),
+        bigquery.SchemaField("favorited", "BOOLEAN", mode="NULLABLE", description=""),
+        bigquery.SchemaField("filter_level", "BOOLEAN", mode="NULLABLE", description=""),
+        bigquery.SchemaField("full_text", "STRING", mode="NULLABLE", description=""),
+        bigquery.SchemaField("geo_coordinates_0", "FLOAT", mode="NULLABLE", description=""),
+        bigquery.SchemaField("geo_coordinates_1", "FLOAT", mode="NULLABLE", description=""),
+        bigquery.SchemaField("geo_type", "STRING", mode="NULLABLE", description=""),
+        bigquery.SchemaField("id", "STRING", mode="NULLABLE", description=""),
+        bigquery.SchemaField("in_reply_to_screen_name", "STRING", mode="NULLABLE", description=""),
+        bigquery.SchemaField("in_reply_to_status_id", "STRING", mode="NULLABLE", description=""),
+        bigquery.SchemaField("in_reply_to_user_id", "STRING", mode="NULLABLE", description=""),
+        bigquery.SchemaField("is_quote_status", "BOOLEAN", mode="NULLABLE", description=""),
+        bigquery.SchemaField("lang", "STRING", mode="NULLABLE", description=""),
+        bigquery.SchemaField("matching_rules", "STRING", mode="NULLABLE", description=""),
+        bigquery.SchemaField("place_country", "STRING", mode="NULLABLE", description=""),
+        bigquery.SchemaField("place_country_code", "STRING", mode="NULLABLE", description=""),
+        bigquery.SchemaField("place_full_name", "STRING", mode="NULLABLE", description=""),
+        bigquery.SchemaField("place_id", "STRING", mode="NULLABLE", description=""),
+        bigquery.SchemaField("place_name", "STRING", mode="NULLABLE", description=""),
+        bigquery.SchemaField("place_place_type", "STRING", mode="NULLABLE", description=""),
+        bigquery.SchemaField("place_url", "STRING", mode="NULLABLE", description=""),
+        bigquery.SchemaField("possibly_sensitive", "BOOLEAN", mode="NULLABLE", description=""),
+        bigquery.SchemaField("quote_count", "INTEGER", mode="NULLABLE", description=""),
+        bigquery.SchemaField("quoted_status_id", "STRING", mode="NULLABLE", description=""),
+        bigquery.SchemaField("quoted_status_text", "STRING", mode="NULLABLE", description=""),
+        bigquery.SchemaField("quoted_status_user_id", "STRING", mode="NULLABLE", description=""),
+        bigquery.SchemaField("reply_count", "INTEGER", mode="NULLABLE", description=""),
+        bigquery.SchemaField("retweet_count", "INTEGER", mode="NULLABLE", description=""),
+        bigquery.SchemaField("retweeted", "BOOLEAN", mode="NULLABLE", description=""),
+        bigquery.SchemaField("retweeted_status_id", "STRING", mode="NULLABLE", description=""),
+        bigquery.SchemaField("retweeted_status_user_id", "STRING", mode="NULLABLE", description=""),
+        bigquery.SchemaField("source", "STRING", mode="NULLABLE", description=""),
+        bigquery.SchemaField("text", "STRING", mode="NULLABLE", description=""),
+        bigquery.SchemaField("truncated", "BOOLEAN", mode="NULLABLE", description=""),
+        bigquery.SchemaField("user_contributors_enabled", "BOOLEAN", mode="NULLABLE", description=""),
+        bigquery.SchemaField("user_created_at", "STRING", mode="NULLABLE", description=""),
+        bigquery.SchemaField("user_default_profile", "BOOLEAN", mode="NULLABLE", description=""),
+        bigquery.SchemaField("user_default_profile_image", "BOOLEAN", mode="NULLABLE", description=""),
+        bigquery.SchemaField("user_description", "STRING", mode="NULLABLE", description=""),
+        bigquery.SchemaField("user_favourites_count", "INTEGER", mode="NULLABLE", description=""),
+        bigquery.SchemaField("user_followers_count", "INTEGER", mode="NULLABLE", description=""),
+        bigquery.SchemaField("user_friends_count", "INTEGER", mode="NULLABLE", description=""),
+        bigquery.SchemaField("user_geo_enabled", "BOOLEAN", mode="NULLABLE", description=""),
+        bigquery.SchemaField("user_id", "STRING", mode="NULLABLE", description=""),
+        bigquery.SchemaField("user_is_translator", "BOOLEAN", mode="NULLABLE", description=""),
+        bigquery.SchemaField("user_lang", "STRING", mode="NULLABLE", description=""),
+        bigquery.SchemaField("user_listed_count", "INTEGER", mode="NULLABLE", description=""),
+        bigquery.SchemaField("user_location", "STRING", mode="NULLABLE", description=""),
+        bigquery.SchemaField("user_name", "STRING", mode="NULLABLE", description=""),
+        bigquery.SchemaField("user_profile_background_color", "STRING", mode="NULLABLE", description=""),
+        bigquery.SchemaField("user_profile_background_image_url", "STRING", mode="NULLABLE", description=""),
+        bigquery.SchemaField("user_profile_background_title", "STRING", mode="NULLABLE", description=""),
+        bigquery.SchemaField("user_profile_banner_url", "STRING", mode="NULLABLE", description=""),
+        bigquery.SchemaField("user_profile_fill_color", "STRING", mode="NULLABLE", description=""),
+        bigquery.SchemaField("user_profile_image_url", "STRING", mode="NULLABLE", description=""),
+        bigquery.SchemaField("user_profile_image_url_https", "STRING", mode="NULLABLE", description=""),
+        bigquery.SchemaField("user_profile_link_color", "STRING", mode="NULLABLE", description=""),
+        bigquery.SchemaField("user_profile_sidebar_border_color", "STRING", mode="NULLABLE", description=""),
+        bigquery.SchemaField("user_profile_text_color", "STRING", mode="NULLABLE", description=""),
+        bigquery.SchemaField("user_profile_use_background_image", "STRING", mode="NULLABLE", description=""),
+        bigquery.SchemaField("user_screen_name", "STRING", mode="NULLABLE", description=""),
+        bigquery.SchemaField("user_statuses_count", "INTEGER", mode="NULLABLE", description=""),
+        bigquery.SchemaField("user_time_zone", "STRING", mode="NULLABLE", description=""),
+        bigquery.SchemaField("user_url", "STRING", mode="NULLABLE", description=""),
+        bigquery.SchemaField("user_utc_offset", "STRING", mode="NULLABLE", description=""),
+        bigquery.SchemaField("user_verified", "BOOLEAN", mode="NULLABLE", description=""),
+        bigquery.SchemaField("entities_hashtags_text", "STRING", mode="NULLABLE", description=""),
+        bigquery.SchemaField("entities_user_mentions_name", "STRING", mode="NULLABLE", description=""),
+        bigquery.SchemaField("entities_user_mention_id", "STRING", mode="NULLABLE", description=""),
+        bigquery.SchemaField("entities_user_mention_screen_name", "STRING", mode="NULLABLE", description=""),
+        bigquery.SchemaField("urls_url", "STRING", mode="NULLABLE", description=""),
+        bigquery.SchemaField("urls_expanded_url", "STRING", mode="NULLABLE", description=""),
+        bigquery.SchemaField("urls_unshortened_url", "STRING", mode="NULLABLE", description=""),
+        bigquery.SchemaField("urls_domain_path", "STRING", mode="NULLABLE", description=""),
+        bigquery.SchemaField("urls_status", "STRING", mode="NULLABLE", description="")
+    ]
+
+    # LISTS
+    # -----
+
+    list_of_csv = ['TWEETS.csv']
+
+    list_of_schema = [tweet_schema]
+
+    list_of_tablenames = ['tweets']

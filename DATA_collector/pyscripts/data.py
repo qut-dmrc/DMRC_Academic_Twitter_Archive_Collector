@@ -15,9 +15,9 @@ from google.cloud.bigquery.client import Client
 from google.cloud.exceptions import NotFound
 from google.api_core import exceptions
 
-from .bq_schema import DATA_schema, TCAT_schema
+from .bq_schema import DATA_schema, TCAT_schema, TweetQuery_schema
 from .emails import *
-from .fields import DATA_fields, TCAT_fields
+from .fields import DATA_fields, TCAT_fields, TweetQuery_fields
 from .set_up_directories import *
 
 pd.options.mode.chained_assignment = None
@@ -181,13 +181,12 @@ def get_pre_search_counts(client, query, start_date, end_date, project, dataset,
     \n
     Proceed? y/n""")
 
-    user_proceed = input('>>>')
+    user_proceed = input('>>>').lower()
 
     return archive_search_counts, user_proceed
 
-def collect_archive_data(bq, project, dataset, to_collect, expected_files, client, subquery, start_date, end_date, csv_filepath, archive_search_counts, tweet_count):
+def collect_archive_data(bq, project, dataset, to_collect, expected_files, client, subquery, start_date, end_date, csv_filepath, archive_search_counts, tweet_count, query, query_count):
     logging.info('Commencing data collection...')
-
     # Collect archive data one interval at a time using the Twarc search_all endpoint
     if len(to_collect) > 0:
         for a_file in to_collect:
@@ -195,6 +194,7 @@ def collect_archive_data(bq, project, dataset, to_collect, expected_files, clien
             logging.info('-----------------------------------------------------------------------------------------')
             logging.info(f'Collecting file {a_file}')
             start, end = expected_files[a_file]
+            logging.info(f'Query {query_count} of {len(query)}')
             logging.info(f'Query: {subquery} from {start} to {end}')
             search_results = client.search_all(query=subquery, start_time=start, end_time=end, max_results=100)
 
@@ -216,7 +216,8 @@ def collect_archive_data(bq, project, dataset, to_collect, expected_files, clien
 
                     # For each interval (file), process json
                     tweet_count = process_json_data(a_file, csv_filepath, bq, project, dataset, subquery, start_date, end_date, archive_search_counts, tweet_count)
-
+    else:
+        logging.info('Files are already in the collected_json directory!')
 
 
 def process_json_data(a_file, csv_filepath, bq, project, dataset, subquery, start_date, end_date, archive_search_counts, tweet_count):
@@ -224,8 +225,12 @@ def process_json_data(a_file, csv_filepath, bq, project, dataset, subquery, star
         tweets = chunk
 
         # Rename 'id' field for clarity
-        tweets = tweets.rename(columns={'id': 'tweet_id'})
-        tweets['tweet_id'] = tweets['tweet_id'].astype(object)
+        try:
+            tweets = tweets.rename(columns={'id': 'tweet_id'})
+            tweets['tweet_id'] = tweets['tweet_id'].astype(object)
+        except KeyError:
+            tweets = tweets.rename(columns={'id_str': 'tweet_id'})
+            tweets['tweet_id'] = tweets['tweet_id'].astype(object)
 
         # Call function to flatten top level tweets and merge with flattened columns
         tweets_flat = flatten_top_tweet_level(tweets)
@@ -271,7 +276,7 @@ def process_json_data(a_file, csv_filepath, bq, project, dataset, subquery, star
             CONTEXT_ANNOTATIONS = None
             ANNOTATIONS = None
             HASHTAGS = build_hashtags_table(TWEETS)
-            URLS = None
+            URLS = build_urls_table(TWEETS)
             INTERACTIONS = None
 
         # Special case of geo_geo_bbox: convert from column of lists to strings
@@ -523,7 +528,7 @@ def move_referenced_tweet_data_up(reference_levels_list, up_a_level_column_list)
                  'quoted': 'quote'})
     else:
 
-        TWEETS = level
+        TWEETS = pd.concat([combined_level, level])
 
         if 'tweet_type' in TWEETS.columns:
             TWEETS['tweet_type'] = TWEETS['tweet_type'].replace(
@@ -968,6 +973,9 @@ def build_hashtags_table(TWEETS):
             .reset_index()
         entities_hashtags_tag = pd.json_normalize(entities_hashtags[0]) \
             .add_prefix('hashtags_')
+        if 'hashtags_text' in entities_hashtags_tag:
+            entities_hashtags_tag = entities_hashtags_tag.rename(columns={'hashtags_text':'hashtags_tag'})
+
         HASHTAGS = pd.concat([entities_hashtags['tweet_id'], entities_hashtags_tag], axis=1) \
             .dropna(subset='hashtags_tag') \
             .reset_index(drop=True) \
@@ -1112,11 +1120,11 @@ def get_schema_type(list_of_dataframes, tweet_count):
         list_of_schema = TCAT_schema.list_of_schema
         tweet_count = len(list_of_dataframes[0]) + tweet_count
     else:
-        list_of_dataframes = []
+        list_of_dataframes = transform_DATA_to_TQ(list_of_dataframes)
         list_of_csv = TweetQuery_schema.list_of_csv
         list_of_tablenames = TweetQuery_schema.list_of_tablenames
         list_of_schema = TweetQuery_schema.list_of_schema
-        tweet_count = len(list_of_dataframes[0]) + tweet_count
+        tweet_count = len(list_of_dataframes[0].drop_duplicates(subset=['id'])) + tweet_count
 
     return list_of_dataframes, list_of_csv, list_of_tablenames, list_of_schema, tweet_count
 
@@ -1205,6 +1213,158 @@ def transform_DATA_to_TCAT(list_of_dataframes):
 
     return list_of_dataframes
 
+def transform_DATA_to_TQ(list_of_dataframes):
+    # ------------------------------------------------------------------------------------------------------
+    # RENAME TWARC FIELDS FOR TCAT COMPATIBILITY
+    # ------------------------------------------------------------------------------------------------------
+
+    #If not none:
+    TWEETS = list_of_dataframes[0].copy()
+
+    # TWEETS
+    # ------
+
+    # In reply to
+    TWEETS['in_reply_to_screen_name'] = TWEETS['referenced_tweet_author_username']
+    TWEETS['in_reply_to_status_id'] = TWEETS['referenced_tweet_id']
+    TWEETS['in_reply_to_user_id'] = TWEETS['referenced_tweet_author_id']
+
+    # Quoted
+    TWEETS['is_quote_status'] = np.where(TWEETS['tweet_type'] == 'quote', True, False)
+    TWEETS['quoted_status_id'] = TWEETS['referenced_tweet_id']
+    TWEETS['quoted_status_text'] = TWEETS['referenced_tweet_text']
+    TWEETS['quoted_status_user_id'] = TWEETS['referenced_tweet_author_id']
+
+    # Retweeted
+    TWEETS['retweeted'] = np.where(TWEETS['tweet_type'] == 'retweet', True, False)
+    TWEETS.loc[TWEETS['tweet_type'] == 'retweet', 'retweeted'] = 'true'
+    TWEETS['retweeted_status_id'] = TWEETS['referenced_tweet_id']
+    TWEETS['retweeted_status_user_id'] = TWEETS['referenced_tweet_author_id']
+
+    TWEETS['author_created_at'] = pd.to_datetime(TWEETS["author_created_at"], format="%Y-%m-%dT%H:%M:%S")
+
+    TWEETS.loc[TWEETS['tweet_type'] != 'quote', 'quoted_status_id'] = ''
+    TWEETS.loc[TWEETS['tweet_type'] != 'quote', 'quoted_status_text'] = ''
+    TWEETS.loc[TWEETS['tweet_type'] != 'reply', 'in_reply_to_status_id'] = ''
+
+    # Generate empty fields for those TQ fields that do not have equivalents in the DATA format
+    TWEETS['coordinates_coordinates_0'] = ''
+    TWEETS['coordinates_coordinates_1'] = ''
+    TWEETS['coordinates_type'] = ''
+    TWEETS['entities_symbols'] = ''
+    TWEETS['favorited'] = ''
+    TWEETS['filter_level'] = ''
+    TWEETS['geo_coordinates_0'] = ''
+    TWEETS['geo_coordinates_1'] = ''
+    TWEETS['geo_type'] = ''
+    TWEETS['matching_rules'] = ''
+    TWEETS['place_url'] = ''
+    TWEETS['truncated'] = ''
+    TWEETS['user_contributors_enabled'] = ''
+    TWEETS['user_default_profile'] = ''
+    TWEETS['user_default_profile_image'] = ''
+    TWEETS['user_favourites_count'] = ''
+    TWEETS['user_geo_enabled'] = ''
+    TWEETS['user_is_translator'] = ''
+    TWEETS['user_lang'] = ''
+    TWEETS['user_profile_background_color'] = ''
+    TWEETS['user_profile_background_image_url'] = ''
+    TWEETS['user_profile_background_title'] = ''
+    TWEETS['user_profile_banner_url'] = ''
+    TWEETS['user_profile_fill_color'] = ''
+    TWEETS['user_profile_image_url_https'] = ''
+    TWEETS['user_profile_link_color'] = ''
+    TWEETS['user_profile_sidebar_border_color'] = ''
+    TWEETS['user_profile_text_color'] = ''
+    TWEETS['user_profile_use_background_image'] = ''
+    TWEETS['user_time_zone'] = ''
+    TWEETS['user_utc_offset'] = ''
+
+
+
+
+    # HASHTAGS
+    # --------
+    if list_of_dataframes[4] is not None:
+        HASHTAGS = list_of_dataframes[4].copy()
+        HASHTAGS = HASHTAGS[TweetQuery_fields.hashtags_column_order]\
+            .rename(columns=TweetQuery_fields.hashtags_column_names_dict)
+        TWEETS = TWEETS.merge(HASHTAGS, how='left', on='tweet_id')
+    else:
+        TWEETS['entities_hashtags_text'] = ''
+
+    # MENTIONS
+    # --------
+    interactions = TWEETS[[
+        'tweet_id',
+        'tweet_type',
+        'referenced_tweet_author_name',
+        'referenced_tweet_author_id',
+        'referenced_tweet_author_username'
+    ]].astype('string')
+
+    interactions_author = TWEETS[['tweet_id', 'author_id', 'author_username']]
+    interactions = interactions.merge(interactions_author, how='left', on='tweet_id')
+
+    try:
+        interactions = interactions.drop(interactions.index[interactions['tweet_type'] == 'original'])
+    except:
+        pass
+
+    interactions = interactions\
+        .dropna()\
+        .rename(columns=TweetQuery_fields.interactions_mentions_column_names_dict)
+
+    if list_of_dataframes[6] is not None:
+        MENTIONS = list_of_dataframes[6].copy()
+        interactions_mentions = MENTIONS[[
+            'tweet_id',
+            'tweet_mentions_author_name',
+            'tweet_mentions_author_id',
+            'tweet_mentions_author_username'
+        ]].astype('string')
+        interactions_mentions = interactions_mentions.merge(interactions_author, how='left', on='tweet_id')
+
+        interactions_mentions['tweet_type'] = 'mention'
+
+        MENTIONS = pd.concat([interactions, interactions_mentions], ignore_index=True)
+
+        MENTIONS = MENTIONS[TweetQuery_fields.mentions_column_order] \
+            .rename(columns=TweetQuery_fields.mentions_column_names_dict) \
+            .drop_duplicates()
+        TWEETS = TWEETS.merge(MENTIONS, how='left', on='tweet_id')
+    else:
+        MENTIONS = interactions.drop_duplicates()
+        TWEETS = TWEETS.merge(MENTIONS, how='left', on='tweet_id')
+
+
+    if list_of_dataframes[5] is not None:
+        URLS = list_of_dataframes[5].copy()
+        URLS = URLS.astype(str)
+        URLS['urls_unshortened_url'] = URLS['urls_unwound_url']
+        URLS['urls_domain_path'] = URLS['urls_unwound_url'].str.split('/').str[0:3]
+        URLS['urls_domain_path'] = ['/'.join(map(str, l)) for l in URLS['urls_domain_path']]
+        URLS = URLS[TweetQuery_fields.urls_column_order]
+
+        TWEETS = TWEETS.merge(URLS, how='left', on='tweet_id')
+
+    else:
+        TWEETS['urls_url'] = ''
+        TWEETS['urls_expanded_url'] = ''
+        TWEETS['urls_unshortened_url'] = ''
+        TWEETS['urls_domain_path'] = ''
+        TWEETS['urls_status'] = ''
+
+
+    TWEETS = TWEETS[TweetQuery_fields.tweet_column_order]\
+        .rename(columns=TweetQuery_fields.tweet_column_names_dict)
+
+    list_of_dataframes = [TWEETS]
+
+    return list_of_dataframes
+
+
+
 def write_processed_data_to_csv(tweetframe, csv_file, csv_filepath):
     if tweetframe is not None:
         if os.path.isfile(csv_filepath + csv_file) == True:
@@ -1215,11 +1375,13 @@ def write_processed_data_to_csv(tweetframe, csv_file, csv_filepath):
             logging.info(f'Writing data to new {csv_file} file...')
             mode = 'w'
             header = True
+
         tweetframe.to_csv(csv_filepath + csv_file,
                           mode=mode,
                           index=False,
                           escapechar='|',
                           header=header)
+
 
 def push_processed_tables_to_bq(bq, project, dataset, list_of_tablenames, csv_filepath, list_of_csv, subquery, start_date, end_date, list_of_schema, list_of_dataframes):
 
@@ -1431,7 +1593,7 @@ def run_DATA():
 
 
                     # Call function collect_archive_data()
-                    collect_archive_data(bq, project, dataset, to_collect, expected_files, client, query, start_date, end_date, csv_filepath, archive_search_counts, tweet_count)
+                    collect_archive_data(bq, project, dataset, to_collect, expected_files, client, query, start_date, end_date, csv_filepath, archive_search_counts, tweet_count, query, query_count)
                     table = 1
                     search_end_time = datetime.now()
                     search_duration = (search_end_time - search_start_time)
@@ -1443,15 +1605,17 @@ def run_DATA():
                         lv0_tweet_count = query_total_record_count(table, bq)
                         time.sleep(30)
 
-                        send_completion_email(mailgun_domain, mailgun_key, query, start_date, end_date, lv0_tweet_count,
-                                              search_start_time, search_end_time, readable_duration, number_rows=table.num_rows,
-                                              project_name=table.project, dataset_name=table.dataset_id)
+                        send_completion_email(mailgun_domain, mailgun_key, start_date, end_date,
+                                                  lv0_tweet_count,
+                                                  search_start_time, search_end_time, readable_duration,
+                                                  number_rows=table.num_rows,
+                                                  project_name=table.project, dataset_name=table.dataset_id, query=query)
                         logging.info('Completion email sent to user.')
 
 
                     else:
                         time.sleep(30)
-                        send_no_results_email(mailgun_domain, mailgun_key, query, start_date, end_date)
+                        send_no_results_email(mailgun_domain, mailgun_key, start_date, end_date, query=query)
                         logging.info('No results email sent to user.')
 
                     logging.info('Archive search complete!')
@@ -1502,9 +1666,16 @@ def run_DATA():
         #                                                             dataset, schematype, interval)
         archive_search_counts = 0
 
-        print(f'You are about to search {len(query)} queries. Proceed?')
+        print(f'You are about to search {len(query)} queries. They are: ')
+        print('\n')
+        for item in query:
+            print(f'''{item}''')
+        print('\n')
+        print('Proceed?')
 
-        user_proceed = input('>>>')
+
+
+        user_proceed = input('>>>').lower()
 
         if user_proceed == 'y':
             sleep(3)
@@ -1531,11 +1702,11 @@ def run_DATA():
             # Set table variable to none, if it gets a value it can be queried
             table = 0
             tweet_count = 0
-
+            query_count = 0
             # TODO: why two try/excepts here?
             try:
                 for subquery in query:
-                    print(subquery)
+                    query_count = query_count + 1
                     try:
                         # Get current datetime for calculating duration
                         search_start_time = datetime.now()
@@ -1545,7 +1716,7 @@ def run_DATA():
                         # Call function collect_archive_data()
                         subquery = f'@{subquery} OR from:{subquery}'
                         collect_archive_data(bq, project, dataset, to_collect, expected_files, client, subquery, start_date,
-                                             end_date, csv_filepath, archive_search_counts, tweet_count)
+                                             end_date, csv_filepath, archive_search_counts, tweet_count, query, query_count)
                         table = 1
                         search_end_time = datetime.now()
                         search_duration = (search_end_time - search_start_time)
@@ -1554,16 +1725,16 @@ def run_DATA():
                         if table > 0:
                             table_id = bigquery.Table(f'{project}.{dataset}.tweets')
                             table = bq.get_table(table_id)
-                            total_rows_tweet_count = query_total_record_count(table, bq)
-                            time.sleep(30)
+                            lv0_tweet_count = query_total_record_count(table, bq)
+                            time.sleep(3)
                             send_completion_email(mailgun_domain, mailgun_key, start_date, end_date,
-                                                  total_rows_tweet_count,
+                                                  lv0_tweet_count,
                                                   search_start_time, search_end_time, readable_duration,
-                                                  num_rows=table.num_rows,
-                                                  project=table.project, dataset=table.dataset_id, query=subquery)
+                                                  number_rows=table.num_rows,
+                                                  project_name=table.project, dataset_name=table.dataset_id, query=subquery)
                             logging.info('Completion email sent to user.')
                         else:
-                            time.sleep(30)
+                            time.sleep(3)
                             send_no_results_email(mailgun_domain, mailgun_key, query, start_date, end_date)
                             logging.info('No results email sent to user.')
 
@@ -1615,30 +1786,64 @@ def run_DATA():
             schematype = 'TweetQuery'
 
         #upload json
-        print("wooo")
+
 
         json_input_files = get_json_input_files()
-        print(json_input_files)
 
+        logging.info('-----------------------------------------------------------------------------------------')
         print(f'''
-        The following files will be uploaded to {project}.{dataset}:''')
+        The following {len(json_input_files)} files will be processed and uploaded to {project}.{dataset}:
+        ''')
 
         for item in json_input_files:
             print(item)
 
-        logging.info('Processing from existing json...')
+        print('''
+        Proceed? y/n''')
 
-        # Access BigQuery
-        # ---------------
-        os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = access_key[0]
-        bq = Client(project=project)
+        user_proceed = input('>>>').lower()
 
-        for a_file in json_input_files:
+        if user_proceed == 'y':
+
             logging.info('-----------------------------------------------------------------------------------------')
-            logging.info(f'Processing file {a_file}')
+            logging.info('Processing from existing json(s)...')
 
-            # For each interval (file), process json
-            tweet_count = process_json_data(a_file, csv_filepath, bq, project, dataset, query, start_date, end_date, archive_search_counts, tweet_count)
+            # Access BigQuery
+            # ---------------
+            os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = access_key[0]
+            bq = Client(project=project)
+
+            # Get current datetime for calculating duration
+            search_start_time = datetime.now()
+            filecount = 1
+            for a_file in json_input_files:
+                logging.info('-----------------------------------------------------------------------------------------')
+                logging.info(f'Processing file {a_file}')
+                logging.info(f'File {filecount} of {len(json_input_files)}')
+                filecount = filecount + 1
+
+                # For each interval (file), process json
+                tweet_count = process_json_data(a_file, csv_filepath, bq, project, dataset, query, start_date, end_date, archive_search_counts, tweet_count)
+
+            search_end_time = datetime.now()
+            search_duration = (search_end_time - search_start_time)
+            readable_duration = humanfriendly.format_timespan(search_duration)
+
+            table = 1
+            if table > 0:
+                table_id = bigquery.Table(f'{project}.{dataset}.tweets')
+                table = bq.get_table(table_id)
+                lv0_tweet_count = query_total_record_count(table, bq)
+                time.sleep(3)
+                send_completion_email(mailgun_domain, mailgun_key, start_date, end_date,
+                                      lv0_tweet_count,
+                                      search_start_time, search_end_time, readable_duration,
+                                      number_rows=table.num_rows,
+                                      project_name=table.project, dataset_name=table.dataset_id, query='process from json file')
+                logging.info('Completion email sent to user.')
+
+
+            logging.info('json processing complete!')
 
     else:
         print('Invalid selection')

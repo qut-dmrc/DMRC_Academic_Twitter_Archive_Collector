@@ -153,7 +153,7 @@ def set_up_expected_files(start_date, end_date, json_filepath, option_selection,
 def get_json_input_files():
     json_input_filepath = f'{cwd}/json_input_files/'
     json_input_files = glob.glob(json_input_filepath + "*jsonl")
-    # json_input_filepath = '//rstore.qut.edu.au/projects/cif/auspubsphere/dmrc_DATA_collection/unfriend/done/'
+    # json_input_filepath = '//rstore.qut.edu.au/projects/cif/auspubsphere/dmrc_DATA_collection/x_journalism/collected_json/'
     # json_input_files = glob.glob(json_input_filepath + "*jsonl")
 
     # json_input_filepath = 'C:/Users/vodden/PycharmProjects/AWS_boto/pulled_files/done/'

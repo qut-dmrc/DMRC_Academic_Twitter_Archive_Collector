@@ -6,7 +6,7 @@ mailgun_domain = 'sandbox878e4b17425b43b18b208fb54533aafa.mailgun.org'
 mailgun_key = 'key-e281f7193b94d71f446b26b0f7875122'
 
 
-def send_completion_email(mailgun_domain, mailgun_key, query, start_date, end_date, lv0_tweet_count, search_start_time, search_end_time, readable_duration, number_rows, project_name, dataset_name):
+def send_completion_email(mailgun_domain, mailgun_key, start_date, end_date, lv0_tweet_count, search_start_time, search_end_time, readable_duration, number_rows, project_name, dataset_name, query):
     requests.post(
         f"https://api.mailgun.net/v3/{mailgun_domain}/messages",
         auth=("api", mailgun_key),
@@ -43,7 +43,7 @@ The DMRC Academic Twitter App (DATA) \U0001F916
     """})
 
 
-def send_no_results_email(mailgun_domain, mailgun_key, query, start_date, end_date):
+def send_no_results_email(mailgun_domain, mailgun_key, start_date, end_date, query):
     requests.post(
         f"https://api.mailgun.net/v3/{mailgun_domain}/messages",
         auth=("api", mailgun_key),

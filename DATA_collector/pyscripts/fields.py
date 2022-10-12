@@ -410,3 +410,157 @@ class TCAT_fields:
         'referenced_tweet_author_id': 'tweet_mentions_author_id',
         'referenced_tweet_author_username': 'tweet_mentions_author_username'}
 
+
+class TweetQuery_fields:
+
+    tweet_column_order = [
+        'coordinates_coordinates_0',
+        'coordinates_coordinates_1',
+        'coordinates_type',
+        'created_at',
+        'attachments_poll_id',
+        'entities_symbols',
+        'public_metrics_like_count',
+        'favorited',
+        'filter_level',
+        'tweet_text',
+        'geo_coordinates_0',
+        'geo_coordinates_1',
+        'geo_type',
+        'tweet_id',
+        'in_reply_to_screen_name',
+        'in_reply_to_status_id',
+        'in_reply_to_user_id',
+        'is_quote_status',
+        'lang',
+        'matching_rules',
+        'geo_country',
+        'geo_country_code',
+        'geo_full_name',
+        'geo_id',
+        'geo_name',
+        'geo_place_type',
+        'place_url',
+        'possibly_sensitive',
+        'public_metrics_quote_count',
+        'quoted_status_id',
+        'quoted_status_text',
+        'quoted_status_user_id',
+        'public_metrics_reply_count',
+        'public_metrics_retweet_count',
+        'retweeted',
+        'retweeted_status_id',
+        'retweeted_status_user_id',
+        'source',
+        'tweet_text',
+        'truncated',
+        'user_contributors_enabled',
+        'author_created_at',
+        'user_default_profile',
+        'user_default_profile_image',
+        'author_description',
+        'user_favourites_count',
+        'author_public_metrics_followers_count',
+        'author_public_metrics_following_count',
+        'user_geo_enabled',
+        'author_id',
+        'user_is_translator',
+        'user_lang',
+        'author_public_metrics_listed_count',
+        'author_location',
+        'author_name',
+        'user_profile_background_color',
+        'user_profile_background_image_url',
+        'user_profile_background_title',
+        'user_profile_banner_url',
+        'user_profile_fill_color',
+        'author_profile_image_url',
+        'user_profile_image_url_https',
+        'user_profile_link_color',
+        'user_profile_sidebar_border_color',
+        'user_profile_text_color',
+        'user_profile_use_background_image',
+        'author_username',
+        'author_public_metrics_tweet_count',
+        'user_time_zone',
+        'author_url',
+        'user_utc_offset',
+        'author_verified',
+        'entities_hashtags_text',
+        'entities_user_mentions_name',
+        'entities_user_mention_id',
+        'entities_user_mention_screen_name',
+        'urls_url',
+        'urls_expanded_url',
+        'urls_unshortened_url',
+        'urls_domain_path',
+        'urls_status'
+    ]
+
+    hashtags_column_order = [
+        'tweet_id',
+        'hashtags_tag'
+    ]
+
+    mentions_column_order = [
+        'tweet_id',
+        'tweet_mentions_author_name',
+        'tweet_mentions_author_id',
+        'tweet_mentions_author_username'
+    ]
+
+    urls_column_order = [
+        'tweet_id',
+        'urls_url',
+        'urls_expanded_url',
+        'urls_unshortened_url',
+        'urls_domain_path',
+        'urls_status'
+    ]
+
+    tweet_column_names_dict = {
+        'tweet_id':'id',
+        'tweet_text':'text',
+        'attachments_poll_id':'entities_polls',
+        'public_metrics_like_count':'favorite_count',
+        'geo_country':'place_country',
+        'geo_country_code':'place_country_code',
+        'geo_full_name':'place_full_name',
+        'geo_place_id':'place_id',
+        'geo_name':'place_name',
+        'geo_place_type':'place_place_type',
+        'public_metrics_quote_count':'quote_count',
+        'public_metrics_reply_count':'reply_count',
+        'author_created_at':'user_created_at',
+        'author_description':'user_description',
+        'author_public_metrics_followers_count':'user_followers_count',
+        'author_public_metrics_following_count':'user_friends_count',
+        'author_id':'user_id',
+        'author_public_metrics_listed_count':'user_listed_count',
+        'author_location':'user_location',
+        'author_name':'user_name',
+        'author_profile_image_url':'user_profile_image_url',
+        'author_username':'user_screen_name',
+        'author_public_metrics_tweet_count':'user_statuses_count',
+        'author_url':'user_url',
+        'author_verified':'user_verified'}
+
+    hashtags_column_names_dict = {
+        'hashtags_tag': 'entities_hashtags_text'}
+
+    mentions_column_names_dict = {
+        'author_id': 'user_from_id',
+        'author_username': 'user_from_name',
+        'tweet_mentions_author_name': 'entities_user_mentions_name',
+        'tweet_mentions_author_id': 'entities_user_mention_id',
+        'tweet_mentions_author_username': 'entities_user_mention_screen_name',
+        'tweet_type': 'mention_type'}
+
+    interactions_mentions_column_names_dict = {
+        'referenced_tweet_author_name':'tweet_mentions_author_name',
+        'referenced_tweet_author_id': 'tweet_mentions_author_id',
+        'referenced_tweet_author_username': 'tweet_mentions_author_username'}
+
+
+
+
