@@ -1,4 +1,6 @@
 import json
+import logging
+
 import pandas as pd
 import numpy as np
 import time
@@ -185,7 +187,7 @@ def get_pre_search_counts(client, query, start_date, end_date, project, dataset,
 
     return archive_search_counts, user_proceed
 
-def collect_archive_data(bq, project, dataset, to_collect, expected_files, client, subquery, start_date, end_date, csv_filepath, archive_search_counts, tweet_count, query, query_count):
+def collect_archive_data(bq, project, dataset, to_collect, expected_files, client, subquery, start_date, end_date, csv_filepath, archive_search_counts, tweet_count, query, query_count, schematype):
     logging.info('Commencing data collection...')
     # Collect archive data one interval at a time using the Twarc search_all endpoint
     if len(to_collect) > 0:
@@ -194,7 +196,8 @@ def collect_archive_data(bq, project, dataset, to_collect, expected_files, clien
             logging.info('-----------------------------------------------------------------------------------------')
             logging.info(f'Collecting file {a_file}')
             start, end = expected_files[a_file]
-            logging.info(f'Query {query_count} of {len(query)}')
+            if type(query) == list:
+                logging.info(f'Query {query_count} of {len(list(query))}')
             logging.info(f'Query: {subquery} from {start} to {end}')
             search_results = client.search_all(query=subquery, start_time=start, end_time=end, max_results=100)
 
@@ -215,12 +218,12 @@ def collect_archive_data(bq, project, dataset, to_collect, expected_files, clien
                     logging.info(f'Processing tweet data...')
 
                     # For each interval (file), process json
-                    tweet_count = process_json_data(a_file, csv_filepath, bq, project, dataset, subquery, start_date, end_date, archive_search_counts, tweet_count)
+                    tweet_count = process_json_data(a_file, csv_filepath, bq, project, dataset, subquery, start_date, end_date, archive_search_counts, tweet_count, schematype)
     else:
         logging.info('Files are already in the collected_json directory!')
 
 
-def process_json_data(a_file, csv_filepath, bq, project, dataset, subquery, start_date, end_date, archive_search_counts, tweet_count):
+def process_json_data(a_file, csv_filepath, bq, project, dataset, subquery, start_date, end_date, archive_search_counts, tweet_count, schematype):
     for chunk in pd.read_json(a_file, lines=True, dtype=False, chunksize=40000):
         tweets = chunk
 
@@ -375,7 +378,7 @@ def process_json_data(a_file, csv_filepath, bq, project, dataset, subquery, star
             logging.info(f'{tweet_count} of {archive_search_counts} tweets collected ({round(percent_collected, 1)}%)')
 
         # Write temp csv files to BigQuery tables
-        push_processed_tables_to_bq(bq, project, dataset, list_of_tablenames, csv_filepath, list_of_csv, subquery, start_date, end_date, list_of_schema, list_of_dataframes)
+        push_processed_tables_to_bq(bq, project, dataset, list_of_tablenames, csv_filepath, list_of_csv, subquery, start_date, end_date, list_of_schema, list_of_dataframes, schematype)
 
     return tweet_count
 
@@ -1383,7 +1386,7 @@ def write_processed_data_to_csv(tweetframe, csv_file, csv_filepath):
                           header=header)
 
 
-def push_processed_tables_to_bq(bq, project, dataset, list_of_tablenames, csv_filepath, list_of_csv, subquery, start_date, end_date, list_of_schema, list_of_dataframes):
+def push_processed_tables_to_bq(bq, project, dataset, list_of_tablenames, csv_filepath, list_of_csv, subquery, start_date, end_date, list_of_schema, list_of_dataframes, schematype):
 
     logging.info('Pushing tables to Google BigQuery database.')
 
@@ -1406,7 +1409,13 @@ def push_processed_tables_to_bq(bq, project, dataset, list_of_tablenames, csv_fi
     # Create table if one does not exist
     for i in range(num_tables):
         if os.path.isfile(csv_filepath + list_of_csv[i]) == True:
-            table_id = bigquery.Table(tweet_dataset + '.' + list_of_tablenames[i])
+            if schematype != 'TweetQuery':
+                tweets_table = list_of_tablenames[i]
+            else:
+                tweets_table = f'{dataset.lower()}_flat_test'
+
+            table_id = bigquery.Table(f'{tweet_dataset}.{tweets_table}')
+
             try:
                 bq.get_table(table_id)
             except:
@@ -1425,7 +1434,7 @@ def push_processed_tables_to_bq(bq, project, dataset, list_of_tablenames, csv_fi
             with open(csv_filepath + list_of_csv[i], 'rb') as tweet_fh:
                 for attempt in range(1, 10):
                     try:
-                        job = bq.load_table_from_file(tweet_fh, tweet_dataset + '.' + list_of_tablenames[i],
+                        job = bq.load_table_from_file(tweet_fh, tweet_dataset + '.' + tweets_table,
                                                       job_config=job_config)
                         job.result()
                     except exceptions.InternalServerError:
@@ -1455,22 +1464,26 @@ def push_processed_tables_to_bq(bq, project, dataset, list_of_tablenames, csv_fi
 
 def query_total_record_count(table, bq):
     # Query total rows in dataset
-    if Schematype.DATA == True:
-        # Query number of level 0 tweets in dataset
-        counts_query_string = f"""
-            SELECT
-            *
-            FROM `{table.project}.{table.dataset_id}.tweets`
-            WHERE reference_level = '0'
-            """
-        lv0_tweet_count = (bq.query(counts_query_string).result()).total_rows
-    else:
-        counts_query_string = f"""
-            SELECT
-            *
-            FROM `{table.project}.{table.dataset_id}.tweets`
-            """
-        lv0_tweet_count = (bq.query(counts_query_string).result()).total_rows
+    try:
+        if Schematype.DATA == True:
+            # Query number of level 0 tweets in dataset
+            counts_query_string = f"""
+                SELECT
+                *
+                FROM `{table.project}.{table.dataset_id}.tweets`
+                WHERE reference_level = '0'
+                """
+            lv0_tweet_count = (bq.query(counts_query_string).result()).total_rows
+        else:
+            counts_query_string = f"""
+                SELECT
+                *
+                FROM `{table.project}.{table.dataset_id}.tweets`
+                """
+            lv0_tweet_count = (bq.query(counts_query_string).result()).total_rows
+    except:
+        logging.info("Tweets table too large to retrieve row counts from BigQuery database.")
+        lv0_tweet_count = 'Undeterminable'
 
     return lv0_tweet_count
 
@@ -1514,7 +1527,7 @@ def run_DATA():
 
     --------------------------------------------------------------------------
     \n""")
-    time.sleep(5)
+    time.sleep(3.5)
 
     print("""
     Please make a selection from the following options:
@@ -1554,21 +1567,22 @@ def run_DATA():
         archive_search_counts, user_proceed = get_pre_search_counts(client, query, start_date, end_date, project, dataset, schematype, interval)
 
         if user_proceed == 'y':
-            sleep(3)
+            sleep(1.5)
+            #TODO FUNCTION FOR MULTIPLE INSTANCES OF THIS CODE
             # Set directories and file paths
             # ------------------------------
             set_up_logging(logfile_filepath)
-            sleep(1)
+            sleep(0.5)
             set_directory(dir_name, folder)
-            sleep(1)
+            sleep(0.5)
             set_json_path(json_filepath, folder)
-            sleep(1)
+            sleep(0.5)
             set_csv_path(csv_filepath, folder)
-            sleep(1)
+            sleep(0.5)
             set_error_log_path(error_filepath, folder)
-            sleep(1)
+            sleep(0.5)
             set_log_file_path(logfile_filepath, folder)
-            sleep(1)
+            sleep(0.5)
 
             # Access BigQuery
             # ---------------
@@ -1581,6 +1595,7 @@ def run_DATA():
             # Set table variable to none, if it gets a value it can be queried
             table = 0
             tweet_count = 0
+            query_count = 1
 
             # TODO: why two try/excepts here?
             try:
@@ -1593,7 +1608,7 @@ def run_DATA():
 
 
                     # Call function collect_archive_data()
-                    collect_archive_data(bq, project, dataset, to_collect, expected_files, client, query, start_date, end_date, csv_filepath, archive_search_counts, tweet_count, query, query_count)
+                    collect_archive_data(bq, project, dataset, to_collect, expected_files, client, query, start_date, end_date, csv_filepath, archive_search_counts, tweet_count, query, query_count, schematype)
                     table = 1
                     search_end_time = datetime.now()
                     search_duration = (search_end_time - search_start_time)
@@ -1621,7 +1636,6 @@ def run_DATA():
                     logging.info('Archive search complete!')
 
                 except Exception as error:
-
                     traceback_info = capture_error_string(error, error_filepath)
                     send_error_email(mailgun_domain, mailgun_key, dataset, traceback_info)
                     logging.info('Error email sent to admin.')
@@ -1716,7 +1730,7 @@ def run_DATA():
                         # Call function collect_archive_data()
                         subquery = f'@{subquery} OR from:{subquery}'
                         collect_archive_data(bq, project, dataset, to_collect, expected_files, client, subquery, start_date,
-                                             end_date, csv_filepath, archive_search_counts, tweet_count, query, query_count)
+                                             end_date, csv_filepath, archive_search_counts, tweet_count, query, query_count, schematype)
                         table = 1
                         search_end_time = datetime.now()
                         search_duration = (search_end_time - search_start_time)
@@ -1823,7 +1837,7 @@ def run_DATA():
                 filecount = filecount + 1
 
                 # For each interval (file), process json
-                tweet_count = process_json_data(a_file, csv_filepath, bq, project, dataset, query, start_date, end_date, archive_search_counts, tweet_count)
+                tweet_count = process_json_data(a_file, csv_filepath, bq, project, dataset, query, start_date, end_date, archive_search_counts, tweet_count, schematype)
 
             search_end_time = datetime.now()
             search_duration = (search_end_time - search_start_time)
