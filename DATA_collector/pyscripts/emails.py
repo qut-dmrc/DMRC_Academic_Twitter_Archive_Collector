@@ -32,7 +32,7 @@ Your DATA search is complete. Please find details relating to your search below:
     ----------------
 
 
-Your search commenced at {search_start_time.strftime("%Y-%m-%d %H:%M:%S")}, and completed at {search_end_time.strftime("%Y-%m-%d %H:%M:%S")}. The search took {readable_duration}
+This process commenced at {search_start_time.strftime("%Y-%m-%d %H:%M:%S")}, and completed at {search_end_time.strftime("%Y-%m-%d %H:%M:%S")}. The search took {readable_duration}
 
 
 Best regards,

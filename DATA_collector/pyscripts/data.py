@@ -1248,7 +1248,15 @@ def transform_DATA_to_TQ(list_of_dataframes):
 
     TWEETS.loc[TWEETS['tweet_type'] != 'quote', 'quoted_status_id'] = ''
     TWEETS.loc[TWEETS['tweet_type'] != 'quote', 'quoted_status_text'] = ''
+    TWEETS.loc[TWEETS['tweet_type'] != 'quote', 'quoted_status_user_id'] = ''
+
     TWEETS.loc[TWEETS['tweet_type'] != 'reply', 'in_reply_to_status_id'] = ''
+    TWEETS.loc[TWEETS['tweet_type'] != 'reply', 'in_reply_to_user_id'] = ''
+
+    TWEETS.loc[TWEETS['tweet_type'] != 'retweet', 'retweeted_status_id'] = ''
+    TWEETS.loc[TWEETS['tweet_type'] != 'retweet', 'retweeted_status_user_id'] = ''
+
+    TWEETS['user_profile_image_url_https'] = TWEETS['author_profile_image_url'].replace('http', 'https')
 
     # Generate empty fields for those TQ fields that do not have equivalents in the DATA format
     TWEETS['coordinates_coordinates_0'] = ''
@@ -1275,7 +1283,6 @@ def transform_DATA_to_TQ(list_of_dataframes):
     TWEETS['user_profile_background_title'] = ''
     TWEETS['user_profile_banner_url'] = ''
     TWEETS['user_profile_fill_color'] = ''
-    TWEETS['user_profile_image_url_https'] = ''
     TWEETS['user_profile_link_color'] = ''
     TWEETS['user_profile_sidebar_border_color'] = ''
     TWEETS['user_profile_text_color'] = ''
@@ -1412,7 +1419,7 @@ def push_processed_tables_to_bq(bq, project, dataset, list_of_tablenames, csv_fi
             if schematype != 'TweetQuery':
                 tweets_table = list_of_tablenames[i]
             else:
-                tweets_table = f'{dataset.lower()}_flat_test'
+                tweets_table = f'{dataset.lower()}_flat_DATA'
 
             table_id = bigquery.Table(f'{tweet_dataset}.{tweets_table}')
 
@@ -1430,7 +1437,7 @@ def push_processed_tables_to_bq(bq, project, dataset, list_of_tablenames, csv_fi
 
             job_config.allow_quoted_newlines = True
 
-# TODO TEST THIS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+            # TODO TEST THIS!!!!!!!!! it's not doing anything !!!!!!!!!!!!!!!!!!!!!!!!!
             with open(csv_filepath + list_of_csv[i], 'rb') as tweet_fh:
                 for attempt in range(1, 10):
                     try:

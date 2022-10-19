@@ -503,7 +503,7 @@ class TweetQuery_schema:
         bigquery.SchemaField("text", "STRING", mode="NULLABLE", description=""),
         bigquery.SchemaField("truncated", "BOOLEAN", mode="NULLABLE", description=""),
         bigquery.SchemaField("user_contributors_enabled", "BOOLEAN", mode="NULLABLE", description=""),
-        bigquery.SchemaField("user_created_at", "STRING", mode="NULLABLE", description=""),
+        bigquery.SchemaField("user_created_at", "TIMESTAMP", mode="NULLABLE", description=""),
         bigquery.SchemaField("user_default_profile", "BOOLEAN", mode="NULLABLE", description=""),
         bigquery.SchemaField("user_default_profile_image", "BOOLEAN", mode="NULLABLE", description=""),
         bigquery.SchemaField("user_description", "STRING", mode="NULLABLE", description=""),
