@@ -24,6 +24,7 @@ error_filepath = 'error_logs/'
 error_filepath = str(dir_name + error_filepath)
 logfile_filepath = f'{cwd}/logging'
 
+
 # Create a new directory for the archive search
 # ---------------------------------------------
 def set_directory(dir_name, folder):
@@ -98,40 +99,41 @@ def set_log_file_path(logfile_filepath, folder):
 # Construct a range of datetimes to use to collect Tweets in specified n_day intervals (1 interval = 1 json file)
 # ---------------------------------------------------------------------------------------------------------------
 def set_up_expected_files(start_date, end_date, json_filepath, option_selection, query):
+    '''
+    Divides search into multiple queries, based on the interval chosen in config.yml.
+    This saves on memory by 'chunking' long and voluminous searches into separate collections based on number of days.
+    Interval parameter can be any number. 0.25 = 6 hours. 0.5 = 12 hours. 1 =  24 hours. 90 = ~3 months, and so on.
+    '''
+
     window_length = dt.timedelta(days=Query.interval_days)
     expected_files = dict()
     current_date = start_date
     saved_search_path = json_filepath
 
-    if option_selection == "1":
-        # Generate dictionary of file names, start date and end date
-        while current_date < end_date:
-            expected_files[saved_search_path + f"{current_date.isoformat()}_tweets.jsonl".replace(":", "")] = (
-                current_date,
-                current_date + window_length
-            )
-            current_date += window_length
-
-    else:
-        # Generating dictionary of file names and start and end dates
+    # TODO check I don't need this
+    # if option_selection == "1":
+    #     # Generate dictionary of file names, start date and end date
+    #     while current_date < end_date:
+    #         expected_files[saved_search_path + f"{current_date.isoformat()}_tweets.jsonl".replace(":", "")] = (
+    #             current_date,
+    #             current_date + window_length
+    #         )
+    #         current_date += window_length
 
 
+    # else:
+    # Generate dictionary of file names and start and end dates
+    while current_date < end_date:
+        expected_files[
+            saved_search_path + f"{query}_{current_date.isoformat()}_tweets.jsonl".replace(":", "")] = (
+            current_date,
+            current_date + window_length
+        )
+        current_date += window_length
 
-        while current_date < end_date:
-            expected_files[
-                saved_search_path + f"{query}_{current_date.isoformat()}_tweets.jsonl".replace(":", "")] = (
-                current_date,
-                current_date + window_length
-            )
-            current_date += window_length
-
-
-
-
-
-
-
-    # TODO make this a bit nicer - this is a bit makeshift. The idea is to change the last end date in the dict to the end date in the config. It is based on the window length so sometimes the end date is wrong.
+    # TODO make this a bit nicer - this is a bit makeshift.
+    #  The idea is to change the last end date in the dict to the end date in the config.
+    #  It is based on the window length so sometimes the end date is wrong.
     kvps = list(expected_files.items())
     kvps_list = list(kvps[-1])
     kvps_list_list = list(kvps_list[-1])

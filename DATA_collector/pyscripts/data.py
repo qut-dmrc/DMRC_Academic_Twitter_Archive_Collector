@@ -34,6 +34,10 @@ warnings.simplefilter(action='ignore', category=pd.errors.PerformanceWarning)
 # Functions
 # ---------
 def validate_search_parameters(query, bearer_token, start_date, end_date, project, dataset, interval):
+    '''
+    Validates search parameters when Option 1 (Search Archive) selected.
+    Unable to check bearer token validity beyond ensuring it is in config.yml; checks for presence only
+    '''
 
     utc = pytz.UTC
 
@@ -41,31 +45,37 @@ def validate_search_parameters(query, bearer_token, start_date, end_date, projec
     Validating your config...
     """)
 
-    # Search query length
-    if len(query) in range(1, 1024):
-        query = query
-    elif len(query) < 1:
-        print('Please enter a search query.')
-        query = None
+    # Search query length; if str query, check min and max len of query. Else, if list query, check min len.
+    if type(query) == str:
+        if len(query) in range(1, 1024):
+            query = query
+        elif len(query) < 1:
+            print('Please enter a search query.')
+            query = None
+        else:
+            query = None
+            print(
+                f'Query is too long ({len(query)} characters). Please shorten it to 1024 characters or fewer and retry.')
     else:
-        query = None
-        print(f'Query is too long ({len(query)} characters). Please shorten it to 1024 characters or less and retry.')
+        if len(query) < 1:
+            print('Please enter a search query.')
+            query = None
 
-    # Bearer token entered
+    # Check bearer token entered; only checks len for presence of a bearer token
     if len(bearer_token) > 0:
         bearer_token = bearer_token
     else:
         bearer_token = None
         print('Please enter a valid bearer token for Twitter API access.')
 
-    # Google access key entered
+    # Check for Google access key; looks for .json service account key in the 'access_key' dir
     if glob.glob(f'{cwd}/access_key/*.json'):
         access_key = glob.glob(f'{cwd}/access_key/*.json')
     else:
         access_key = None
         print('Please enter a valid Google service account access key')
 
-    # Start date in the past
+    # Ensure start date is in the past, but must be before end date
     if start_date < end_date:
         start_date = start_date
     elif start_date > utc.localize(dt.datetime.now()):
@@ -75,33 +85,34 @@ def validate_search_parameters(query, bearer_token, start_date, end_date, projec
         start_date = None
         print('Start date cannot be after end date.')
 
-    # End date in the past, but after start date
+    # Ensure end date is in the past
     if end_date < utc.localize(dt.datetime.now()):
         end_date = end_date
     else:
         end_date = None
         print('End date cannot be in the future.')
 
-    # Project name entered
+    # Check project name entered; only checks len for presence of a project name #Todo no hyphens etc
     if len(project) > 0:
         project = project
     else:
         project = None
         print('Please enter a Google BigQuery billing project.')
 
-    # Dataset name entered
+    # Checks dataset name entered; only checks len for presence of a dataset name #Todo no hyphens etc
     if len(dataset) > 0:
         dataset = dataset
     else:
         dataset = None
         print('Please enter a name for your desired dataset.')
 
-    # Interval
+    # Checks interval; if no interval entered, default to 1 (1 day)
     if interval != '0':
         interval = interval
     else:
         interval = 1
 
+    # If any of the above parameters are None, exit program; else, proceed.
     if None in [query, bearer_token, access_key, start_date, end_date, project, dataset]:
         print("""
         \n 
@@ -116,28 +127,30 @@ def validate_search_parameters(query, bearer_token, start_date, end_date, projec
 
         return query, bearer_token, access_key, start_date, end_date, project, dataset, interval
 
-
 def validate_project_parameters(project, dataset):
+    '''
+    Validates project parameters when Option 2 (Process from .json) is selected.
+    '''
 
     query = 'JSON upload'
     start_date = ''
     end_date = ''
 
-    # Google access key entered
+    # Check for Google access key; looks for .json service account key in the 'access_key' dir
     if glob.glob(f'{cwd}/access_key/*.json'):
         access_key = glob.glob(f'{cwd}/access_key/*.json')
     else:
         access_key = None
         print('Please enter a valid Google service account access key')
 
-    # Project name entered
+    # Check project name entered; only checks len for presence of a project name #Todo no hyphens etc
     if len(project) > 0:
         project = project
     else:
         project = None
         print('Please enter a Google BigQuery billing project.')
 
-    # Dataset name entered
+    # Check dataset name entered; only checks len for presence of a dataset name #Todo no hyphens etc
     if len(dataset) > 0:
         dataset = dataset
     else:
@@ -147,6 +160,12 @@ def validate_project_parameters(project, dataset):
     return query, start_date, end_date, dataset, access_key
 
 def get_pre_search_counts(client, query, start_date, end_date, project, dataset, schematype, interval):
+    '''
+    Runs a Twarc counts search on the query in config.yml when Option 1 (Search Archive) is selected.
+    Results are printed to screen; user can then choose to proceed if results are acceptable.
+    If user_proceed = 'n', exit program.
+    '''
+
     # Run counts_all search
     count_tweets = client.counts_all(query=query, start_time=start_date, end_time=end_date)
 
@@ -164,11 +183,13 @@ def get_pre_search_counts(client, query, start_date, end_date, project, dataset,
     # Get total tweet counts
     archive_search_counts = sum(tweet_counts)
 
+    # Give an estimate of search duration #Todo see if we can get an accurate calculation
     time_estimate = (archive_search_counts*0.0012379*60)
     readable_time_estimate = format_timespan(time_estimate)
 
+    # Print search results for user and ask to proceed
     print(f"""
-    Please check the below details carefully, and ensure you have enough room in your bearer token quota!
+    Please check the below details carefully, and ensure you have enough room in your academic project bearer token quota!
     \n
     Your query: {query}
     Start date: {start_date}
@@ -188,19 +209,28 @@ def get_pre_search_counts(client, query, start_date, end_date, project, dataset,
     return archive_search_counts, user_proceed
 
 def collect_archive_data(bq, project, dataset, to_collect, expected_files, client, subquery, start_date, end_date, csv_filepath, archive_search_counts, tweet_count, query, query_count, schematype):
+    '''
+    Uses a dictionary containing expected filename, start_date and end-date, generated in set_up_directories.py.
+    For each file in the dictionary, a separate query is run, resulting in e.g. 1 file per day if interval = 1.
+    This function loops through the expected files if they do not already exist in the 'collected_json' dir.
+    Leads to the process_json_data() function.
+    '''
+
     logging.info('Commencing data collection...')
     # Collect archive data one interval at a time using the Twarc search_all endpoint
     if len(to_collect) > 0:
         for a_file in to_collect:
-
             logging.info('-----------------------------------------------------------------------------------------')
             logging.info(f'Collecting file {a_file}')
             start, end = expected_files[a_file]
             if type(query) == list:
                 logging.info(f'Query {query_count} of {len(list(query))}')
             logging.info(f'Query: {subquery} from {start} to {end}')
+
+            # Twarc search_all
             search_results = client.search_all(query=subquery, start_time=start, end_time=end, max_results=100)
 
+            # Flatten tweet objects and dump to json
             for page in search_results:
                 result = expansions.flatten(page)
                 for tweet in result:
@@ -208,10 +238,12 @@ def collect_archive_data(bq, project, dataset, to_collect, expected_files, clien
                     with open(a_file, "a") as f:
                         f.write(json_object + "\n")
 
+            # Append to list to commence processing
             tweetsList = []
             if os.path.isfile(a_file):
                 with open(a_file) as f:
                     for jsonObj in f:
+                        # TODO do I do anything with these variables?
                         tweetDict = json.loads(jsonObj)
                         tweetsList.append(tweetDict)
 
@@ -251,7 +283,6 @@ def process_json_data(a_file, csv_filepath, bq, project, dataset, subquery, star
         # --------------------------
         # Save nested columns as new expanded dataframes with corresponding tweet_id
         logging.info('Unpacking one-to-many nested columns...')
-
         if 'entities_mentions' in TWEETS.columns:
             entities_mentions = extract_entities_data(TWEETS)
         else:
@@ -530,8 +561,12 @@ def move_referenced_tweet_data_up(reference_levels_list, up_a_level_column_list)
                  'replied_to': 'reply',
                  'quoted': 'quote'})
     else:
-
-        TWEETS = pd.concat([combined_level, level])
+        try:
+            level.columns = level.columns.str.replace(".", "_", regex=True)
+            TWEETS = pd.concat([combined_level, level])
+        except:
+            level.columns = level.columns.str.replace(".", "_", regex=True)
+            TWEETS = level
 
         if 'tweet_type' in TWEETS.columns:
             TWEETS['tweet_type'] = TWEETS['tweet_type'].replace(
