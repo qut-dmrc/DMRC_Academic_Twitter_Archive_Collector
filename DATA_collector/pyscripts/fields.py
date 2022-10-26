@@ -156,50 +156,74 @@ class DATA_fields:
         'author_description_urls_display_url'
     ]
 
-    author_description_hashtags_column_order = [
-        'author_id',
-        'author_description_hashtags_start',
-        'author_description_hashtags_end',
-        'author_description_hashtags_tag',
-        'author_description_mentions_start',
-        'author_description_mentions_end',
-        'author_description_mentions_username',
-        'author_description_urls_start',
-        'author_description_urls_end',
-        'author_description_urls_url',
-        'author_description_urls_expanded_url',
-        'author_description_urls_display_url'
+    type_list = ['author', 'tweet_mentions_author', 'in_reply_to_user']
+
+
+    author_desc_hashtags_cols = [
+        '_id',
+        '_hashtags_start',
+        '_hashtags_end',
+        '_hashtags_tag'
     ]
 
-    author_description_mentions_column_order = [
-        'tweet_mentions_author_id',
-        'mentioned_author_description_hashtags_start',
-        'mentioned_author_description_hashtags_end',
-        'mentioned_author_description_hashtags_tag',
-        'mentioned_author_description_mentions_start',
-        'mentioned_author_description_mentions_end',
-        'mentioned_author_description_mentions_username',
-        'mentioned_author_description_urls_start',
-        'mentioned_author_description_urls_end',
-        'mentioned_author_description_urls_url',
-        'mentioned_author_description_urls_expanded_url',
-        'mentioned_author_description_urls_display_url'
+    author_desc_mentions_cols = [
+        '_mentions_start',
+        '_mentions_end',
+        '_mentions_username'
     ]
 
-    author_description_urls_column_order = [
-        'author_id',
-        'author_description_hashtags_start',
-        'author_description_hashtags_end',
-        'author_description_hashtags_tag',
-        'author_description_mentions_start',
-        'author_description_mentions_end',
-        'author_description_mentions_username',
-        'author_description_urls_start',
-        'author_description_urls_end',
-        'author_description_urls_url',
-        'author_description_urls_expanded_url',
-        'author_description_urls_display_url'
+    author_desc_urls_cols = [
+        '_urls_start',
+        '_urls_end',
+        '_urls_url',
+        '_urls_expanded_url',
+        '_urls_display_url'
     ]
+
+    # author_description_hashtags_column_order = [
+    #     'author_id',
+    #     'author_description_hashtags_start',
+    #     'author_description_hashtags_end',
+    #     'author_description_hashtags_tag',
+    #     'author_description_mentions_start',
+    #     'author_description_mentions_end',
+    #     'author_description_mentions_username',
+    #     'author_description_urls_start',
+    #     'author_description_urls_end',
+    #     'author_description_urls_url',
+    #     'author_description_urls_expanded_url',
+    #     'author_description_urls_display_url'
+    # ]
+    #
+    # author_description_mentions_column_order = [
+    #     'tweet_mentions_author_id',
+    #     'mentioned_author_description_hashtags_start',
+    #     'mentioned_author_description_hashtags_end',
+    #     'mentioned_author_description_hashtags_tag',
+    #     'mentioned_author_description_mentions_start',
+    #     'mentioned_author_description_mentions_end',
+    #     'mentioned_author_description_mentions_username',
+    #     'mentioned_author_description_urls_start',
+    #     'mentioned_author_description_urls_end',
+    #     'mentioned_author_description_urls_url',
+    #     'mentioned_author_description_urls_expanded_url',
+    #     'mentioned_author_description_urls_display_url'
+    # ]
+    #
+    # author_description_urls_column_order = [
+    #     'author_id',
+    #     'author_description_hashtags_start',
+    #     'author_description_hashtags_end',
+    #     'author_description_hashtags_tag',
+    #     'author_description_mentions_start',
+    #     'author_description_mentions_end',
+    #     'author_description_mentions_username',
+    #     'author_description_urls_start',
+    #     'author_description_urls_end',
+    #     'author_description_urls_url',
+    #     'author_description_urls_expanded_url',
+    #     'author_description_urls_display_url'
+    # ]
 
 
     author_urls_column_order = [
@@ -261,6 +285,33 @@ class DATA_fields:
         'author.profile_image_url',
         'author.protected',
         'author.verified']
+
+
+    dfs_move_up_colnames = {
+        'tweet_id': 'referenced_tweet_id',
+        'referencing_tweet_id': 'tweet_id',
+        'type': 'tweet_type',
+        'text': 'referenced_tweet_text',
+        'entities.hashtags': 'referenced_tweet_hashtags',
+        'entities.mentions': 'referenced_tweet_mentions',
+        'entities.urls': 'referenced_tweet_urls',
+        'entities.annotations': 'referenced_tweet_annotations',
+        'author.id': 'referenced_tweet_author_id',
+        'author.name': 'referenced_tweet_author_name',
+        'author.username': 'referenced_tweet_author_username',
+        'author.description': 'referenced_tweet_author_description',
+        'author.url': 'referenced_tweet_author_url',
+        'author.public_metrics.followers_count': 'referenced_tweet_author_public_metrics_followers_count',
+        'author.public_metrics.following_count': 'referenced_tweet_author_public_metrics_following_count',
+        'author.public_metrics.tweet_count': 'referenced_tweet_author_public_metrics_tweet_count',
+        'author.public_metrics.listed_count': 'referenced_tweet_author_public_metrics_listed_count',
+        'author.created_at': 'referenced_tweet_author_created_at',
+        'author.location': 'referenced_tweet_author_location',
+        'author.pinned_tweet_id': 'referenced_tweet_author_pinned_tweet_id',
+        'author.profile_image_url': 'referenced_tweet_author_profile_image_url',
+        'author.protected': 'referenced_tweet_author_protected',
+        'author.verified': 'referenced_tweet_author_verified'}
+
 
     col_to_bool_list = [
         'attachments_media',
@@ -409,6 +460,19 @@ class TCAT_fields:
     interactions_mentions_column_names_dict = {
         'referenced_tweet_author_id': 'tweet_mentions_author_id',
         'referenced_tweet_author_username': 'tweet_mentions_author_username'}
+
+    blank_cols = [
+        'filter_level',
+        'withheld_copyright',
+        'withheld_scope',
+        'truncated',
+        'lat',
+        'lng',
+        'from_user_utcoffset',
+        'from_user_timezone',
+        'from_user_lang',
+        'from_user_favourites_count',
+        'from_user_withheld_scope']
 
 
 class TweetQuery_fields:

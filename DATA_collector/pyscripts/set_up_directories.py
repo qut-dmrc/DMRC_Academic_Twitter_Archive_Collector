@@ -1,7 +1,7 @@
 # This file contains functions for setting up the directory environment for the archive search
 import os.path
 import glob
-
+from time import sleep
 
 from .logging_archive_search import *
 from .config import *
@@ -23,6 +23,25 @@ csv_filepath = str(dir_name + csv_filepath)
 error_filepath = 'error_logs/'
 error_filepath = str(dir_name + error_filepath)
 logfile_filepath = f'{cwd}/logging'
+
+
+# Call directory setup functions
+def set_up_directories(logfile_filepath, dir_name, folder, json_filepath, csv_filepath, error_filepath):
+    # Set directories and file paths
+    # ------------------------------
+    set_up_logging(logfile_filepath)
+    sleep(0.5)
+    set_directory(dir_name, folder)
+    sleep(0.5)
+    set_json_path(json_filepath, folder)
+    sleep(0.5)
+    set_csv_path(csv_filepath, folder)
+    sleep(0.5)
+    set_error_log_path(error_filepath, folder)
+    sleep(0.5)
+    set_log_file_path(logfile_filepath, folder)
+    sleep(0.5)
+
 
 
 # Create a new directory for the archive search
@@ -74,6 +93,7 @@ def set_error_log_path(error_filepath, folder):
     try:
         os.mkdir(error_filepath)
         logging.info('Path does not yet exist')
+        print('Path does not yet exist')
         logging.info(f"Created new error file directory named {folder} at location {error_filepath}")
     except OSError as error:
         logging.info(f"error log file directory already exists at location {error_filepath}")
@@ -153,7 +173,7 @@ def set_up_expected_files(start_date, end_date, json_filepath, option_selection,
 
 
 def get_json_input_files():
-    json_input_filepath = f'{cwd}/json_input_files/'
+    json_input_filepath = f'{cwd}/json_input_files/aws_pull_v1_schema/'
     json_input_files = glob.glob(json_input_filepath + "*jsonl")
     # json_input_filepath = '//rstore.qut.edu.au/projects/cif/auspubsphere/dmrc_DATA_collection/x_journalism/collected_json/'
     # json_input_files = glob.glob(json_input_filepath + "*jsonl")

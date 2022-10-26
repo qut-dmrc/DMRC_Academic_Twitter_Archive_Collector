@@ -11,6 +11,6 @@ def set_up_logging(logfile_filepath):
                         handlers=[logging.FileHandler(f'{logfile_filepath}/archive_collection_{logtime}.log'),
                             logging.StreamHandler(sys.stdout)])
     print('logging.basicConfig set')
-    print(f'{logfile_filepath}/archive_collection_{logtime}.log')
+    print(f'Log file located at: {logfile_filepath}/archive_collection_{logtime}.log')
 
 
