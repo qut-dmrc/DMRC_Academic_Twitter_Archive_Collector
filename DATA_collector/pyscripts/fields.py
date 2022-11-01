@@ -261,6 +261,11 @@ class DATA_fields:
         'tweet_context_annotation_entity_description'
     ]
 
+    edit_history = [
+        'tweet_id',
+        'edit_history_tweet_ids'
+    ]
+
     up_a_level_column_list = [
         'tweet_id',
         'referencing_tweet_id',
@@ -418,13 +423,23 @@ class TCAT_fields:
         'hashtags_tag'
     ]
 
-    mentions_column_order = [
+    # mentions_column_order = [
+    #     'tweet_id',
+    #     'author_id',
+    #     'author_username',
+    #     'tweet_mentions_author_id',
+    #     'tweet_mentions_author_username',
+    #     'tweet_type'
+    # ]
+
+    MENTIONS_column_order = [
         'tweet_id',
-        'author_id',
-        'author_username',
-        'tweet_mentions_author_id',
-        'tweet_mentions_author_username',
-        'tweet_type'
+        'user_from_id',
+        'user_from_name',
+        'user_to_id',
+        'user_to_name',
+        'mention_type'
+
     ]
 
     tweet_column_names_dict = {
@@ -451,15 +466,25 @@ class TCAT_fields:
         'hashtags_tag':'hashtag'}
 
     mentions_column_names_dict = {
-        'author_id': 'user_from_id',
-        'author_username': 'user_from_name',
-        'tweet_mentions_author_id':'user_to_id',
-        'tweet_mentions_author_username':'user_to_name',
+        'user_from_id': 'user_from_id',
+        'user_from_username': 'user_from_name',
+        'user_to_id':'user_to_id',
+        'user_to_username':'user_to_name',
         'tweet_type': 'mention_type'}
 
     interactions_mentions_column_names_dict = {
         'referenced_tweet_author_id': 'tweet_mentions_author_id',
         'referenced_tweet_author_username': 'tweet_mentions_author_username'}
+
+    interactions_to_column_names_dict = {
+        'to_user_id': 'user_to_id',
+        'to_user_username': 'user_to_name'
+    }
+
+    interactions_from_column_names_dict = {
+        'author_id': 'user_from_id',
+        'author_username': 'user_from_name'
+    }
 
     blank_cols = [
         'filter_level',
@@ -620,11 +645,57 @@ class TweetQuery_fields:
         'tweet_mentions_author_username': 'entities_user_mention_screen_name',
         'tweet_type': 'mention_type'}
 
+    MENTIONS_column_order = [
+        'tweet_id',
+        'entities_user_mentions_name',
+        'entities_user_mention_id',
+        'entities_user_mention_screen_name',
+        'mention_type']
+
+    # interactions_mentions_column_names_dict = {
+    #     'referenced_tweet_author_name':'tweet_mentions_author_name',
+    #     'referenced_tweet_author_id': 'tweet_mentions_author_id',
+    #     'referenced_tweet_author_username': 'tweet_mentions_author_username'}
+
+    blank_cols = [
+        'coordinates_coordinates_0',
+        'coordinates_coordinates_1',
+        'coordinates_type',
+        'entities_symbols',
+        'favorited',
+        'filter_level',
+        'geo_coordinates_0',
+        'geo_coordinates_1',
+        'geo_type',
+        'matching_rules',
+        'place_url',
+        'truncated',
+        'user_contributors_enabled',
+        'user_default_profile',
+        'user_default_profile_image',
+        'user_favourites_count',
+        'user_geo_enabled',
+        'user_is_translator',
+        'user_lang',
+        'user_profile_background_color',
+        'user_profile_background_image_url',
+        'user_profile_background_title',
+        'user_profile_banner_url',
+        'user_profile_fill_color',
+        'user_profile_link_color',
+        'user_profile_sidebar_border_color',
+        'user_profile_text_color',
+        'user_profile_use_background_image',
+        'user_time_zone',
+        'user_utc_offset']
+
     interactions_mentions_column_names_dict = {
-        'referenced_tweet_author_name':'tweet_mentions_author_name',
         'referenced_tweet_author_id': 'tweet_mentions_author_id',
         'referenced_tweet_author_username': 'tweet_mentions_author_username'}
 
-
-
-
+    interactions_to_column_names_dict = {
+        'tweet_type': 'mention_type',
+        'to_user_id': 'entities_user_mention_id',
+        'to_user_username': 'entities_user_mention_screen_name',
+        'tweet_mentions_author_name': 'entities_user_mentions_name'
+    }

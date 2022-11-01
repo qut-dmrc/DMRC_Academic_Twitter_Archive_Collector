@@ -24,7 +24,7 @@ Your DATA search is complete. Please find details relating to your search below:
     Query start: {start_date}
     Query end: {end_date}
 
-    Tweets matching search criteria: {lv0_tweet_count}
+    Level 0 tweets in dataset: {lv0_tweet_count}
     Total tweets in dataset (including referenced tweets): {number_rows}
 
     Dataset: {dataset_name}

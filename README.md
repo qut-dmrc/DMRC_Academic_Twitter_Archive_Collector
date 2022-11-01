@@ -1,15 +1,14 @@
 # DMRC Academic Twitter Archive Collector
 
-The DMRC Academic Twitter Archive Collector uses the Twarc Python library to pull tweets from Twitter's archive, via the API 2.0. It then processes the resulting json files and pushes the data to a designated Google BigQuery database.
-<br>
-<br>
-<br>
-
 
 ### Overview
 
 ------------------------------------
-Overview here... To be completed...
+The DMRC Academic Twitter Archive (DATA) Collector uses the Twarc Python library to pull tweets from Twitter's archive, via the API 2.0. It then processes the resulting json files and pushes the data to a designated Google BigQuery database.
+Tweets can be collected as far back as 22 Mar, 2006. 
+
+DATA can be used to append data to an existing TCAT or TweetQuery dataset.
+You can now also upload a previously collected Twitter API 2.0 json file (e.g. from Twitter's Tweet Downloader) to be processed and pushed to Google BigQuery.
 
 <br>
 
@@ -93,7 +92,7 @@ Depending on the schema type selected, the tool will produce data as shown below
 |-------------|--------------------------------------------------------------------------------------------------------|----------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | DATA        | Standalone archive data analysis, where it is not necessary to append archive data to existing tables. | 11       | annotations<br/>author_description<br/>author_urls<br/>context_annotations<br/>hashtags<br/>interactions<br/>media<br/>mentions<br/>poll_options<br/>tweets<br/>urls |
 | TCAT        | Backfill/append archive data to an existing TCAT table                                                 | 3        | hashtags<br/>mentions<br/>tweets                                                                                                                                     |
-| TweetQuery  | Backfill/append archive data to an existing TweetQuery table                                           | 3        | hashtags<br/>mentions<br/>tweets                                                                                                                                     |
+| TweetQuery  | Backfill/append archive data to an existing TweetQuery table                                           | 1        | tweets_flat                                                                                                                                |
 
 
 A detailed overview of the tables and fields can be located here (TBC - provide link)

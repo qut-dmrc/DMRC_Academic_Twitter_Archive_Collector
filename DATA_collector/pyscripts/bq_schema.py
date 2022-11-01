@@ -340,6 +340,14 @@ class DATA_schema:
         bigquery.SchemaField("to_user_username", "STRING", mode="NULLABLE", description="")
     ]
 
+    #EDIT_HISTORY schema
+    edit_history_schema = [
+        bigquery.SchemaField("tweet_id", "STRING", mode="REQUIRED",
+                             description="Unique ID for tweet"),
+        bigquery.SchemaField("edit_history_tweet_ids", "STRING", mode="NULLABLE",
+                             description="Unique ID for edited Tweet")
+    ]
+
 
     # LISTS
     # -----
@@ -354,7 +362,8 @@ class DATA_schema:
                    'AUTHOR_DESCRIPTION.csv',
                    'AUTHOR_URLS.csv',
                    'POLL_OPTIONS.csv',
-                   'INTERACTIONS.csv']
+                   'INTERACTIONS.csv',
+                   'EDIT_HISTORY.csv']
 
     list_of_schema = [tweet_schema,
                       media_schema,
@@ -366,7 +375,8 @@ class DATA_schema:
                       author_description_schema,
                       author_urls_shema,
                       poll_schema,
-                      interactions_schema]
+                      interactions_schema,
+                      edit_history_schema]
 
     list_of_tablenames = ['tweets',
                           'media',
@@ -378,7 +388,8 @@ class DATA_schema:
                           'author_description',
                           'author_urls',
                           'poll_options',
-                          'interactions']
+                          'interactions',
+                          'edit_history']
 
 class TCAT_schema:
 
@@ -461,7 +472,7 @@ class TweetQuery_schema:
     # ------
 
     # TWEET schema
-    tweet_schema = [
+    tweets_flat_schema = [
         bigquery.SchemaField("coordinates_coordinates_0", "FLOAT", mode="NULLABLE", description=""),
         bigquery.SchemaField("coordinates_coordinates_1", "FLOAT", mode="NULLABLE", description=""),
         bigquery.SchemaField("coordinates_type", "STRING", mode="NULLABLE", description=""),
@@ -548,8 +559,8 @@ class TweetQuery_schema:
     # LISTS
     # -----
 
-    list_of_csv = ['TWEETS.csv']
+    list_of_csv = ['TWEETS_flat.csv']
 
-    list_of_schema = [tweet_schema]
+    list_of_schema = [tweets_flat_schema]
 
-    list_of_tablenames = ['tweets']
+    list_of_tablenames = ['tweets_flat']
