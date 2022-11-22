@@ -1,3 +1,7 @@
+'''
+This file gets data from config.yml and assigns them to variables.
+'''
+
 import datetime as dt
 import os
 import yaml
@@ -31,3 +35,4 @@ class Schematype():
     DATA = config['DATA']
     TCAT = config['TCAT']
     TweetQuery = config['TweetQuery']
+

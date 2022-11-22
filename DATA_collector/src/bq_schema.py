@@ -1,12 +1,12 @@
-# This file contains all the BQ schema for the archive Twitter data
+'''
+This file contains the Google BigQuery table schema for each schematype as specified in config.yml
+'''
+
 from google.cloud import bigquery
+
 
 class DATA_schema:
 
-    # SCHEMA
-    # ------
-
-    # TWEET schema
     tweet_schema = [
         bigquery.SchemaField("tweet_id", "STRING", mode="REQUIRED",
                              description="Unique ID for this Tweet (from Twitter)"),
@@ -157,7 +157,6 @@ class DATA_schema:
                              description="The version of Twarc that was used to retrieve this Tweet"),
     ]
 
-    # MEDIA schema
     media_schema = [
         bigquery.SchemaField("tweet_id", "STRING", mode="REQUIRED",
                              description="Unique ID for this tweet (from Twitter)"),
@@ -179,7 +178,6 @@ class DATA_schema:
         bigquery.SchemaField("media_alt_text", "STRING", mode="NULLABLE", description="")
     ]
 
-    # ANNOTATIONS schema
     annotations_schema = [
         bigquery.SchemaField("tweet_id", "STRING", mode="REQUIRED",
                              description="Unique ID for this tweet (from Twitter)"),
@@ -195,7 +193,6 @@ class DATA_schema:
                              description="The text used to determine the annotation type")
     ]
 
-    # CONTEXT_ANNOTATIONS schema
     context_annotations_schema = [
         bigquery.SchemaField("tweet_id", "STRING", mode="REQUIRED",
                              description="Unique ID for this Tweet (from Twitter)"),
@@ -213,7 +210,6 @@ class DATA_schema:
                              description="Additional information regarding referenced entity")
     ]
 
-    # HASHTAGS schema
     hashtags_schema = [
         bigquery.SchemaField("tweet_id", "STRING", mode="REQUIRED",
                              description="Unique ID for this Tweet (from Twitter)"),
@@ -225,7 +221,6 @@ class DATA_schema:
                              description="The text of the hashtag within in the Tweet")
     ]
 
-    # URLS schema
     urls_schema = [
         bigquery.SchemaField("tweet_id", "STRING", mode="REQUIRED",
                              description="Unique ID for this tweet (from Twitter)"),
@@ -247,7 +242,6 @@ class DATA_schema:
         bigquery.SchemaField("urls_description", "STRING", mode="NULLABLE", description="")
     ]
 
-    # MENTIONS schema
     mentions_schema = [
         bigquery.SchemaField("tweet_id", "STRING", mode="REQUIRED",
                              description="Unique ID for this tweet (from Twitter)"),
@@ -284,7 +278,6 @@ class DATA_schema:
                              description="")
     ]
 
-    # AUTHOR_DESCRIPTION schema
     author_description_schema = [
         bigquery.SchemaField("author_id", "STRING", mode="NULLABLE",
                              description="Unique ID for this author (from Twitter)"),
@@ -306,7 +299,6 @@ class DATA_schema:
                              description="")
     ]
 
-    # AUTHOR_URLS schema
     author_urls_shema = [
         bigquery.SchemaField("author_id", "STRING", mode="REQUIRED",
                              description="Unique ID for this author (from Twitter)"),
@@ -320,7 +312,6 @@ class DATA_schema:
                              description="")
     ]
 
-    # POLL_OPTIONS schema
     poll_schema = [
         bigquery.SchemaField("poll_id", "STRING", mode="REQUIRED",
                              description="Unique ID for this poll (from Twitter)"),
@@ -330,7 +321,6 @@ class DATA_schema:
                              description="Count of votes for poll option")
     ]
 
-    # INTERACTIONS schema
     interactions_schema = [
         bigquery.SchemaField("tweet_id", "STRING", mode="REQUIRED",
                              description="Unique ID for tweet"),
@@ -340,17 +330,12 @@ class DATA_schema:
         bigquery.SchemaField("to_user_username", "STRING", mode="NULLABLE", description="")
     ]
 
-    #EDIT_HISTORY schema
     edit_history_schema = [
         bigquery.SchemaField("tweet_id", "STRING", mode="REQUIRED",
                              description="Unique ID for tweet"),
         bigquery.SchemaField("edit_history_tweet_ids", "STRING", mode="NULLABLE",
                              description="Unique ID for edited Tweet")
     ]
-
-
-    # LISTS
-    # -----
 
     list_of_csv = ['TWEETS.csv',
                    'MEDIA.csv',
@@ -393,10 +378,6 @@ class DATA_schema:
 
 class TCAT_schema:
 
-    # SCHEMA
-    # ------
-
-    # TWEET schema
     tweet_schema = [
         bigquery.SchemaField("id", "STRING", mode="NULLABLE", description=""),
         bigquery.SchemaField("time", "TIMESTAMP", mode="NULLABLE", description=""),
@@ -436,13 +417,11 @@ class TCAT_schema:
         bigquery.SchemaField("from_user_created_at", "STRING", mode="NULLABLE", description="")
     ]
 
-    # Hashtags_schema
     hashtags_schema = [
         bigquery.SchemaField("tweet_id", "STRING", mode="NULLABLE", description=""),
         bigquery.SchemaField("hashtag", "STRING", mode="NULLABLE", description="")
     ]
 
-    # Mentions_schema
     mentions_schema = [
         bigquery.SchemaField("tweet_id", "STRING", mode="NULLABLE", description=""),
         bigquery.SchemaField("user_from_id", "STRING", mode="NULLABLE", description=""),
@@ -451,9 +430,6 @@ class TCAT_schema:
         bigquery.SchemaField("user_to_name", "STRING", mode="NULLABLE", description=""),
         bigquery.SchemaField("mention_type", "STRING", mode="NULLABLE", description="")
     ]
-
-    # LISTS
-    # -----
 
     list_of_csv = ['TWEETS.csv',
                    'HASHTAGS.csv',
@@ -468,10 +444,7 @@ class TCAT_schema:
                           'mentions']
 
 class TweetQuery_schema:
-    # SCHEMA
-    # ------
 
-    # TWEET schema
     tweets_flat_schema = [
         bigquery.SchemaField("coordinates_coordinates_0", "FLOAT", mode="NULLABLE", description=""),
         bigquery.SchemaField("coordinates_coordinates_1", "FLOAT", mode="NULLABLE", description=""),
@@ -556,11 +529,9 @@ class TweetQuery_schema:
         bigquery.SchemaField("urls_status", "STRING", mode="NULLABLE", description="")
     ]
 
-    # LISTS
-    # -----
-
     list_of_csv = ['TWEETS_flat.csv']
 
     list_of_schema = [tweets_flat_schema]
 
     list_of_tablenames = ['tweets_flat']
+

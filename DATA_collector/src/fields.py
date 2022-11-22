@@ -1,7 +1,121 @@
-# This file contains column order lists and dtype dictionaries for fields to match table schema
+'''
+This file contains column order lists and dtype dictionaries for fields to match table schema for the main TWEETS
+dataframe, as well as for the different schematypes available.
+'''
 
-# TABLE FIELDS
-# ----------------------------------------------------------------------------------------------------------------------
+class TWEET_fields:
+    up_a_level_column_list = [
+        'tweet_id',
+        'referencing_tweet_id',
+        'type',
+        'text',
+        'entities.hashtags',
+        'entities.mentions',
+        'entities.urls',
+        'entities.annotations',
+        'author.id',
+        'author.name',
+        'author.username',
+        'author.description',
+        'author.url',
+        'author.public_metrics.followers_count',
+        'author.public_metrics.following_count',
+        'author.public_metrics.tweet_count',
+        'author.public_metrics.listed_count',
+        'author.created_at',
+        'author.location',
+        'author.pinned_tweet_id',
+        'author.profile_image_url',
+        'author.protected',
+        'author.verified'
+    ]
+
+    dfs_move_up_colnames = {
+        'tweet_id': 'referenced_tweet_id',
+        'referencing_tweet_id': 'tweet_id',
+        'type': 'tweet_type',
+        'text': 'referenced_tweet_text',
+        'entities.hashtags': 'referenced_tweet_hashtags',
+        'entities.mentions': 'referenced_tweet_mentions',
+        'entities.urls': 'referenced_tweet_urls',
+        'entities.annotations': 'referenced_tweet_annotations',
+        'author.id': 'referenced_tweet_author_id',
+        'author.name': 'referenced_tweet_author_name',
+        'author.username': 'referenced_tweet_author_username',
+        'author.description': 'referenced_tweet_author_description',
+        'author.url': 'referenced_tweet_author_url',
+        'author.public_metrics.followers_count': 'referenced_tweet_author_public_metrics_followers_count',
+        'author.public_metrics.following_count': 'referenced_tweet_author_public_metrics_following_count',
+        'author.public_metrics.tweet_count': 'referenced_tweet_author_public_metrics_tweet_count',
+        'author.public_metrics.listed_count': 'referenced_tweet_author_public_metrics_listed_count',
+        'author.created_at': 'referenced_tweet_author_created_at',
+        'author.location': 'referenced_tweet_author_location',
+        'author.pinned_tweet_id': 'referenced_tweet_author_pinned_tweet_id',
+        'author.profile_image_url': 'referenced_tweet_author_profile_image_url',
+        'author.protected': 'referenced_tweet_author_protected',
+        'author.verified': 'referenced_tweet_author_verified'
+    }
+
+    col_to_bool_list = [
+        'attachments_media',
+        'entities_mentions',
+        'entities_hashtags',
+        'entities_urls',
+        'entities_annotations',
+        'context_annotations'
+    ]
+
+    bool_has_list = [
+        'has_media',
+        'has_mention',
+        'has_hashtags',
+        'has_urls',
+        'has_annotations',
+        'has_context_annotations'
+    ]
+
+    boolean_cols = [
+        'possibly_sensitive',
+        'author_protected',
+        'author_verified',
+        'referenced_tweet_author_protected',
+        'referenced_tweet_author_verified',
+        'is_reply',
+        'is_quote',
+        'is_retweet',
+        'has_mention',
+        'has_media',
+        'has_hashtags',
+        'has_urls',
+        'has_annotations',
+        'has_context_annotations'
+    ]
+
+    tweet_table_dtype_dict = {
+        'tweet_id': 'string',
+        'referenced_tweet_id': 'string',
+        'referencing_tweet_id': 'string',
+        'conversation_id': 'string',
+        'author_id': 'string',
+        'author_pinned_tweet_id': 'string',
+        'referenced_tweet_author_id': 'string',
+        'referenced_tweet_author_pinned_tweet_id': 'string',
+        'geo_id': 'string',
+        'geo_place_id': 'string',
+        'public_metrics_like_count': 'int32',
+        'public_metrics_quote_count': 'int32',
+        'public_metrics_reply_count': 'int32',
+        'public_metrics_retweet_count': 'int32',
+        'author_public_metrics_followers_count': 'int32',
+        'author_public_metrics_following_count': 'int32',
+        'author_public_metrics_tweet_count': 'int32',
+        'author_public_metrics_listed_count': 'int32',
+        'referenced_tweet_author_public_metrics_followers_count': 'int32',
+        'referenced_tweet_author_public_metrics_following_count': 'int32',
+        'referenced_tweet_author_public_metrics_listed_count': 'int32',
+        'referenced_tweet_author_public_metrics_tweet_count': 'int32'
+    }
+
 class DATA_fields:
     tweet_column_order = [
         'tweet_id',
@@ -156,9 +270,6 @@ class DATA_fields:
         'author_description_urls_display_url'
     ]
 
-    type_list = ['author', 'tweet_mentions_author', 'in_reply_to_user']
-
-
     author_desc_hashtags_cols = [
         '_id',
         '_hashtags_start',
@@ -180,51 +291,11 @@ class DATA_fields:
         '_urls_display_url'
     ]
 
-    # author_description_hashtags_column_order = [
-    #     'author_id',
-    #     'author_description_hashtags_start',
-    #     'author_description_hashtags_end',
-    #     'author_description_hashtags_tag',
-    #     'author_description_mentions_start',
-    #     'author_description_mentions_end',
-    #     'author_description_mentions_username',
-    #     'author_description_urls_start',
-    #     'author_description_urls_end',
-    #     'author_description_urls_url',
-    #     'author_description_urls_expanded_url',
-    #     'author_description_urls_display_url'
-    # ]
-    #
-    # author_description_mentions_column_order = [
-    #     'tweet_mentions_author_id',
-    #     'mentioned_author_description_hashtags_start',
-    #     'mentioned_author_description_hashtags_end',
-    #     'mentioned_author_description_hashtags_tag',
-    #     'mentioned_author_description_mentions_start',
-    #     'mentioned_author_description_mentions_end',
-    #     'mentioned_author_description_mentions_username',
-    #     'mentioned_author_description_urls_start',
-    #     'mentioned_author_description_urls_end',
-    #     'mentioned_author_description_urls_url',
-    #     'mentioned_author_description_urls_expanded_url',
-    #     'mentioned_author_description_urls_display_url'
-    # ]
-    #
-    # author_description_urls_column_order = [
-    #     'author_id',
-    #     'author_description_hashtags_start',
-    #     'author_description_hashtags_end',
-    #     'author_description_hashtags_tag',
-    #     'author_description_mentions_start',
-    #     'author_description_mentions_end',
-    #     'author_description_mentions_username',
-    #     'author_description_urls_start',
-    #     'author_description_urls_end',
-    #     'author_description_urls_url',
-    #     'author_description_urls_expanded_url',
-    #     'author_description_urls_display_url'
-    # ]
-
+    author_type_list = [
+            'author',
+            'tweet_mentions_author',
+            'in_reply_to_user'
+        ]
 
     author_urls_column_order = [
         'author_id',
@@ -261,125 +332,12 @@ class DATA_fields:
         'tweet_context_annotation_entity_description'
     ]
 
-    edit_history = [
+    edit_history_column_order = [
         'tweet_id',
         'edit_history_tweet_ids'
     ]
 
-    up_a_level_column_list = [
-        'tweet_id',
-        'referencing_tweet_id',
-        'type',
-        'text',
-        'entities.hashtags',
-        'entities.mentions',
-        'entities.urls',
-        'entities.annotations',
-        'author.id',
-        'author.name',
-        'author.username',
-        'author.description',
-        'author.url',
-        'author.public_metrics.followers_count',
-        'author.public_metrics.following_count',
-        'author.public_metrics.tweet_count',
-        'author.public_metrics.listed_count',
-        'author.created_at',
-        'author.location',
-        'author.pinned_tweet_id',
-        'author.profile_image_url',
-        'author.protected',
-        'author.verified']
-
-
-    dfs_move_up_colnames = {
-        'tweet_id': 'referenced_tweet_id',
-        'referencing_tweet_id': 'tweet_id',
-        'type': 'tweet_type',
-        'text': 'referenced_tweet_text',
-        'entities.hashtags': 'referenced_tweet_hashtags',
-        'entities.mentions': 'referenced_tweet_mentions',
-        'entities.urls': 'referenced_tweet_urls',
-        'entities.annotations': 'referenced_tweet_annotations',
-        'author.id': 'referenced_tweet_author_id',
-        'author.name': 'referenced_tweet_author_name',
-        'author.username': 'referenced_tweet_author_username',
-        'author.description': 'referenced_tweet_author_description',
-        'author.url': 'referenced_tweet_author_url',
-        'author.public_metrics.followers_count': 'referenced_tweet_author_public_metrics_followers_count',
-        'author.public_metrics.following_count': 'referenced_tweet_author_public_metrics_following_count',
-        'author.public_metrics.tweet_count': 'referenced_tweet_author_public_metrics_tweet_count',
-        'author.public_metrics.listed_count': 'referenced_tweet_author_public_metrics_listed_count',
-        'author.created_at': 'referenced_tweet_author_created_at',
-        'author.location': 'referenced_tweet_author_location',
-        'author.pinned_tweet_id': 'referenced_tweet_author_pinned_tweet_id',
-        'author.profile_image_url': 'referenced_tweet_author_profile_image_url',
-        'author.protected': 'referenced_tweet_author_protected',
-        'author.verified': 'referenced_tweet_author_verified'}
-
-
-    col_to_bool_list = [
-        'attachments_media',
-        'entities_mentions',
-        'entities_hashtags',
-        'entities_urls',
-        'entities_annotations',
-        'context_annotations']
-
-    bool_has_list = [
-        'has_media',
-        'has_mention',
-        'has_hashtags',
-        'has_urls',
-        'has_annotations',
-        'has_context_annotations']
-
-    boolean_cols = [
-        'possibly_sensitive',
-        'author_protected',
-        'author_verified',
-        'referenced_tweet_author_protected',
-        'referenced_tweet_author_verified',
-        'is_reply',
-        'is_quote',
-        'is_retweet',
-        'has_mention',
-        'has_media',
-        'has_hashtags',
-        'has_urls',
-        'has_annotations',
-        'has_context_annotations']
-
-
-    # DTYPE DICTS
-    # ----------------------------------------------------------------------------------------------------------------------
-    tweet_table_dtype_dict = {
-        'tweet_id': 'string',
-        'referenced_tweet_id': 'string',
-        'referencing_tweet_id': 'string',
-        'conversation_id': 'string',
-        'author_id': 'string',
-        'author_pinned_tweet_id': 'string',
-        'referenced_tweet_author_id': 'string',
-        'referenced_tweet_author_pinned_tweet_id': 'string',
-        'geo_id': 'string',
-        'geo_place_id': 'string',
-        'public_metrics_like_count': 'int32',
-        'public_metrics_quote_count': 'int32',
-        'public_metrics_reply_count': 'int32',
-        'public_metrics_retweet_count': 'int32',
-        'author_public_metrics_followers_count': 'int32',
-        'author_public_metrics_following_count': 'int32',
-        'author_public_metrics_tweet_count': 'int32',
-        'author_public_metrics_listed_count': 'int32',
-        'referenced_tweet_author_public_metrics_followers_count': 'int32',
-        'referenced_tweet_author_public_metrics_following_count': 'int32',
-        'referenced_tweet_author_public_metrics_listed_count': 'int32',
-        'referenced_tweet_author_public_metrics_tweet_count': 'int32'}
-
-
 class TCAT_fields:
-
     tweet_column_order = [
         'tweet_id',
         'time',
@@ -416,30 +374,21 @@ class TCAT_fields:
         'from_user_favourites_count',
         'author_public_metrics_listed_count',
         'from_user_withheld_scope',
-        'author_created_at']
+        'author_created_at'
+    ]
 
     hashtags_column_order = [
         'tweet_id',
         'hashtags_tag'
     ]
 
-    # mentions_column_order = [
-    #     'tweet_id',
-    #     'author_id',
-    #     'author_username',
-    #     'tweet_mentions_author_id',
-    #     'tweet_mentions_author_username',
-    #     'tweet_type'
-    # ]
-
     MENTIONS_column_order = [
-        'tweet_id',
+        'id',
         'user_from_id',
         'user_from_name',
         'user_to_id',
         'user_to_name',
         'mention_type'
-
     ]
 
     tweet_column_names_dict = {
@@ -460,30 +409,35 @@ class TCAT_fields:
         'author_public_metrics_followers_count':'from_user_followercount',
         'author_public_metrics_following_count':'from_user_friendcount',
         'author_public_metrics_listed_count':'from_user_listed',
-        'author_created_at':'from_user_created_at'}
+        'author_created_at':'from_user_created_at'
+    }
 
     hashtags_column_names_dict = {
-        'hashtags_tag':'hashtag'}
+        'hashtags_tag':'hashtag'
+    }
 
     mentions_column_names_dict = {
-        'user_from_id': 'user_from_id',
-        'user_from_username': 'user_from_name',
+        'from_user_id': 'user_from_id',
+        'from_user_username': 'user_from_name',
         'user_to_id':'user_to_id',
         'user_to_username':'user_to_name',
-        'tweet_type': 'mention_type'}
+        'tweet_type': 'mention_type'
+    }
 
     interactions_mentions_column_names_dict = {
         'referenced_tweet_author_id': 'tweet_mentions_author_id',
-        'referenced_tweet_author_username': 'tweet_mentions_author_username'}
+        'referenced_tweet_author_username': 'tweet_mentions_author_username'
+    }
 
     interactions_to_column_names_dict = {
+        'tweet_id': 'id',
         'to_user_id': 'user_to_id',
         'to_user_username': 'user_to_name'
     }
 
     interactions_from_column_names_dict = {
-        'author_id': 'user_from_id',
-        'author_username': 'user_from_name'
+        'from_user_id': 'user_from_id',
+        'from_user_name': 'user_from_name'
     }
 
     blank_cols = [
@@ -497,8 +451,8 @@ class TCAT_fields:
         'from_user_timezone',
         'from_user_lang',
         'from_user_favourites_count',
-        'from_user_withheld_scope']
-
+        'from_user_withheld_scope'
+    ]
 
 class TweetQuery_fields:
 
@@ -632,10 +586,12 @@ class TweetQuery_fields:
         'author_username':'user_screen_name',
         'author_public_metrics_tweet_count':'user_statuses_count',
         'author_url':'user_url',
-        'author_verified':'user_verified'}
+        'author_verified':'user_verified'
+    }
 
     hashtags_column_names_dict = {
-        'hashtags_tag': 'entities_hashtags_text'}
+        'hashtags_tag': 'entities_hashtags_text'
+    }
 
     mentions_column_names_dict = {
         'author_id': 'user_from_id',
@@ -643,19 +599,16 @@ class TweetQuery_fields:
         'tweet_mentions_author_name': 'entities_user_mentions_name',
         'tweet_mentions_author_id': 'entities_user_mention_id',
         'tweet_mentions_author_username': 'entities_user_mention_screen_name',
-        'tweet_type': 'mention_type'}
+        'tweet_type': 'mention_type'
+    }
 
     MENTIONS_column_order = [
         'tweet_id',
         'entities_user_mentions_name',
         'entities_user_mention_id',
         'entities_user_mention_screen_name',
-        'mention_type']
-
-    # interactions_mentions_column_names_dict = {
-    #     'referenced_tweet_author_name':'tweet_mentions_author_name',
-    #     'referenced_tweet_author_id': 'tweet_mentions_author_id',
-    #     'referenced_tweet_author_username': 'tweet_mentions_author_username'}
+        'mention_type'
+    ]
 
     blank_cols = [
         'coordinates_coordinates_0',
@@ -687,11 +640,13 @@ class TweetQuery_fields:
         'user_profile_text_color',
         'user_profile_use_background_image',
         'user_time_zone',
-        'user_utc_offset']
+        'user_utc_offset'
+    ]
 
     interactions_mentions_column_names_dict = {
         'referenced_tweet_author_id': 'tweet_mentions_author_id',
-        'referenced_tweet_author_username': 'tweet_mentions_author_username'}
+        'referenced_tweet_author_username': 'tweet_mentions_author_username'
+    }
 
     interactions_to_column_names_dict = {
         'tweet_type': 'mention_type',

@@ -1,4 +1,4 @@
-from pyscripts.data import run_DATA
+from src.data import run_DATA
 
 
 if __name__ == "__main__":
