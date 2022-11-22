@@ -8,7 +8,7 @@ The DMRC Academic Twitter Archive (DATA) Collector uses the Twarc Python library
 Tweets can be collected as far back as 22 Mar, 2006. 
 
 DATA can be used to append data to an existing TCAT or TweetQuery dataset.
-You can now also upload a previously collected Twitter API 2.0 json file (e.g. from Twitter's Tweet Downloader) to be processed and pushed to Google BigQuery.
+You can now also upload a previously collected Twitter API 2.0 json file (e.g. from Twitter's Tweet Downloader) to be processed and pushed to Google BigQuery. *** This is still being tested.
 
 <br>
 
