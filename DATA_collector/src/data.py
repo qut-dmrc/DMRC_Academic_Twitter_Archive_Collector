@@ -1558,7 +1558,7 @@ def run_DATA():
                     # Get current datetime for calculating duration
                     search_start_time = datetime.now()
                     # to_collect, expected files tell the program what to collect and what has already been collected
-                    to_collect, expected_files = set_up_expected_files(start_date, end_date, json_filepath, option_selection, dataset)
+                    to_collect, expected_files = set_up_expected_files(start_date, end_date, json_filepath, option_selection, dataset, interval)
                     # Call function collect_archive_data()
                     collect_archive_data(bq, project, dataset, to_collect, expected_files, client, query, start_date, end_date, csv_filepath, archive_search_counts, tweet_count, query, query_count, schematype)
                     # Notify user of completion
@@ -1627,7 +1627,7 @@ def run_DATA():
                         # Get current datetime for calculating duration
                         search_start_time = datetime.now()
                         # to_collect, expected files tell the program what to collect and what has already been collected
-                        to_collect, expected_files = set_up_expected_files(start_date, end_date, json_filepath, option_selection, subquery)
+                        to_collect, expected_files = set_up_expected_files(start_date, end_date, json_filepath, option_selection, subquery, interval)
 
                         subquery = f'@{subquery} OR from:{subquery}'
 
