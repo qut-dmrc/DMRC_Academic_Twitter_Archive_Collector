@@ -70,8 +70,8 @@ def calculate_interval(start_date, end_date, archive_search_counts):
     ave_tweets_per_file = 150000
     archive_search_counts = archive_search_counts
     interval = search_duration * ave_tweets_per_file / archive_search_counts
-
-    return interval
+    num_intervals = round(archive_search_counts/150000)
+    return interval, num_intervals
 
 def collect_archive_data(bq, project, dataset, to_collect, expected_files, client, subquery, start_date, end_date, csv_filepath, archive_search_counts, tweet_count, query, query_count, schematype):
     '''
@@ -1522,7 +1522,7 @@ def run_DATA():
             # Pre-search archive counts
             # subquery = query
             archive_search_counts, readable_time_estimate = get_pre_search_counts(client, query, start_date, end_date) #TODO *args??
-            interval = calculate_interval(start_date, end_date, archive_search_counts)
+            interval, num_intervals = calculate_interval(start_date, end_date, archive_search_counts)
             # TODO if archive_search_counts == 0, do nut run search...
             # Print search results for user and ask to proceed
             print(f"""
@@ -1535,6 +1535,9 @@ def run_DATA():
             Schema type: {schematype}
             \n
             Your archive search will collect approximately {archive_search_counts} tweets (upper estimate).
+            The collection will be distributed across approximately {num_intervals} json files.
+            \n
+            ** Remember to monitor the space on your hard drive! **
             \n 
             \n
             Proceed? y/n""")
