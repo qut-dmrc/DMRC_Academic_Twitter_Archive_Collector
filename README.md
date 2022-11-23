@@ -24,7 +24,7 @@ This tool is intended for researchers at the Digital Media Research Centre who w
 ### What You Will Need
 
 ------------------------------------
-1. Python 3.10 or later
+1. Python 3.8 or newer
 2. A valid [Twitter Academic API bearer token](https://developer.twitter.com/en/products/twitter-api/academic-research)
 3. A valid [Google service account and json key](https://cloud.google.com/iam/docs/creating-managing-service-account-keys)
 4. `xGB` free on your local drive for json file storage (the following are estimates and may differ depending on the data collected; you can store these files elsewhere after collection):
@@ -43,15 +43,25 @@ This tool is intended for researchers at the Digital Media Research Centre who w
 ------------------------------------
 
 #### If you HAVEN'T already cloned this repository:
-1. Clone this repository to a location with enough space to download tweets (refer to <b>What You Will Need</b> section, above).
+###
+#### `In cmd/terminal:`
+1. Clone this repository to a location with enough space to download tweets (refer to <b>What You Will Need</b> section, above): 
+`git clone https://github.com/qut-dmrc/DMRC_Academic_Twitter_Archive_Collector.git`.
 ####
-2. Install venv requirements: `python -m pip install -r requirements.txt`
+2. Navigate to the cloned  directory: `cd DMRC_Academic_Twitter_Archive_Collector`.
 ####
-3. Place your Google BigQuery service key json file into the `DATA_collector/access_key` directory.
+3. Install venv requirements: `python -m pip install -r requirements.txt`.
 ####
-4. Open `DATA_collector/config/config_template.yml`.
+4. Navigate to the collector: `cd DATA_collector`.
+####
+###
+#### `In your file explorer:`
+5. Place your Google BigQuery service key json file into the `DATA_collector/access_key` directory.
+####
+6. Open `DATA_collector/config/config_template.yml`.
       1. Set your query parameters:
          * <b>query:</b> string containing keyword(s) and/or phrase(s), e.g. 'winter OR cold' 
+         * <b>query_list</b>: a list of queries, in testing - leave as is.
          * <b>start_date:</b> the earliest date to search, in UTC time.
          * <b>end_date:</b> the latest date to search, in UTC time.
          * <b>interval_days:</b> the number of days covered per json file collected; default 7*
@@ -69,11 +79,14 @@ This tool is intended for researchers at the Digital Media Research Centre who w
       ####
       5. Choose your <b>schema type</b> (DATA, TCAT, TweetQuery). DATA = True by default. Refer to <b>Output</b>, below, for schema details.
 ####
-5. Rename `config_template.yml` to `config.yml`.
+7. Rename `config_template.yml` to `config.yml`.
 ####
-6. In your terminal, navigate to `cd .\DATA_collector\` and run `python ./run.py`.
+###
+#### `In cmd/terminal:` 
+8. Run `python ./run.py`.
+###
 ####
-After you run `run.py`, you will be prompted to verify your query config details. If everything is correct, type 'y', otherwise, type 'n' to exit and change your input.
+After you run `run.py`, you will be prompted to verify your query config details. If everything is correct, type `y`, otherwise, type `n` to exit and change your input.
 <br>
 <br>
 <br>
