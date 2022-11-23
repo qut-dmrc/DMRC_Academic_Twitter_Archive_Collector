@@ -68,7 +68,7 @@ def calculate_interval(start_date, end_date, archive_search_counts):
     if search_duration == 0:
         search_duration = 1
     ave_tweets_per_file = 150000
-    archive_search_counts = 10000000
+    archive_search_counts = archive_search_counts
     interval = search_duration * ave_tweets_per_file / archive_search_counts
 
     return interval
