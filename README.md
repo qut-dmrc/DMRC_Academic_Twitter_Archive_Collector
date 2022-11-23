@@ -66,8 +66,6 @@ This tool is intended for researchers at the Digital Media Research Centre who w
          * <b>query_list</b>: a list of queries, in testing - leave as is.
          * <b>start_date:</b> the earliest date to search, in UTC time.
          * <b>end_date:</b> the latest date to search, in UTC time.
-         * <b>interval_days:</b> the number of days covered per json file collected; default 7*
-           * Decreasing the interval to 1 = one day at a time, increasing to 30 = one month at a time, etc. Using the right interval can speed up collection. I'm working on a calculation to automate this :)
       ####
       2. Enter your bearer token:
          * <b>bearer_token</b>: your Twitter Academic API bearer token.
@@ -79,7 +77,7 @@ This tool is intended for researchers at the Digital Media Research Centre who w
       4. Enter your email address:
          * <b>user_email:</b> your email address, to notify you by email of the search's completion.
       ####
-      5. Choose your <b>schema type</b> (DATA, TCAT, TweetQuery). DATA = True by default. Refer to <b>Output</b>, below, for schema details.
+      5. Choose your <b>schema type</b> (DATA, TCAT, TweetQuery). `DATA = True` by default. Refer to <b>Output</b>, below, for schema details.
 ####
 7. Rename `config_template.yml` to `config.yml`.
 ####
@@ -104,11 +102,11 @@ There is a very good chance that (beneficial!) changes have been made to this re
 ------------------------------------
 Depending on the schema type selected, the tool will produce data as shown below:
 
-| Schema Type | Purpose                                                                                                | n Tables | Table Names                                                                                                                                                          |
-|-------------|--------------------------------------------------------------------------------------------------------|----------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| DATA        | Standalone archive data analysis, where it is not necessary to append archive data to existing tables. | 11       | annotations<br/>author_description<br/>author_urls<br/>context_annotations<br/>hashtags<br/>interactions<br/>media<br/>mentions<br/>poll_options<br/>tweets<br/>urls |
-| TCAT        | Backfill/append archive data to an existing TCAT table                                                 | 3        | hashtags<br/>mentions<br/>tweets                                                                                                                                     |
-| TweetQuery  | Backfill/append archive data to an existing TweetQuery table                                           | 1        | tweets_flat                                                                                                                                |
+| Schema Type | Purpose                                                                                                | n Tables | Table Names                                                                                                                                                                                                              |
+|-------------|--------------------------------------------------------------------------------------------------------|----------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| DATA        | Standalone archive data analysis, where it is not necessary to append archive data to existing tables. | 12       | annotations<br/>author_description<br/>author_urls<br/>context_annotations<br/>hashtags<br/>interactions<br/>media<br/>mentions<br/>poll_options<br/>tweets<br/>urls<br>edit_history (for tweets later than August 2022) |
+| TCAT        | Backfill/append archive data to an existing TCAT table                                                 | 3        | hashtags<br/>mentions<br/>tweets                                                                                                                                                                                         |
+| TweetQuery  | Backfill/append archive data to an existing TweetQuery table                                           | 1        | tweets_flat                                                                                                                                                                                                              |
 
 
 A detailed overview of the tables and fields can be located here (TBC - provide link)

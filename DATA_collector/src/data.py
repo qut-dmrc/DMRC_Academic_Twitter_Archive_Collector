@@ -58,6 +58,21 @@ def get_pre_search_counts(*args):
 
     return archive_search_counts, readable_time_estimate
 
+def calculate_interval(start_date, end_date, archive_search_counts):
+    '''
+    Calculates an appropriate interval to serve as number of days per json file collected. Helps to keep file sizes and
+    memory usage low.
+    interval = search_duration * ave_tweets_per_file / archive_search_counts
+    '''
+    search_duration = (end_date - start_date).days
+    if search_duration == 0:
+        search_duration = 1
+    ave_tweets_per_file = 150000
+    archive_search_counts = 10000000
+    interval = search_duration * ave_tweets_per_file / archive_search_counts
+
+    return interval
+
 def collect_archive_data(bq, project, dataset, to_collect, expected_files, client, subquery, start_date, end_date, csv_filepath, archive_search_counts, tweet_count, query, query_count, schematype):
     '''
     Uses a dictionary containing expected filename, start_date and end-date, generated in set_up_directories.py.
@@ -420,7 +435,7 @@ def notify_completion(bq, search_start_time, project, dataset, start_date, end_d
 
 class ValidateParams:
 
-    def validate_search_parameters(self, query, bearer_token, start_date, end_date, project, dataset, interval):
+    def validate_search_parameters(self, query, bearer_token, start_date, end_date, project, dataset):
         '''
         Validates search parameters when Option 1 (Search Archive) selected.
         Unable to check bearer token validity beyond ensuring it is in config.yml; checks for presence only
@@ -501,11 +516,6 @@ class ValidateParams:
             dataset = None
             print('No dataset in config.')
 
-        # Checks interval; if no interval entered, default to 1 (1 day)
-        if interval != '0':
-            interval = interval
-        else:
-            interval = 1
 
         # If any of the above parameters are None, exit program; else, proceed.
         if None in [query, bearer_token, access_key, start_date, end_date, project, dataset]:
@@ -520,7 +530,7 @@ class ValidateParams:
             Config input valid!
             \n""")
 
-            return query, bearer_token, access_key, start_date, end_date, project, dataset, interval
+            return query, bearer_token, access_key, start_date, end_date, project, dataset
 
     def validate_project_parameters(self, project, dataset):
         '''
@@ -1494,13 +1504,13 @@ def run_DATA():
             end_date = Query.end_date
             project = GBQ.project_id
             dataset = GBQ.dataset
-            interval = Query.interval_days
+
 
             # Init ValidateParams class
             valdate_params = ValidateParams()
 
             # Validate search parameters
-            query, bearer_token, access_key, start_date, end_date, project, dataset, interval = valdate_params.validate_search_parameters(query, bearer_token, start_date, end_date, project, dataset, interval)
+            query, bearer_token, access_key, start_date, end_date, project, dataset = valdate_params.validate_search_parameters(query, bearer_token, start_date, end_date, project, dataset)
 
             # Set schema type
             schema_funcs = SchemaFuncs()
@@ -1512,6 +1522,7 @@ def run_DATA():
             # Pre-search archive counts
             # subquery = query
             archive_search_counts, readable_time_estimate = get_pre_search_counts(client, query, start_date, end_date) #TODO *args??
+            interval = calculate_interval(start_date, end_date, archive_search_counts)
             # TODO if archive_search_counts == 0, do nut run search...
             # Print search results for user and ask to proceed
             print(f"""
@@ -1522,10 +1533,8 @@ def run_DATA():
             End date: {end_date}
             Destination database: {project}.{dataset}
             Schema type: {schematype}
-            Intervals (days): {interval}
             \n
             Your archive search will collect approximately {archive_search_counts} tweets (upper estimate).
-            This could take around {readable_time_estimate}.
             \n 
             \n
             Proceed? y/n""")
@@ -1571,13 +1580,13 @@ def run_DATA():
             end_date = Query.end_date
             project = GBQ.project_id
             dataset = GBQ.dataset
-            interval = Query.interval_days
+
 
             # Init ValidateParams class
             valdate_params = ValidateParams()
 
             # Validate search parameters
-            query, bearer_token, access_key, start_date, end_date, project, dataset, interval = valdate_params.validate_search_parameters(query, bearer_token, start_date, end_date, project, dataset, interval)
+            query, bearer_token, access_key, start_date, end_date, project, dataset = valdate_params.validate_search_parameters(query, bearer_token, start_date, end_date, project, dataset)
 
             # Init SchemaFuncs class
             schema_funcs = SchemaFuncs()
