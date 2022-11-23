@@ -43,7 +43,8 @@ This tool is intended for researchers at the Digital Media Research Centre who w
 ------------------------------------
 
 #### If you HAVEN'T already cloned this repository:
-###  
+<br>  
+
 #### `In cmd/terminal:`
 1. Clone this repository to a location with enough space to download tweets (refer to <b>What You Will Need</b> section, above): 
 `git clone https://github.com/qut-dmrc/DMRC_Academic_Twitter_Archive_Collector.git`.
@@ -54,7 +55,8 @@ This tool is intended for researchers at the Digital Media Research Centre who w
 ####
 4. Navigate to the collector: `cd DATA_collector`.
 ####
-###  
+<br>  
+
 #### `In your file explorer:`
 5. Place your Google BigQuery service key json file into the `DATA_collector/access_key` directory.
 ####
@@ -81,7 +83,8 @@ This tool is intended for researchers at the Digital Media Research Centre who w
 ####
 7. Rename `config_template.yml` to `config.yml`.
 ####
-###  
+<br>  
+
 #### `In cmd/terminal:` 
 8. Run `python ./run.py`.
 ###
