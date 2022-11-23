@@ -101,7 +101,6 @@ def set_error_log_path(error_filepath, folder):
     try:
         os.mkdir(error_filepath)
         logging.info('Path does not yet exist')
-        print('Path does not yet exist')
         logging.info(f"Created new error file directory named {folder} at location {error_filepath}")
     except OSError:
         logging.info(f"error log file directory already exists at location {error_filepath}")

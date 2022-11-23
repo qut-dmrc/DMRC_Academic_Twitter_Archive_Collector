@@ -58,9 +58,11 @@ This tool is intended for researchers at the Digital Media Research Centre who w
 <br>  
 
 #### `In your file explorer:`
-5. Place your Google BigQuery service key json file into the `DATA_collector/access_key` directory.
+6. Navigate to the DATA_collector directory (e.g. `C:/Users/You/Desktop/DMRC_Academic_Twitter_Archive_Collector/DATA_collector`).
 ####
-6. Open `DATA_collector/config/config_template.yml`.
+7. Place your Google BigQuery service key json file into the `DATA_collector/access_key` directory.
+####
+8. Open `DATA_collector/config/config_template.yml`.
       1. Set your query parameters:
          * <b>query:</b> string containing keyword(s) and/or phrase(s), e.g. 'winter OR cold' 
          * <b>query_list</b>: a list of queries, in testing - leave as is.
@@ -79,12 +81,12 @@ This tool is intended for researchers at the Digital Media Research Centre who w
       ####
       5. Choose your <b>schema type</b> (DATA, TCAT, TweetQuery). `DATA = True` by default. Refer to <b>Output</b>, below, for schema details.
 ####
-7. Rename `config_template.yml` to `config.yml`.
+9. Rename `config_template.yml` to `config.yml`.
 ####
 <br>  
 
 #### `In cmd/terminal:` 
-8. Run `python ./run.py`.
+10. Run `python ./run.py`.
 ###
 ####
 After you run `run.py`, you will be prompted to verify your query config details. If everything is correct, type `y`, otherwise, type `n` to exit and change your input.
