@@ -71,6 +71,8 @@ def calculate_interval(start_date, end_date, archive_search_counts):
     archive_search_counts = archive_search_counts
     interval = search_duration * ave_tweets_per_file / archive_search_counts
     num_intervals = round(archive_search_counts/150000)
+    if num_intervals <= 0:
+        num_intervals = 1
     return interval, num_intervals
 
 def collect_archive_data(bq, project, dataset, to_collect, expected_files, client, subquery, start_date, end_date, csv_filepath, archive_search_counts, tweet_count, query, query_count, schematype):
