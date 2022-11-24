@@ -8,7 +8,7 @@ def set_up_logging(logfile_filepath):
 
     logging.basicConfig(level=logging.INFO,
                         format="%(asctime)s [%(levelname)s] %(message)s",
-                        handlers=[logging.FileHandler(f'{logfile_filepath}/archive_collection_{logtime}.log'),
+                        handlers=[logging.FileHandler(f'{logfile_filepath}/archive_collection_{logtime}.log', encoding='utf-8'),
                             logging.StreamHandler(sys.stdout)])
     print('logging.basicConfig set')
     print(f'Log file located at: {logfile_filepath}/archive_collection_{logtime}.log')
