@@ -8,7 +8,7 @@ import yaml
 
 wd = os.getcwd()
 
-with open(f'{wd}/config/config.yml') as f:
+with open(f'{wd}/config/config.yml', encoding='utf-8') as f:
     config = yaml.load(f, Loader=yaml.FullLoader)
 
 
