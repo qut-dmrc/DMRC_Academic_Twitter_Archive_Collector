@@ -35,6 +35,7 @@ def get_pre_search_counts(*args):
 
     client = args[0]
     # Run counts_all search
+    print("Getting Tweet count estimate for your query. Please wait...")
     count_tweets = client.counts_all(query=args[1], start_time=args[2], end_time=args[3])
 
     # Append each page of data to list
