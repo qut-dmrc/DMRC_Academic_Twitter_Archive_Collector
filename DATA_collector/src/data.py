@@ -35,7 +35,6 @@ def get_pre_search_counts(*args):
 
     client = args[0]
     # Run counts_all search
-    print("Getting Tweet count estimate for your query. Please wait...")
     count_tweets = client.counts_all(query=args[1], start_time=args[2], end_time=args[3])
 
     # Append each page of data to list
@@ -1173,21 +1172,22 @@ class ProcessTables:
         column, expands and flattens data.
         '''
 
-        entities_mentions = TWEETS[['tweet_id', 'entities_mentions']] \
-            .dropna() \
-            .set_index(['tweet_id'])['entities_mentions'] \
-            .apply(pd.Series) \
-            .stack() \
-            .reset_index()
-        entities_mentions_mntns = pd.json_normalize(entities_mentions[0]) \
-            .add_prefix('tweet_mentions_author_')
-        entities_mentions = pd.concat([entities_mentions['tweet_id'], entities_mentions_mntns], axis=1) \
-            .replace('', np.nan)
-        # Replace nans in int fields with 0
-        for column in entities_mentions.columns:
-            if entities_mentions[column].dtype == float:
-                entities_mentions[column] = entities_mentions[column].fillna(value=0)
-                entities_mentions[column] = entities_mentions[column].astype('int32')
+        entities_mentions = TWEETS[['tweet_id', 'entities_mentions']].dropna()
+        if len(entities_mentions) > 0:
+            entities_mentions = entities_mentions \
+                .set_index(['tweet_id'])['entities_mentions'] \
+                .apply(pd.Series) \
+                .stack() \
+                .reset_index()
+            entities_mentions_mntns = pd.json_normalize(entities_mentions[0]) \
+                .add_prefix('tweet_mentions_author_')
+            entities_mentions = pd.concat([entities_mentions['tweet_id'], entities_mentions_mntns], axis=1) \
+                .replace('', np.nan)
+            # Replace nans in int fields with 0
+            for column in entities_mentions.columns:
+                if entities_mentions[column].dtype == float:
+                    entities_mentions[column] = entities_mentions[column].fillna(value=0)
+                    entities_mentions[column] = entities_mentions[column].astype('int32')
 
         return entities_mentions
 
@@ -1524,6 +1524,7 @@ def run_DATA():
 
             # Pre-search archive counts
             # subquery = query
+            print("Getting Tweet count estimate for your query. Please wait...")
             archive_search_counts, readable_time_estimate = get_pre_search_counts(client, query, start_date, end_date) #TODO *args??
             interval, num_intervals = calculate_interval(start_date, end_date, archive_search_counts)
             # TODO if archive_search_counts == 0, do nut run search...
@@ -1632,22 +1633,26 @@ def run_DATA():
 
                         # Get current datetime for calculating duration
                         search_start_time = datetime.now()
-                        # to_collect, expected files tell the program what to collect and what has already been collected
-                        to_collect, expected_files = set_up_expected_files(start_date, end_date, json_filepath, option_selection, subquery, interval)
 
-                        subquery = f'@{subquery} OR from:{subquery}'
+                        subquery_formatted = f'@{subquery} OR from:{subquery}'
 
                         # Pre-search archive counts
                         logging.info('-----------------------------------------------------------------------------------------')
-                        logging.info(f'Getting tweet counts for query: {subquery}')
-                        archive_search_counts, readable_time_estimate = get_pre_search_counts(client, subquery, start_date, end_date)
+                        logging.info(f'Getting tweet counts for query: {subquery_formatted}')
+                        archive_search_counts, readable_time_estimate = get_pre_search_counts(client, subquery_formatted, start_date, end_date)
+
+                        # to_collect, expected files tell the program what to collect and what has already been collected
+                        interval, num_intervals = calculate_interval(start_date, end_date, archive_search_counts)
+                        to_collect, expected_files = set_up_expected_files(start_date, end_date, json_filepath, option_selection, subquery, interval)
+
+
                         # TODO if archive_search_counts == 0, do nut run search...
                         logging.info(f'{archive_search_counts} tweets for query: {subquery}')
 
                         # Call function collect_archive_data()
-                        collect_archive_data(bq, project, dataset, to_collect, expected_files, client, subquery, start_date, end_date, csv_filepath, archive_search_counts, tweet_count, query, query_count, schematype)
+                        collect_archive_data(bq, project, dataset, to_collect, expected_files, client, subquery_formatted, start_date, end_date, csv_filepath, archive_search_counts, tweet_count, query, query_count, schematype)
                         # Notify user of completion
-                        notify_completion(bq, search_start_time, project, dataset, start_date, end_date, option_selection, archive_search_counts, subquery=subquery, interval=interval)
+                        notify_completion(bq, search_start_time, project, dataset, start_date, end_date, option_selection, archive_search_counts, subquery=subquery_formatted, interval=interval)
 
                 except Exception as error:
                     traceback_info = capture_error_string(error, error_filepath)
