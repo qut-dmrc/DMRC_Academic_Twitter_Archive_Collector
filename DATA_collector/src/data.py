@@ -836,9 +836,10 @@ class ProcessTweets:
         # Add boolean has_mention, has_media, has_hashtags, has_urls columns
         for col, bool_col in zip(col_to_bool_list, bool_has_list):
             if col in TWEETS.columns:
-                TWEETS[bool_col] = np.where(TWEETS[col] == '', False, True)
+                TWEETS[bool_col] = TWEETS[col].isnull().map({True: 'true', False: 'false'})
             else:
                 TWEETS[bool_col] = np.nan
+
 
         # Add boolean is_retweet, is_quote, is_reply columns
         if 'tweet_type' in TWEETS.columns:
