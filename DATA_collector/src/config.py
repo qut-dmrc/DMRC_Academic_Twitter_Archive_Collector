@@ -13,12 +13,17 @@ with open(f'{wd}/config/config.yml', encoding='utf-8') as f:
 
 
 class Query():
-    query = config['query']
-    # start_date = config['start_date']
+    if type(config['query']) == str:
+        query = config['query']
+        query_list = None
+    else:
+        query_list = config['query']
+        query = None
+
     start_date = dt.datetime.fromisoformat(config['start_date'])
-    # end_date = config['end_date']
     end_date = dt.datetime.fromisoformat(config['end_date'])
-    query_list = config['query_list']
+
+
 
 class Tokens():
     bearer_token = config['bearer_token']
@@ -27,8 +32,8 @@ class GBQ():
     project_id = config['project_id']
     dataset = config['dataset']
 
-class Emails():
-    user_email = config['user_email']
+# class Emails():
+#     user_email = config['user_email']
 
 class Schematype():
     DATA = config['DATA']

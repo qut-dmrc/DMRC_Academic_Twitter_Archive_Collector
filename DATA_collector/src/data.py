@@ -1,4 +1,6 @@
 import json
+import logging
+import requests
 
 import pandas as pd
 import numpy as np
@@ -17,7 +19,7 @@ from google.cloud.exceptions import NotFound
 from google.api_core import exceptions
 
 from .bq_schema import DATA_schema, TCAT_schema, TweetQuery_schema
-from .emails import *
+from .notifications import *
 from .fields import DATA_fields, TCAT_fields, TweetQuery_fields, TWEET_fields
 from .set_up_directories import *
 
@@ -69,13 +71,18 @@ def calculate_interval(start_date, end_date, archive_search_counts):
         search_duration = 1
     ave_tweets_per_file = 150000
     archive_search_counts = archive_search_counts
-    interval = search_duration * ave_tweets_per_file / archive_search_counts
-    num_intervals = round(archive_search_counts/150000)
-    if num_intervals <= 0:
-        num_intervals = 1
+    if archive_search_counts > 0:
+        interval = search_duration * ave_tweets_per_file / archive_search_counts
+        num_intervals = round(archive_search_counts/150000)
+        if num_intervals <= 0:
+            num_intervals = 1
+    else:
+        interval = None
+        num_intervals = None
+
     return interval, num_intervals
 
-def collect_archive_data(bq, project, dataset, to_collect, expected_files, client, subquery, start_date, end_date, csv_filepath, archive_search_counts, tweet_count, query, query_count, schematype):
+def collect_archive_data(bq, project, dataset, to_collect, not_to_collect, expected_files, client, subquery, start_date, end_date, csv_filepath, archive_search_counts, tweet_count, query, query_count, schematype):
     '''
     Uses a dictionary containing expected filename, start_date and end-date, generated in set_up_directories.py.
     For each file in the dictionary, a separate query is run, resulting in e.g. 1 file per day if interval = 1.
@@ -87,7 +94,7 @@ def collect_archive_data(bq, project, dataset, to_collect, expected_files, clien
     # Collect archive data one interval at a time using the Twarc search_all endpoint
     if len(to_collect) > 0:
         for a_file in to_collect:
-            logging.info('-----------------------------------------------------------------------------------------')
+            # logging.info('-----------------------------------------------------------------------------------------')
             logging.info(f'Collecting file {a_file}')
             start, end = expected_files[a_file]
             if type(query) == list:
@@ -112,7 +119,8 @@ def collect_archive_data(bq, project, dataset, to_collect, expected_files, clien
                 tweet_count = process_json_data(a_file, csv_filepath, bq, project, dataset, subquery, start_date, end_date, archive_search_counts, tweet_count, schematype)
 
     else:
-        logging.info('Files are already in the collected_json directory!')
+        print_already_collected(dataset, not_to_collect)
+        exit()
 
 def process_json_data(a_file, csv_filepath, bq, project, dataset, subquery, start_date, end_date, archive_search_counts, tweet_count, schematype):
     '''
@@ -414,15 +422,15 @@ def notify_completion(bq, search_start_time, project, dataset, start_date, end_d
             table = bq.get_table(table_id)
         lv0_tweet_count = query_total_record_count(table, bq)
         time.sleep(3)
-        send_completion_email(mailgun_domain, mailgun_key, start_date, end_date,
+        print_completion(start_date, end_date,
                               lv0_tweet_count, search_start_time, search_end_time, readable_duration,
                               number_rows=table.num_rows, project_name=table.project, dataset_name=table.dataset_id,
                               query=subquery)
-        logging.info('Completion email sent to user.')
+        # logging.info('Completion email sent to user.')
     else:
         time.sleep(10)
-        send_no_results_email(mailgun_domain, mailgun_key, start_date, end_date, query=subquery)
-        logging.info('No results! Email sent to user.')
+        print_no_results(start_date, end_date, query=subquery)
+        # logging.info('No results! Email sent to user.')
 
 
     if option_selection == '2':
@@ -440,7 +448,8 @@ class ValidateParams:
     def validate_search_parameters(self, query, bearer_token, start_date, end_date, project, dataset):
         '''
         Validates search parameters when Option 1 (Search Archive) selected.
-        Unable to check bearer token validity beyond ensuring it is in config.yml; checks for presence only
+        Unable to check bearer token validity beyond ensuring it is in config.yml; checks for presence only.
+        If parameter is invalid, then parameter=None and program will notify user and exit.
         '''
 
         utc = pytz.UTC
@@ -461,9 +470,10 @@ class ValidateParams:
                 print(
                     f'Query is too long ({len(query)} characters). Please shorten it to 1024 characters or fewer and retry.')
         else:
-            if len(query) < 1:
-                print('Please enter a search query.')
-                query = None
+            if type(query) == str:
+                if len(query) < 1:
+                    print('Please enter a search query.')
+                    query = None
 
         # Check bearer token entered; only checks len for presence of a bearer token
         if len(bearer_token) > 0:
@@ -537,6 +547,7 @@ class ValidateParams:
     def validate_project_parameters(self, project, dataset):
         '''
         Validates project parameters when Option 2 (Process from .json) is selected.
+        If parameter is invalid, then parameter=None and program will notify user and exit.
         '''
 
         query = 'JSON upload'
@@ -836,7 +847,7 @@ class ProcessTweets:
         # Add boolean has_mention, has_media, has_hashtags, has_urls columns
         for col, bool_col in zip(col_to_bool_list, bool_has_list):
             if col in TWEETS.columns:
-                TWEETS[bool_col] = TWEETS[col].isnull().map({True: 'true', False: 'false'})
+                TWEETS[bool_col] = TWEETS[col].isnull().map({True: 'false', False: 'true'})
             else:
                 TWEETS[bool_col] = np.nan
 
@@ -862,9 +873,9 @@ class ProcessTweets:
             else:
                 TWEETS[bool_col] = pd.NA
 
-        # Convert boolean columns
-        TWEETt = TWEETS
-        TWEETt[boolean_cols] = TWEETS[boolean_cols].astype('boolean')
+        # # Convert boolean columns
+        # TWEETt = TWEETS
+        # TWEETS[boolean_cols] = TWEETS[boolean_cols].astype('boolean')
 
         return TWEETS
 
@@ -874,7 +885,7 @@ class ProcessTweets:
         '''
 
         # Convert any blanks to nan for workability
-        TWEETS = TWEETS.replace('', np.nan)
+        # TWEETSy = TWEETS.replace('', np.nan, regex=True)
 
         # If column name contains 'public_metrics' (counts), fillna(value=0)
         for col in TWEETS.columns:
@@ -1526,58 +1537,66 @@ def run_DATA():
             # Pre-search archive counts
             # subquery = query
             print("Getting Tweet count estimate for your query. Please wait...")
-            archive_search_counts, readable_time_estimate = get_pre_search_counts(client, query, start_date, end_date) #TODO *args??
-            interval, num_intervals = calculate_interval(start_date, end_date, archive_search_counts)
-            # TODO if archive_search_counts == 0, do nut run search...
-            # Print search results for user and ask to proceed
-            print(f"""
-            Please check the below details carefully, and ensure you have enough room in your academic project bearer token quota!
-            \n
-            Your query: {query}
-            Start date: {start_date}
-            End date: {end_date}
-            Destination database: {project}.{dataset}
-            Schema type: {schematype}
-            \n
-            Your archive search will collect approximately {archive_search_counts} tweets (upper estimate).
-            The collection will be distributed across approximately {num_intervals} json files.
-            \n
-            ** Remember to monitor the space on your hard drive! **
-            \n 
-            \n
-            Proceed? y/n""")
+            archive_search_counts, readable_time_estimate = get_pre_search_counts(client, query, start_date, end_date)
 
-            user_proceed = input('>>>').lower()
+            if archive_search_counts > 0:
 
-            if user_proceed == 'y':
-                sleep(1)
-                set_up_directories(logfile_filepath, dir_name, folder, json_filepath, csv_filepath, error_filepath)
+                interval, num_intervals = calculate_interval(start_date, end_date, archive_search_counts)
+                # Print search results for user and ask to proceed
+                print(f"""
+        \n
+        Please check the below details carefully, and ensure you have enough room in your academic project bearer token quota!
+        \n
+        Your query: {query}
+        Start date: {start_date}
+        End date: {end_date}
+        Destination database: {project}.{dataset}
+        Schema type: {schematype}
+        \n
+        Your archive search will collect approximately {archive_search_counts} tweets (upper estimate).
+        The collection will be distributed across approximately {num_intervals} json files.
+        \n
+        ** Remember to monitor the space on your hard drive! **
+        \n 
+        \n
+        Proceed? y/n""")
 
-                # Access BigQuery
-                os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = access_key[0]
-                bq = Client(project=project)
 
-                # Set table variable to none, if it gets a value it can be queried
-                table = 0
-                tweet_count = 0
-                query_count = 1
+                user_proceed = input('>>>').lower()
 
-                try:
-                    # Get current datetime for calculating duration
-                    search_start_time = datetime.now()
-                    # to_collect, expected files tell the program what to collect and what has already been collected
-                    to_collect, expected_files = set_up_expected_files(start_date, end_date, json_filepath, option_selection, dataset, interval)
-                    # Call function collect_archive_data()
-                    collect_archive_data(bq, project, dataset, to_collect, expected_files, client, query, start_date, end_date, csv_filepath, archive_search_counts, tweet_count, query, query_count, schematype)
-                    # Notify user of completion
-                    notify_completion(bq, search_start_time, project, dataset, start_date, end_date, option_selection, archive_search_counts, subquery=query, interval=interval)
+                if user_proceed == 'y':
+                    sleep(1)
+                    set_up_directories(logfile_filepath, dir_name, folder, json_filepath, csv_filepath, error_filepath)
 
-                except Exception as error:
-                    traceback_info = capture_error_string(error, error_filepath)
-                    send_error_email(mailgun_domain, mailgun_key, dataset, traceback_info)
-                    logging.info('Error email sent to admin.')
+                    # Access BigQuery
+                    os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = access_key[0]
+                    bq = Client(project=project)
+
+                    # Set table variable to none, if it gets a value it can be queried
+                    table = 0
+                    tweet_count = 0
+                    query_count = 1
+
+                    try:
+                        # Get current datetime for calculating duration
+                        search_start_time = datetime.now()
+                        # to_collect, expected files tell the program what to collect and what has already been collected
+                        to_collect, not_to_collect, expected_files = set_up_expected_files(start_date, end_date, json_filepath, option_selection, dataset, interval)
+                        # Call function collect_archive_data()
+                        collect_archive_data(bq, project, dataset, to_collect, not_to_collect, expected_files, client, query, start_date, end_date, csv_filepath, archive_search_counts, tweet_count, query, query_count, schematype)
+                        # Notify user of completion
+                        notify_completion(bq, search_start_time, project, dataset, start_date, end_date, option_selection, archive_search_counts, subquery=query, interval=interval)
+
+                    except Exception as error:
+                        traceback_info = capture_error_string(error, error_filepath)
+                        logging.info(traceback_info)
+                        print_error(dataset, traceback_info)
+                        # logging.info('Error email sent to admin.')
+                else:
+                    exit()
+
             else:
-                exit()
+                print_no_results(start_date, end_date, query)
 
         elif option_selection == "lv":
 
@@ -1641,24 +1660,27 @@ def run_DATA():
                         logging.info('-----------------------------------------------------------------------------------------')
                         logging.info(f'Getting tweet counts for query: {subquery_formatted}')
                         archive_search_counts, readable_time_estimate = get_pre_search_counts(client, subquery_formatted, start_date, end_date)
+                        if archive_search_counts > 0:
+                            # to_collect, expected files tell the program what to collect and what has already been collected
+                            interval, num_intervals = calculate_interval(start_date, end_date, archive_search_counts)
+                            to_collect, not_to_collect, expected_files = set_up_expected_files(start_date, end_date, json_filepath, option_selection, subquery, interval)
 
-                        # to_collect, expected files tell the program what to collect and what has already been collected
-                        interval, num_intervals = calculate_interval(start_date, end_date, archive_search_counts)
-                        to_collect, expected_files = set_up_expected_files(start_date, end_date, json_filepath, option_selection, subquery, interval)
 
+                            # TODO if archive_search_counts == 0, do nut run search...
+                            logging.info(f'Archive counts: {archive_search_counts}')
 
-                        # TODO if archive_search_counts == 0, do nut run search...
-                        logging.info(f'{archive_search_counts} tweets for query: {subquery}')
-
-                        # Call function collect_archive_data()
-                        collect_archive_data(bq, project, dataset, to_collect, expected_files, client, subquery_formatted, start_date, end_date, csv_filepath, archive_search_counts, tweet_count, query, query_count, schematype)
-                        # Notify user of completion
-                        notify_completion(bq, search_start_time, project, dataset, start_date, end_date, option_selection, archive_search_counts, subquery=subquery_formatted, interval=interval)
+                            # Call function collect_archive_data()
+                            collect_archive_data(bq, project, dataset, to_collect, not_to_collect, expected_files, client, subquery_formatted, start_date, end_date, csv_filepath, archive_search_counts, tweet_count, query, query_count, schematype)
+                            # Notify user of completion
+                            notify_completion(bq, search_start_time, project, dataset, start_date, end_date, option_selection, archive_search_counts, subquery=subquery_formatted, interval=interval)
+                        else:
+                            logging.info(f'Archive_counts: {archive_search_counts}')
 
                 except Exception as error:
                     traceback_info = capture_error_string(error, error_filepath)
-                    send_error_email(mailgun_domain, mailgun_key, dataset, traceback_info)
-                    logging.info('Error email sent to admin.')
+                    logging.INFO(traceback_info)
+                    print_error(dataset, traceback_info)
+                    # logging.info('Error email sent to admin.')
             else:
                 exit()
 
@@ -1731,5 +1753,10 @@ def run_DATA():
 
     except Exception as error:
         traceback_info = capture_error_string(error, error_filepath)
-        send_error_email(mailgun_domain, mailgun_key, dataset, traceback_info)
-        logging.info('Error email sent to admin.')
+        logging.info(traceback_info)
+        print_error(dataset, traceback_info)
+    #     logging.info('Error email sent to admin.')
+
+    # except requests.exceptions.RequestException as e:
+    #     print(e)
+    #     print('\nYour bearer token seems to be invalid... Ensure you are using the correct bearer token (for an approved academic project)')

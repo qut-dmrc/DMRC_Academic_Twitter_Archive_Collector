@@ -2,8 +2,8 @@ import requests
 from .config import *
 
 
-mailgun_domain = 'sandbox878e4b17425b43b18b208fb54533aafa.mailgun.org'
-mailgun_key = 'key-e281f7193b94d71f446b26b0f7875122'
+mailgun_domain = None
+mailgun_key = None
 
 
 def send_completion_email(mailgun_domain, mailgun_key, start_date, end_date, lv0_tweet_count, search_start_time, search_end_time, readable_duration, number_rows, project_name, dataset_name, query):

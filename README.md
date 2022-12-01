@@ -1,25 +1,32 @@
 # DMRC Academic Twitter Archive Collector
 
+<br>
+<br>
+<br>
 
 ### Overview
 
 ------------------------------------
-The DMRC Academic Twitter Archive (DATA) Collector uses the Twarc Python library to pull tweets from Twitter's archive, via the API 2.0. It then processes the resulting json files and pushes the data to a designated Google BigQuery database.
-Tweets can be collected as far back as 22 Mar, 2006. 
+The <b>DMRC Academic Twitter Archive (DATA)</b> Collector uses the Twarc Python library to collect tweets from Twitter's archive, via the API 2.0 for academic research. It then processes the collected .json files and pushes the data to a designated Google BigQuery database.
+Tweets can be collected from as far back as 22 Mar, 2006. 
 
-DATA can be used to append data to an existing TCAT or TweetQuery dataset.
-You can now also upload a previously collected Twitter API 2.0 json file (e.g. from Twitter's Tweet Downloader) to be processed and pushed to Google BigQuery. *** This is still being tested.
+This tool can also be used to append archive data to an existing <b>TCAT</b> or <b>TweetQuery</b> dataset, and can serve as a backfill tool to supplement previously-collected datasets.
+
+
+You can now also upload a previously collected Twitter API 2.0 json file (e.g. from Twitter's Tweet Downloader) to be processed and pushed to Google BigQuery * . 
 
 <br>
-
+<br>
+<br>
 
 ### Who is this for?
 
 ------------------------------------
-This tool is intended for researchers at the Digital Media Research Centre who wish to collect data from the Twitter archive (more than one week in the past), and have these data pushed automatically to Google BigQuery.
+This tool is intended for researchers who wish to collect data from the Twitter archive (more than one week in the past), and have these data processed and pushed automatically to Google BigQuery. It was designed with DMRC researchers in mind, but may be useful to researchers from other institutions.
 
 <br>
-
+<br>
+<br>
 
 ### What You Will Need
 
@@ -27,7 +34,7 @@ This tool is intended for researchers at the Digital Media Research Centre who w
 1. Python 3.8 or newer
 2. A valid [Twitter Academic API bearer token](https://developer.twitter.com/en/products/twitter-api/academic-research)
 3. A valid [Google service account and json key](https://cloud.google.com/iam/docs/creating-managing-service-account-keys)
-4. `xGB` free on your local drive for json file storage (the following are estimates and may differ depending on the data collected; you can store these files elsewhere after collection):
+4. `xGB` free on your local drive for json file storage (the following are estimates and may differ depending on the data collected; you can store these files elsewhere after collection; see <b>Managing Disk Space</b>, below):
       
 | n Tweets   | Size (GB) |
 |------------|-----------|
@@ -36,6 +43,9 @@ This tool is intended for researchers at the Digital Media Research Centre who w
 | 1,000,000  | 4 - 5     |
 | 5,000,000  | 16 - 18   |
 | 10,000,000 | 30 - 35   |
+
+<br>
+<br>
 <br>
 
 ### To Use
@@ -64,8 +74,7 @@ This tool is intended for researchers at the Digital Media Research Centre who w
 ####
 8. Open `DATA_collector/config/config_template.yml`.
       1. Set your query parameters:
-         * <b>query:</b> string containing keyword(s) and/or phrase(s), e.g. 'winter OR cold' 
-         * <b>query_list</b>: a list of queries, in testing - leave as is.
+         * <b>query:</b> string containing keyword(s) and/or phrase(s), e.g. 'winter OR cold'
          * <b>start_date:</b> the earliest date to search, in UTC time.
          * <b>end_date:</b> the latest date to search, in UTC time.
       ####
@@ -73,13 +82,10 @@ This tool is intended for researchers at the Digital Media Research Centre who w
          * <b>bearer_token</b>: your Twitter Academic API bearer token.
       ####
       3. Set your Google BigQuery project and dataset:
-         * <b>project_id:</b> name of the relevant Google BigQuery billing project, e.g. 'dmrc-data'.
+         * <b>project_id:</b> name of the relevant Google BigQuery billing project. Must match the provided service account key.
          * <b>dataset:</b> the name of your intended dataset, e.g. 'winter2022'. If it already exists, the data will be appended to the existing dataset; if it does not exist, a new dataset will be created.
       ####
-      4. Enter your email address:
-         * <b>user_email:</b> your email address, to notify you by email of the search's completion.
-      ####
-      5. Choose your <b>schema type</b> (DATA, TCAT, TweetQuery). `DATA = True` by default. Refer to <b>Output</b>, below, for schema details.
+      4. Choose your <b>schema type</b> (DATA, TCAT, TweetQuery). `DATA = True` by default. Refer to <b>Output</b>, below, for schema details.
 ####
 9. Rename `config_template.yml` to `config.yml`.
 ####
@@ -96,9 +102,11 @@ After you run `run.py`, you will be prompted to verify your query config details
 #### !!! If you HAVE already cloned this repository:
 There is a very good chance that (beneficial!) changes have been made to this repository. Remember to update before you use DATA using 
 `git pull origin main`!
+
 <br>
 <br>
 <br>
+
 ### Output
 
 ------------------------------------
@@ -111,10 +119,11 @@ Depending on the schema type selected, the tool will produce data as shown below
 | TweetQuery  | Backfill/append archive data to an existing TweetQuery table                                           | 1        | tweets_flat                                                                                                                                                                                                              |
 
 
-A detailed overview of the tables and fields can be located here (TBC - provide link)
+A detailed overview of the tables and fields is located at `DMRC_Academic_Twitter_Archive_Collector/supp_docs/schema_descriptions.txt`
 <br>
 
 On successful completion of an archive search, you will receive an email from the DMRC Academic Twitter App, containing details of your search, including your search query, location of your data, the number of tweets collected and the time taken to perform the search.
+
 <br>
 <br>
 <br>
@@ -148,12 +157,43 @@ Queries are case insensitive.
 #### Order of operations
 AND operators are evaluated before OR operators. For example, 'frosty OR snowman carrot' will be evaluated as 'frosty OR (snowman AND carrot)'.
 ####
+<br>
+<br>
+<br>
 
 
+### Uploading a .json file to be processed
 
+------------------------------------
+If you have a .json file from Twitter's Tweet Downloader, you can have this processed and pushed to a Google BigQuery dataset by following these steps:
 
-
-
+`TBC` '* Load from 'Tweet Collector' json currently in testing phase.
 
 <br>
 <br>
+<br>
+
+### Managing disk space
+
+------------------------------------
+####
+This tool is designed to run on a user's local computer. In order to keep collected file sizes manageable, collections are split into files containing an average 150,000 tweets. This means that for collections greater than this, files will average approximately 1GB in size.
+If you need to clear some space, you can remove collected .json files from the `DATA_Collector/your_directory/collected_json folder` while the collector is running, and move them to a backup location.
+
+If you do remove files from this location, and need to stop/restart the collector, <b>you will need to update the start_date parameter in `config.yml` to avoid re-collecting those files</b>. 
+Be sure not to remove the current collection file (the newest file in the directory).
+####
+<br>
+<br>
+<br>
+
+### Logging
+
+------------------------------------
+####
+A timestamped log file will be generated at location `DATA_collector/logging` each time you run a collection.
+
+<br>
+<br>
+<br>
+

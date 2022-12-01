@@ -1,7 +1,6 @@
 # Fill and rename this file to 'config.yml'
 
 query: 'string'                                         # Search string (up to 1024 characters)
-query_list: [' ']
 
 start_date: '2022-04-23 00:00:00+00:00'                 # "yyyy-mm-dd hh:mm:ss+hh:mm"
 end_date: '2022-07-19 00:00:00+00:00'                   # "yyyy-mm-dd hh:mm:ss+hh:mm"
@@ -10,8 +9,6 @@ bearer_token: ''                                        # your Twitter Academic 
 
 project_id: 'project'                                   # Billing project
 dataset: 'dataset'                                      # Desired dataset name
-
-user_email: 'your_email@email.com'                      # Your email address (for notifications - tends not to work with institution emails (i.e. QUT emails) due to spam filtering)
 
 DATA: True
 TCAT: False

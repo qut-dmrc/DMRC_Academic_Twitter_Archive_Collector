@@ -34,7 +34,7 @@ def set_up_directories(logfile_filepath, dir_name, folder, json_filepath, csv_fi
     Call functions to set directories and file paths
     '''
 
-    set_up_logging(logfile_filepath)
+    set_up_logging(logfile_filepath, folder)
     sleep(0.5)
     set_directory(dir_name, folder)
     sleep(0.5)
@@ -127,7 +127,7 @@ def set_up_expected_files(start_date, end_date, json_filepath, option_selection,
     Divides search into multiple queries, based on the interval chosen in config.yml.
     This saves on memory by 'chunking' long and voluminous searches into separate collections based on number of days
     (n_intervals). Interval parameter can be any number. 0.25 = 6 hours. 0.5 = 12 hours. 1 =  24 hours. 90 = ~3 months,
-    and so on.
+    and so on. Interval is generated automatically in data.calculate_interval().
     '''
 
     window_length = dt.timedelta(days=interval)
@@ -144,9 +144,9 @@ def set_up_expected_files(start_date, end_date, json_filepath, option_selection,
         )
         current_date += window_length
 
-    # TODO make this a bit nicer - this is a bit makeshift.
+    # TODO make this nicer - this is very makeshift.
     #  The idea is to change the last end date in the dict to the end date in the config.
-    #  It is based on the window length so usually the end date is wrong.
+    #  It is based on the window length so usually the end date is extended to the next interval.
     kvps = list(expected_files.items())
     kvps_list = list(kvps[-1])
     kvps_list_list = list(kvps_list[-1])
@@ -160,8 +160,8 @@ def set_up_expected_files(start_date, end_date, json_filepath, option_selection,
     collected_files = set([filename.replace('\\', '/') for filename in collected_files])
     to_collect = set(expected_files) - collected_files
     to_collect = sorted(to_collect)
-
-    return to_collect, expected_files
+    not_to_collect = result = [i for i in expected_files if i in collected_files]
+    return to_collect, not_to_collect, expected_files
 
 def get_json_input_files():
     '''
