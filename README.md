@@ -122,8 +122,6 @@ Depending on the schema type selected, the tool will produce data as shown below
 A detailed overview of the tables and fields is located at `DMRC_Academic_Twitter_Archive_Collector/supp_docs/schema_descriptions.txt`
 <br>
 
-On successful completion of an archive search, you will receive an email from the DMRC Academic Twitter App, containing details of your search, including your search query, location of your data, the number of tweets collected and the time taken to perform the search.
-
 <br>
 <br>
 <br>
