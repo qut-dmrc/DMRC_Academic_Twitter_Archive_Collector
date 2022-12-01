@@ -1,0 +1,215 @@
+tweet_schema
+------------
+        tweet_id                                                STRING         Unique ID for this Tweet (from Twitter)
+        tweet_text                                              STRING         Text of the Tweet
+        tweet_type                                              STRING         Type of Tweet
+        created_at                                              TIMESTAMP      When the Tweet was created (UTC)
+        public_metrics_like_count                               INTEGER        Count of likes of Tweet
+        public_metrics_quote_count                              INTEGER        Count of quotes of Tweet
+        public_metrics_reply_count                              INTEGER        Count of replies to Tweet
+        public_metrics_retweet_count                            INTEGER        Count of retweets of Tweet
+        is_retweet                                              BOOL           Whether this Tweet is a retweet of another Tweet
+        is_reply                                                BOOL           Whether this Tweet is a reply to another Tweet
+        is_quote                                                BOOL           Whether this Tweet quotes another Tweet
+        has_mention                                             BOOL           Whether this Tweet mentions a user or entity
+        has_media                                               BOOL           Whether this Tweet contains a media item (image    video or animated GIF)
+        has_hashtags                                            BOOL           Whether this Tweet contains hashtags
+        has_urls                                                BOOL           Whether this Tweet contains urls
+        has_annotations                                         BOOL           Whether this Tweet has accompanying annotations
+        has_context_annotations                                 BOOL           Whether this has accompanying context annotations
+        lang                                                    STRING         Language of the Tweet    if detected by Twitter
+        possibly_sensitive                                      BOOL           Indicates whether the URL contained in the Tweet may contain content or media identified as sensitive content
+        conversation_id                                         STRING         The Tweet ID of the original Tweet of the conversation
+        reply_settings                                          STRING         Shows who can reply to a given Tweet
+        source                                                  STRING         The name of the app the user Tweeted from.
+        is_referenced                                           BOOL           Whether this Tweet has been referenced by another in this dataset
+        reference_level                                         STRING         Reference level. 0=Collected Tweets (matching search parameters); 1=Referenced Tweets; 2=Tweets referenced by Referenced Tweets; 3=Tweets referenced by Tweets referenced by Referenced Tweets
+        referencing_tweet_id                                    STRING         The unique ID of the Tweet that REFERENCES this Tweet
+        referenced_tweet_id                                     STRING         The unique ID of the Tweet REFERENCED BY this Tweet
+        author_id                                               STRING         The unique identifier of the user who posted this Tweet
+        author_username                                         STRING         The username of the user who posted this Tweet
+        author_name                                             STRING         The name of the user who posted this Tweet
+        author_description                                      STRING         The text of the Tweet author's profile description
+        author_url                                              STRING         The URL on the profile of the the Tweet author
+        author_public_metrics_followers_count                   INTEGER        The number of entites following the Tweet author
+        author_public_metrics_following_count                   INTEGER        The number of entities the Tweet author follows
+        author_public_metrics_tweet_count                       INTEGER        The total number of Tweets posted by the Tweet author
+        author_public_metrics_listed_count                      INTEGER        The number of public lists that the Tweet author is a member of
+        author_created_at                                       TIMESTAMP      When the Tweet author's account was created (UTC)
+        author_location                                         STRING         Location of Tweet author
+        author_pinned_tweet_id                                  STRING         ID of Tweet author's pinned Tweet
+        author_profile_image_url                                STRING         URL of the Tweet author's profile image
+        author_protected                                        BOOL           Whether or not the Tweet author's Tweets are visible only to followers
+        author_verified                                         BOOL           Whether or not the Tweet author's account has been verified by Twitter
+        referenced_tweet_text                                   STRING         The text of the Tweet that has been referenced
+        referenced_tweet_author_id                              STRING         The unique ID of the user that the Tweet has referenced
+        referenced_tweet_author_username                        STRING         The username of the user that the Tweet has referenced
+        referenced_tweet_author_name                            STRING         The name of the user that the Tweet has referenced
+        referenced_tweet_author_description                     STRING         Text of the profile description of the user that the Tweet has referenced
+        referenced_tweet_author_url                             STRING         The URL on the profile of the user that the Tweet has referenced
+        referenced_tweet_author_public_metrics_followers_count  INTEGER        The number of entities following the user that the Tweet has referenced
+        referenced_tweet_author_public_metrics_following_count  INTEGER        The number of entites the user that the Tweet has referenced is following
+        referenced_tweet_author_public_metrics_tweet_count      INTEGER        The total number of Tweets posted by the user that the Tweet has referenced
+        referenced_tweet_author_public_metrics_listed_count     INTEGER        The number of public lists the user that the Tweet has referenced is a member of
+        referenced_tweet_author_created_at                      TIMESTAMP      When the account of the user that the Tweet has referenced was created (UTC)
+        referenced_tweet_author_location                        STRING         Location of the user that the Tweet has referenced
+        referenced_tweet_author_pinned_tweet_id                 STRING         ID of pinned Tweet of the user that the Tweet has referenced
+        referenced_tweet_author_profile_image_url               STRING         Profile image URL of the user that the Tweet has referenced
+        referenced_tweet_author_protected                       BOOL           Whether or not the Tweets of the user that the Tweet has referenced are visible only to followers
+        referenced_tweet_author_verified                        BOOL           Whether or not the account of the user that Tweet has referenced has been verified by Twitter
+        geo_id                                                  STRING         *** Duplicate data - geo_place_id more consistent ***
+        geo_place_id                                            STRING         The unique identifier of the place    if this is a point of interest tagged in the Tweet
+        geo_name                                                STRING         Short human-readable representation of the place’s name    e.g. Brisbane
+        geo_country                                             STRING         Name of the country containing this place    e.g. Australia
+        geo_country_code                                        STRING         Shortened country code representing the country containing this place
+        geo_full_name                                           STRING         Full human-readable representation of the place’s name    e.g. Brisbane    Queensland
+        geo_geo_type                                            STRING         *** The type of ?? represented by this place    e.g. feature ***
+        geo_place_type                                          STRING         The type of location represented by this place    e.g. city
+        geo_geo_bbox                                            STRING         The type of location represented by this place
+        poll_id                                                 STRING         Unique identifier of the expanded poll
+        poll_voting_status                                      STRING         Indicates if this poll is still active and can receive votes    or if the voting is now closed.
+        poll_duration_minutes                                   STRING         Specifies the total duration of this poll
+        poll_end_datetime                                       TIMESTAMP      Specifies the end date and time for this pol
+        twarc_retrieved_at                                      TIMESTAMP      Date and time at which Twarc retrieved this Tweet
+        twarc_url                                               STRING
+        twarc_version                                           STRING         The version of Twarc that was used to retrieve this Tweet
+    
+
+
+media_schema
+------------
+        tweet_id                                              STRING         Unique ID for this tweet (from Twitter)
+        media_height                                          STRING         Height of the attached media in pixels
+        media_key                                             STRING         Unique identifier of the expanded media content.
+        media_width                                           STRING         Width of the attached media in pixels
+        media_type                                            STRING         Type of media content (image    video    animated GIF)
+        media_url                                             STRING         URL for attached media
+        media_duration_ms                                     STRING         Duration of attached media in milliseconds    if video or animated GIF
+        media_preview_image_url                               STRING         URL to the static placeholder preview of this content    if video or animated GIF
+        media_public_metrics_view_count                       INTEGER        Count of views of media
+        media_alt_text                                        STRING         
+    
+
+
+annotations_schema
+------------------
+        tweet_id                                              STRING         Unique ID for this tweet (from Twitter)
+        tweet_annotation_start                                STRING         The start position (zero-based) of the text used to annotate the Tweet. All start indices are inclusive
+        tweet_annotation_end                                  STRING         The end position (zero based) of the text used to annotate the Tweet. While all other end indices are exclusive    this one is inclusive
+        tweet_annotation_probability                          STRING         The confidence score for the annotation as it correlates to the Tweet text
+        tweet_annotation_type                                 STRING         The description of the type of entity identified when the Tweet text was interpreted
+        tweet_annotation_normalized_text                      STRING         The text used to determine the annotation type
+
+
+
+context_annotations_schema
+--------------------------
+        tweet_id                                              STRING         Unique ID for this Tweet (from Twitter)
+        tweet_context_annotation_domain_id                    STRING         Contains the numeric value of the domain
+        tweet_context_annotation_domain_name                  STRING         Domain name based on the Tweet text
+        tweet_context_annotation_domain_description           STRING         Long form description of domain classification
+        tweet_context_annotation_entity_id                    STRING         Unique value which correlates to an explicitly mentioned Person    Place    Product or Organization
+        tweet_context_annotation_entity_name                  STRING         Name or reference of entity referenced in the Tweet
+        tweet_context_annotation_entity_description           STRING         Additional information regarding referenced entity
+    
+
+
+hashtags_schema
+---------------
+        tweet_id                                              STRING         Unique ID for this Tweet (from Twitter)
+        hashtags_start                                        STRING         The start position (zero-based) of the recognized Hashtag within the Tweet. All start indices are inclusive
+        hashtags_end                                          STRING         The end position (zero-based) of the recognized Hashtag within the Tweet. This end index is exclusive
+        hashtags_tag                                          STRING         The text of the hashtag within in the Tweet
+
+
+
+urls_schema
+-----------
+        tweet_id                                              STRING         Unique ID for this tweet (from Twitter)
+        urls_start                                            STRING         The start position (zero-based) of the recognized URL within the Tweet. All start indices are inclusive
+        urls_end                                              STRING         The end position (zero-based) of the recognized URL within the Tweet. This end index is exclusive
+        urls_url                                              STRING         The URL in the format tweeted by the user
+        urls_expanded_url                                     STRING         The fully resolved URL
+        urls_display_url                                      STRING         The URL as displayed in the Twitter client
+        urls_status                                           STRING         
+        urls_unwound_url                                      STRING         The full destination URL
+        urls_images                                           STRING         
+        urls_title                                            STRING         
+        urls_description                                      STRING         
+    
+
+
+mentions_schema
+---------------
+        tweet_id                                              STRING         Unique ID for this tweet (from Twitter)
+        tweet_mentions_author_start                           STRING         The start position (zero-based) of the recognized user mention within the Tweet. All start indices are inclusive
+        tweet_mentions_author_end                             STRING         The end position (zero-based) of the recognized user mention within the Tweet. This end index is exclusive
+        tweet_mentions_author_username                        STRING         The part of text recognized as a user mention
+        tweet_mentions_author_id                              STRING         
+        tweet_mentions_author_protected                       BOOL           
+        tweet_mentions_author_location                        STRING         
+        tweet_mentions_author_verified                        BOOL           
+        tweet_mentions_author_profile_image_url               STRING         
+        tweet_mentions_author_description                     STRING         
+        tweet_mentions_author_created_at                      TIMESTAMP      
+        tweet_mentions_author_pinned_tweet_id                 STRING         
+        tweet_mentions_author_url                             STRING         
+        tweet_mentions_author_name                            STRING         
+        tweet_mentions_author_public_metrics_followers_count  INTEGER        
+        tweet_mentions_author_public_metrics_following_count  INTEGER        
+        tweet_mentions_author_public_metrics_tweet_count      INTEGER        
+        tweet_mentions_author_public_metrics_listed_count     INTEGER        
+
+
+
+author_description_schema
+-------------------------
+        author_id                                             STRING         Unique ID for this author (from Twitter)
+        author_description_hashtags_start                     STRING         
+        author_description_hashtags_end                       STRING         
+        author_description_hashtags_tag                       STRING         
+        author_description_mentions_start                     STRING         
+        author_description_mentions_end                       STRING         
+        author_description_mentions_username                  STRING         
+        author_description_urls_start                         STRING         
+        author_description_urls_end                           STRING         
+        author_description_urls_url                           STRING         
+        author_description_urls_expanded_url                  STRING         
+        author_description_urls_display_url                   STRING         
+    
+
+
+author_urls_shema
+-----------------
+        author_id                                             STRING         Unique ID for this author (from Twitter)
+        author_start                                          STRING         
+        author_end                                            STRING         
+        author_url                                            STRING         
+        author_expanded_url                                   STRING         
+        author_display_url                                    STRING         
+    
+
+
+poll_schema
+-----------
+        poll_id                                               STRING         Unique ID for this poll (from Twitter)
+        poll_position                                         STRING         Poll option
+        poll_label                                            STRING         Poll label
+        poll_votes                                            INTEGER        Count of votes for poll option
+    
+
+
+interactions_schema
+-------------------
+        tweet_id                                              STRING         Unique ID for tweet
+        tweet_type                                            STRING         Unique ID for this poll (from Twitter)
+        to_user_id                                            STRING         
+        to_user_username                                      STRING         
+    
+
+
+edit_history_schema
+-------------------
+        tweet_id                                              STRING         Unique ID for tweet
+        edit_history_tweet_ids                                STRING         Unique ID for edited Tweet
+    
