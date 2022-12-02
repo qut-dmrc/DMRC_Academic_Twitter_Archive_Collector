@@ -160,6 +160,21 @@ AND operators are evaluated before OR operators. For example, 'frosty OR snowman
 <br>
 
 
+### Tweet reference levels
+
+------------------------------
+The DATA tool collects Twitter data using the <b>Twarc2</b> library. During processing, it generates several extra fields to enrich these data. One such field is called <b>'reference_level'</b>.
+
+Tweets that match the search parameters are situated at reference_level 0. 
+If any tweets at reference level 0 happen to reference another tweet in any way (i.e. retweet, quote, reply), then that referenced tweet will be situated at reference_level 1, and so on. 
+Unless you are interested in these referenced tweets, it can be useful to filter the data to include Tweets where reference_level=0 at the time of analysis. This focuses your analysis on tweets that directly match your search parameters, 
+and reduces the size of your working dataset.
+
+<br>
+<br>
+<br>
+
+
 ### Uploading a .json file to be processed
 
 ------------------------------------
@@ -190,7 +205,7 @@ Be sure not to remove the current collection file (the newest file in the direct
 ------------------------------------
 ####
 A timestamped log file will be generated at location `DATA_collector/logging` each time you run a collection.
-
+This log file contains all outputs and can aid in investigating any errors that may arise.
 <br>
 <br>
 <br>
