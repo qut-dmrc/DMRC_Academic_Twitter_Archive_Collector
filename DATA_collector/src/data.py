@@ -69,11 +69,11 @@ def calculate_interval(start_date, end_date, archive_search_counts):
     search_duration = (end_date - start_date).days
     if search_duration == 0:
         search_duration = 1
-    ave_tweets_per_file = 150000
+    ave_tweets_per_file = 100000
     archive_search_counts = archive_search_counts
     if archive_search_counts > 0:
         interval = search_duration * ave_tweets_per_file / archive_search_counts
-        num_intervals = round(archive_search_counts/150000)
+        num_intervals = round(archive_search_counts/ave_tweets_per_file)
         if num_intervals <= 0:
             num_intervals = 1
     else:
@@ -129,7 +129,7 @@ def process_json_data(a_file, csv_filepath, bq, project, dataset, subquery, star
     All tables are connected to the main Tweet table by either 'tweet_id', 'author_id' or 'poll_id'.
     '''
 
-    # Process json 40,000 lines at a time
+    # Process json 50,000 lines at a time
     for chunk in pd.read_json(a_file, lines=True, dtype=False, chunksize=50000):
         tweets = chunk
         # Rename 'id' field for clarity.
@@ -1678,7 +1678,7 @@ def run_DATA():
 
                 except Exception as error:
                     traceback_info = capture_error_string(error, error_filepath)
-                    logging.INFO(traceback_info)
+                    logging.info(traceback_info)
                     print_error(dataset, traceback_info)
                     # logging.info('Error email sent to admin.')
             else:
