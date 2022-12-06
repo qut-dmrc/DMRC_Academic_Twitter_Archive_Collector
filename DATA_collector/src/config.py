@@ -13,6 +13,7 @@ try:
         config = yaml.load(f, Loader=yaml.FullLoader)
 except FileNotFoundError:
     print("Cannot find config file - please ensure you have renamed config_template.yml to config.yml!")
+    exit()
 
 
 
