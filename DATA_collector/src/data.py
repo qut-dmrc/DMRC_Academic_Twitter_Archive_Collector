@@ -1685,11 +1685,13 @@ def run_DATA():
                         logging.info('-----------------------------------------------------------------------------------------')
                         logging.info(f'Getting tweet counts for query: {subquery_formatted}')
                         archive_search_counts, readable_time_estimate = get_pre_search_counts(client, subquery_formatted, start_date, end_date)
+
+                        logging.info(f'Archive counts: {archive_search_counts}')
+
                         if archive_search_counts > 0:
                             # to_collect, expected files tell the program what to collect and what has already been collected
                             interval, num_intervals = calculate_interval(start_date, end_date, archive_search_counts)
                             to_collect, not_to_collect, expected_files = set_up_expected_files(start_date, end_date, json_filepath, option_selection, subquery, interval)
-
 
                             # TODO if archive_search_counts == 0, do nut run search...
                             logging.info(f'Archive counts: {archive_search_counts}')
