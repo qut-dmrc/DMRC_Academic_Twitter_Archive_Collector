@@ -8,8 +8,12 @@ import yaml
 
 wd = os.getcwd()
 
-with open(f'{wd}/config/config.yml', encoding='utf-8') as f:
-    config = yaml.load(f, Loader=yaml.FullLoader)
+try:
+    with open(f'{wd}/config/config.yml', encoding='utf-8') as f:
+        config = yaml.load(f, Loader=yaml.FullLoader)
+except FileNotFoundError:
+    print("Cannot find config file - please ensure you have renamed config_template.yml to config.yml!")
+
 
 
 class Query():
