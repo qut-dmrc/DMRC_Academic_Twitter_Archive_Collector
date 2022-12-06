@@ -190,8 +190,8 @@ If you have a .json file from Twitter's Tweet Downloader, you can have this proc
 
 ------------------------------------
 ####
-This tool is designed to run on a user's local computer. In order to keep collected file sizes manageable, collections are split into files containing an average 150,000 tweets. This means that for collections greater than this, files will average approximately 1GB in size.
-If you need to clear some space, you can remove collected .json files from the `DATA_Collector/your_directory/collected_json folder` while the collector is running, and move them to a backup location.
+This tool is designed to run on a user's local computer. In order to keep collected file sizes manageable, collections are split into files containing (on average) 100,000 tweets. This means that for collections greater than this, files will average approximately 1GB in size.
+If you need to clear some space on your hard drive, you can remove collected .json files from the `DATA_Collector/your_directory/collected_json folder` while the collector is running, and move them to a backup location.
 
 If you do remove files from this location, and need to stop/restart the collector, <b>you will need to update the start_date parameter in `config.yml` to avoid re-collecting those files</b>. 
 Be sure not to remove the current collection file (the newest file in the directory).

@@ -1676,8 +1676,10 @@ def run_DATA():
 
                         # Get current datetime for calculating duration
                         search_start_time = datetime.now()
-
-                        subquery_formatted = f'@{subquery} OR from:{subquery}'
+                        if 'url' in subquery:
+                            subquery_formatted = subquery
+                        else:
+                            subquery_formatted = f'@{subquery} OR from:{subquery}'
 
                         # Pre-search archive counts
                         logging.info('-----------------------------------------------------------------------------------------')
