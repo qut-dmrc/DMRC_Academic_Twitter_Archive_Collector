@@ -1,0 +1,14 @@
+# Fill and rename this file to 'config.yml'
+
+query: None                              # Search string (up to 1024 characters)
+
+start_date: '2022-11-22 00:00:00+00:00'                 # "yyyy-mm-dd hh:mm:ss+hh:mm"
+end_date: '2022-11-22 00:10:00+00:00'                   # "yyyy-mm-dd hh:mm:ss+hh:mm"
+
+bearer_token: None
+project_id: None                                   # Billing project
+dataset: None                                   # Desired dataset name
+
+DATA: True
+TCAT: False
+TweetQuery: False
