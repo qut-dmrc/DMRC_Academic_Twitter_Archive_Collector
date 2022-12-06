@@ -469,6 +469,7 @@ class ValidateParams:
         if type(query) == str:
             if 'AND' in query:
                 print('AND operator is represented by a space between keywords. Please refer to the documentation and edit your query.')
+                query = None
             else:
                 if len(query) in range(1, 1024):
                     query = query
