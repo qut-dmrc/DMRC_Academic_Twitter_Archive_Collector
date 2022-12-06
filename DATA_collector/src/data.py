@@ -37,7 +37,10 @@ def get_pre_search_counts(*args):
 
     client = args[0]
     # Run counts_all search
-    count_tweets = client.counts_all(query=args[1], start_time=args[2], end_time=args[3])
+    try:
+        count_tweets = client.counts_all(query=args[1], start_time=args[2], end_time=args[3])
+    except requests.exceptions.HTTPError:
+        print(f"\nThere seems to be an issue with your query.")
 
     # Append each page of data to list
     tweet_counts_data = []
@@ -116,15 +119,15 @@ def collect_archive_data(bq, project, dataset, to_collect, not_to_collect, expec
             if os.path.isfile(a_file):
                 logging.info(f'Processing tweet data...')
                 # Process json data
-                tweet_count = process_json_data(a_file, csv_filepath, bq, project, dataset, subquery, start_date, end_date, archive_search_counts, tweet_count, schematype)
+                tweet_count, list_of_dataframes = process_json_data(a_file, csv_filepath, bq, project, dataset, subquery, start_date, end_date, archive_search_counts, tweet_count, schematype, test=False)
 
     else:
         print_already_collected(dataset, not_to_collect)
         exit()
 
-def process_json_data(a_file, csv_filepath, bq, project, dataset, subquery, start_date, end_date, archive_search_counts, tweet_count, schematype):
+def process_json_data(a_file, csv_filepath, bq, project, dataset, subquery, start_date, end_date, archive_search_counts, tweet_count, schematype, test):
     '''
-    For each file collected, process 40,000 lines at a time. This keeps memory usage low while processing at a reasonable rate.
+    For each file collected, process 50,000 lines at a time. This keeps memory usage low while processing at a reasonable rate.
     Un-nests each tweet object, flattens main Tweet table, then sorts nested columns into separate, flattened tables.
     All tables are connected to the main Tweet table by either 'tweet_id', 'author_id' or 'poll_id'.
     '''
@@ -219,44 +222,48 @@ def process_json_data(a_file, csv_filepath, bq, project, dataset, subquery, star
                               INTERACTIONS,
                               EDIT_HISTORY]
 
-        # Init SchemaFuncs class
-        schema_funcs = SchemaFuncs()
+        if test == False:
+            # Init SchemaFuncs class
+            schema_funcs = SchemaFuncs()
 
-        # Proceed according to schema chosen
-        list_of_dataframes, list_of_csv, list_of_tablenames, list_of_schema, tweet_count = schema_funcs.get_schema_type(list_of_dataframes, tweet_count)
+            # Proceed according to schema chosen
+            list_of_dataframes, list_of_csv, list_of_tablenames, list_of_schema, tweet_count = schema_funcs.get_schema_type(list_of_dataframes, tweet_count)
 
-        # For each processed json, write to temp csv file
-        for tweetframe, csv_file in zip(list_of_dataframes, list_of_csv):
-            write_processed_data_to_csv(tweetframe, csv_file, csv_filepath)
-        if archive_search_counts > 0:
-            percent_collected = tweet_count / archive_search_counts * 100
-            logging.info(f'{tweet_count} of {archive_search_counts} tweets collected ({round(percent_collected, 1)}%)')
+            # For each processed json, write to temp csv file
+            for tweetframe, csv_file in zip(list_of_dataframes, list_of_csv):
+                write_processed_data_to_csv(tweetframe, csv_file, csv_filepath)
+            if archive_search_counts > 0:
+                percent_collected = tweet_count / archive_search_counts * 100
+                logging.info(f'{tweet_count} of {archive_search_counts} tweets collected ({round(percent_collected, 1)}%)')
 
-        # Write temp csv files to BigQuery tables
-        push_processed_tables_to_bq(bq, project, dataset, list_of_tablenames, csv_filepath, list_of_csv, subquery, start_date, end_date, list_of_schema, list_of_dataframes, schematype)
+            # Write temp csv files to BigQuery tables
+            push_processed_tables_to_bq(bq, project, dataset, list_of_tablenames, csv_filepath, list_of_csv, subquery, start_date, end_date, list_of_schema, list_of_dataframes, schematype)
 
-    return tweet_count
+    return tweet_count, list_of_dataframes
 
 def write_processed_data_to_csv(tweetframe, csv_file, csv_filepath):
     '''
     Write each generated table to a temporary csv file, to be pushed to Google BigQuery.
     '''
+    try:
+        if tweetframe is not None:
+            if os.path.isfile(csv_filepath + csv_file) == True:
+                    logging.info(f'Appending data to existing {csv_file} file...')
+                    mode = 'a'
+                    header = False
+            else:
+                logging.info(f'Writing data to new {csv_file} file...')
+                mode = 'w'
+                header = True
 
-    if tweetframe is not None:
-        if os.path.isfile(csv_filepath + csv_file) == True:
-                logging.info(f'Appending data to existing {csv_file} file...')
-                mode = 'a'
-                header = False
-        else:
-            logging.info(f'Writing data to new {csv_file} file...')
-            mode = 'w'
-            header = True
-
-        tweetframe.to_csv(csv_filepath + csv_file,
-                          mode=mode,
-                          index=False,
-                          escapechar='|',
-                          header=header)
+            tweetframe.to_csv(csv_filepath + csv_file,
+                              mode=mode,
+                              index=False,
+                              escapechar='|',
+                              header=header)
+    except TypeError:
+        pass
+        print('Test does not produce CSV tables')
 
 def push_processed_tables_to_bq(bq, project, dataset, list_of_tablenames, csv_filepath, list_of_csv, subquery, start_date, end_date, list_of_schema, list_of_dataframes, schematype):
     '''
@@ -460,15 +467,18 @@ class ValidateParams:
 
         # Search query length; if str query, check min and max len of query. Else, if list query, check min len.
         if type(query) == str:
-            if len(query) in range(1, 1024):
-                query = query
-            elif len(query) < 1:
-                print('Please enter a search query.')
-                query = None
+            if 'AND' in query:
+                print('AND operator is represented by a space between keywords. Please refer to the documentation and edit your query.')
             else:
-                query = None
-                print(
-                    f'Query is too long ({len(query)} characters). Please shorten it to 1024 characters or fewer and retry.')
+                if len(query) in range(1, 1024):
+                    query = query
+                elif len(query) < 1:
+                    print('Please enter a search query.')
+                    query = None
+                else:
+                    query = None
+                    print(
+                        f'Query is too long ({len(query)} characters). Please shorten it to 1024 characters or fewer and retry.')
         else:
             if type(query) == str:
                 if len(query) < 1:
@@ -614,19 +624,29 @@ class SchemaFuncs:
             list_of_csv = DATA_schema.list_of_csv
             list_of_tablenames = DATA_schema.list_of_tablenames
             list_of_schema = DATA_schema.list_of_schema
-            tweet_count = len(list_of_dataframes[0].loc[list_of_dataframes[0]['reference_level'] == '0']) + tweet_count
+            try:
+                # For test, this will throw exception because no counts are run; convert to None
+                tweet_count = len(list_of_dataframes[0].loc[list_of_dataframes[0]['reference_level'] == '0']) + tweet_count
+            except:
+                tweet_count = None
         elif Schematype.TCAT == True:
             list_of_dataframes = transform_schema.transform_DATA_to_TCAT(list_of_dataframes)
             list_of_csv = TCAT_schema.list_of_csv
             list_of_tablenames = TCAT_schema.list_of_tablenames
             list_of_schema = TCAT_schema.list_of_schema
-            tweet_count = len(list_of_dataframes[0]) + tweet_count
+            try:
+                tweet_count = len(list_of_dataframes[0]) + tweet_count
+            except:
+                tweet_count = None
         else:
             list_of_dataframes = transform_schema.transform_DATA_to_TQ(list_of_dataframes)
             list_of_csv = TweetQuery_schema.list_of_csv
             list_of_tablenames = TweetQuery_schema.list_of_tablenames
             list_of_schema = TweetQuery_schema.list_of_schema
-            tweet_count = len(list_of_dataframes[0].drop_duplicates(subset=['id'])) + tweet_count
+            try:
+                tweet_count = len(list_of_dataframes[0].drop_duplicates(subset=['id'])) + tweet_count
+            except:
+                tweet_count = None
 
         return list_of_dataframes, list_of_csv, list_of_tablenames, list_of_schema, tweet_count
 

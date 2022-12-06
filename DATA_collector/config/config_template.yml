@@ -5,7 +5,7 @@ query: 'string'                                         # Search string (up to 1
 start_date: '2022-04-23 00:00:00+00:00'                 # "yyyy-mm-dd hh:mm:ss+hh:mm"
 end_date: '2022-07-19 00:00:00+00:00'                   # "yyyy-mm-dd hh:mm:ss+hh:mm"
 
-bearer_token: ''                                        # your Twitter Academic API beaerer token
+bearer_token: ''                                        # your Twitter Academic API bearer token
 
 project_id: 'project'                                   # Billing project
 dataset: 'dataset'                                      # Desired dataset name
