@@ -39,27 +39,29 @@ def get_pre_search_counts(*args):
     # Run counts_all search
     try:
         count_tweets = client.counts_all(query=args[1], start_time=args[2], end_time=args[3])
+
+        # Append each page of data to list
+        tweet_counts_data = []
+        for page in count_tweets:
+            tweet_counts_data.append(page)
+
+        # Combine all ["meta"]["total_tweet_count"] and sum for total tweets
+        tweet_counts = []
+        for i in range(len(tweet_counts_data)):
+            total = (tweet_counts_data[i]["meta"]["total_tweet_count"])
+            tweet_counts.append(total)
+
+        # Get total tweet counts
+        archive_search_counts = sum(tweet_counts)
+
+        # Give an estimate of search duration
+        ''' Currently saving search duration data and counts to a txt file from which I will work out a good calc'''
+        time_estimate = (archive_search_counts*0.4784919736026976)/2
+        readable_time_estimate = format_timespan(time_estimate)
     except requests.exceptions.HTTPError:
-        print(f"\nThere seems to be an issue with your query.")
+        print(f"\nThere seems to be an issue with your query that wasn't caught at the validation stage. If you are searching for tweets in a specific language, make sure you are using the correct lang code!")
+        exit()
 
-    # Append each page of data to list
-    tweet_counts_data = []
-    for page in count_tweets:
-        tweet_counts_data.append(page)
-
-    # Combine all ["meta"]["total_tweet_count"] and sum for total tweets
-    tweet_counts = []
-    for i in range(len(tweet_counts_data)):
-        total = (tweet_counts_data[i]["meta"]["total_tweet_count"])
-        tweet_counts.append(total)
-
-    # Get total tweet counts
-    archive_search_counts = sum(tweet_counts)
-
-    # Give an estimate of search duration
-    ''' Currently saving search duration data and counts to a txt file from which I will work out a good calc'''
-    time_estimate = (archive_search_counts*0.4784919736026976)/2
-    readable_time_estimate = format_timespan(time_estimate)
 
     return archive_search_counts, readable_time_estimate
 
