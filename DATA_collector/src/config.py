@@ -16,7 +16,6 @@ except FileNotFoundError:
     exit()
 
 
-
 class Query():
     if type(config['query']) == str:
         query = config['query']
@@ -29,16 +28,18 @@ class Query():
     end_date = dt.datetime.fromisoformat(config['end_date'])
 
 
-
 class Tokens():
     bearer_token = config['bearer_token']
+
 
 class GBQ():
     project_id = config['project_id']
     dataset = config['dataset']
 
+
 # class Emails():
 #     user_email = config['user_email']
+
 
 class Schematype():
     DATA = config['DATA']

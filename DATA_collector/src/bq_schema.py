@@ -3,6 +3,7 @@ This file contains the Google BigQuery table schema for each schematype as speci
 '''
 
 from google.cloud import bigquery
+from .config import Schematype
 
 
 class DATA_schema:
@@ -535,3 +536,209 @@ class TweetQuery_schema:
 
     list_of_tablenames = ['tweets_flat']
 
+class SchemaFuncs:
+
+    def set_schema_type(self, Schematype):
+        '''
+        Sets the schema type as defined in config.yml.
+        '''
+
+        if Schematype.DATA == True:
+            schematype = 'DATA'
+        elif Schematype.TCAT == True:
+            schematype = 'TCAT'
+        else:
+            schematype = 'TweetQuery'
+
+        return schematype
+
+    def get_schema_type(self, list_of_dataframes, tweet_count):
+        '''
+        Select lists of dataframes, csvs, tablenames and schema depending on the schema indicated in config.yml.
+        '''
+
+        # Init SchemaTransform class
+        transform_schema = SchemaTransform()
+
+        if Schematype.DATA == True:
+            list_of_dataframes = list_of_dataframes
+            list_of_csv = DATA_schema.list_of_csv
+            list_of_tablenames = DATA_schema.list_of_tablenames
+            list_of_schema = DATA_schema.list_of_schema
+            try:
+                # For test, this will throw exception because no counts are run; convert to None
+                tweet_count = len(list_of_dataframes[0].loc[list_of_dataframes[0]['reference_level'] == '0']) + tweet_count
+            except:
+                tweet_count = None
+        elif Schematype.TCAT == True:
+            list_of_dataframes = transform_schema.transform_DATA_to_TCAT(list_of_dataframes)
+            list_of_csv = TCAT_schema.list_of_csv
+            list_of_tablenames = TCAT_schema.list_of_tablenames
+            list_of_schema = TCAT_schema.list_of_schema
+            try:
+                tweet_count = len(list_of_dataframes[0]) + tweet_count
+            except:
+                tweet_count = None
+        else:
+            list_of_dataframes = transform_schema.transform_DATA_to_TQ(list_of_dataframes)
+            list_of_csv = TweetQuery_schema.list_of_csv
+            list_of_tablenames = TweetQuery_schema.list_of_tablenames
+            list_of_schema = TweetQuery_schema.list_of_schema
+            try:
+                tweet_count = len(list_of_dataframes[0].drop_duplicates(subset=['id'])) + tweet_count
+            except:
+                tweet_count = None
+
+        return list_of_dataframes, list_of_csv, list_of_tablenames, list_of_schema, tweet_count
+
+class SchemaTransform:
+
+    def transform_DATA_to_TCAT(self, list_of_dataframes):
+        '''
+        Transforms tables in DATA format for compatibility with existing TCAT datasets. Selects relevant fields from TWEETS,
+        HASHTAGS, MENTIONS and URLS and renames fields that occur in the TCAT schema. TCAT fields for which DATA has no
+        equivalent field are given blank values.
+        '''
+        # todo URLS table
+
+        # TWEETS
+        TWEETS = list_of_dataframes[0].copy()
+        # Rename and reformat miscellaneous Tweets columns
+        TWEETS['time'] = TWEETS['created_at']
+        # Format 'author_created_at'
+        TWEETS['author_created_at'] = pd.to_datetime(TWEETS["author_created_at"], format="%Y-%m-%dT%H:%M:%S")
+        # Use 'referenced_tweet_id' to create columns for quoted and in_reply_to status ids
+        TWEETS['in_reply_to_status_id'] = TWEETS['referenced_tweet_id']
+        TWEETS['quoted_status_id'] = TWEETS['referenced_tweet_id']
+        # Then make the columns blank if tweet_type does not match
+        TWEETS.loc[TWEETS['tweet_type'] != 'quote', 'quoted_status_id'] = ''
+        TWEETS.loc[TWEETS['tweet_type'] != 'reply', 'in_reply_to_status_id'] = ''
+        # Create blank columns (that don't have an equivalent in the DATA schema)
+        TWEETS[[f'{blank_col}' for blank_col in TCAT_fields.blank_cols]] = ''
+        TWEETS = TWEETS[TCAT_fields.tweet_column_order].rename(columns=TCAT_fields.tweet_column_names_dict)
+
+        # HASHTAGS
+        if list_of_dataframes[4] is not None:
+            HASHTAGS = list_of_dataframes[4].copy()
+            # Get hashtags data; rename columns
+            HASHTAGS = HASHTAGS[TCAT_fields.hashtags_column_order].rename(columns=TCAT_fields.hashtags_column_names_dict)
+        else:
+            HASHTAGS = pd.DataFrame(columns=[TCAT_fields.hashtags_column_order])
+
+        # MENTIONS
+        if list_of_dataframes[10] is not None:
+            INTERACTIONS = list_of_dataframes[10].copy()
+            # Get mentions data from INTERACTIONS and TWEETS tables
+            interactions_to = INTERACTIONS.dropna().rename(columns=TCAT_fields.interactions_to_column_names_dict)
+            interactions_from = TWEETS[['id', 'from_user_id', 'from_user_name']].rename(columns=TCAT_fields.interactions_from_column_names_dict)
+            MENTIONS = interactions_to.merge(interactions_from, how='left', on='id')\
+                .drop_duplicates()\
+                .rename(columns=TCAT_fields.mentions_column_names_dict)
+            MENTIONS = MENTIONS[TCAT_fields.MENTIONS_column_order]
+        else:
+            MENTIONS = pd.DataFrame(columns=[TCAT_fields.MENTIONS_column_order])
+
+        list_of_dataframes = [TWEETS, HASHTAGS, MENTIONS]
+
+        return list_of_dataframes
+
+    def transform_DATA_to_TQ(self, list_of_dataframes):
+        '''
+        Transforms tables in DATA format for compatibility with existing TweetQuery datasets. Selects relevant fields from TWEETS,
+        HASHTAGS, MENTIONS, INTERACTIONS and URLS and renames fields that occur in the TweetQuery schema. TweetQuery fields for which DATA has no
+        equivalent field are given blank values.
+        '''
+
+        # TWEETS
+        TWEETS = list_of_dataframes[0].copy()
+        # Generate 'in_reply_to' fields from 'referenced_tweet' fields
+        TWEETS['in_reply_to_screen_name'] = TWEETS['referenced_tweet_author_username']
+        TWEETS['in_reply_to_status_id'] = TWEETS['referenced_tweet_id']
+        TWEETS['in_reply_to_user_id'] = TWEETS['referenced_tweet_author_id']
+        # Generate 'quoted' fields from 'referenced_tweet' fields
+        TWEETS['is_quote_status'] = np.where(TWEETS['tweet_type'] == 'quote', True, False)
+        TWEETS['quoted_status_id'] = TWEETS['referenced_tweet_id']
+        TWEETS['quoted_status_text'] = TWEETS['referenced_tweet_text']
+        TWEETS['quoted_status_user_id'] = TWEETS['referenced_tweet_author_id']
+        # Generate 'retweeted' fields from 'referenced_tweet' fields
+        TWEETS['retweeted'] = np.where(TWEETS['tweet_type'] == 'retweet', True, False)
+        TWEETS.loc[TWEETS['tweet_type'] == 'retweet', 'retweeted'] = 'true'
+        TWEETS['retweeted_status_id'] = TWEETS['referenced_tweet_id']
+        TWEETS['retweeted_status_user_id'] = TWEETS['referenced_tweet_author_id']
+
+        # Keep values in new fields above only if 'tweet_type' matches
+        # todo can these be collapsed? a la [['quoted_status_id', 'quoted_status_text', 'quoted_status_user_id']]
+        TWEETS.loc[TWEETS['tweet_type'] != 'quote', 'quoted_status_id'] = ''
+        TWEETS.loc[TWEETS['tweet_type'] != 'quote', 'quoted_status_text'] = ''
+        TWEETS.loc[TWEETS['tweet_type'] != 'quote', 'quoted_status_user_id'] = ''
+
+        TWEETS.loc[TWEETS['tweet_type'] != 'reply', 'in_reply_to_status_id'] = ''
+        TWEETS.loc[TWEETS['tweet_type'] != 'reply', 'in_reply_to_user_id'] = ''
+        TWEETS.loc[TWEETS['tweet_type'] != 'reply', 'in_reply_to_screen_name'] = ''
+
+        TWEETS.loc[TWEETS['tweet_type'] != 'retweet', 'retweeted_status_id'] = ''
+        TWEETS.loc[TWEETS['tweet_type'] != 'retweet', 'retweeted_status_user_id'] = ''
+
+        # Misc columns
+        TWEETS['user_profile_image_url_https'] = TWEETS['author_profile_image_url'].replace('http', 'https')
+        TWEETS['author_created_at'] = pd.to_datetime(TWEETS["author_created_at"], format="%Y-%m-%dT%H:%M:%S")
+        # Create blank columns (that don't have an equivalent in the DATA schema)
+        TWEETS[[f'{blank_col}' for blank_col in TweetQuery_fields.blank_cols]] = ''
+
+        # HASHTAGS
+        if list_of_dataframes[4] is not None:
+            HASHTAGS = list_of_dataframes[4].copy()
+            HASHTAGS = HASHTAGS[TweetQuery_fields.hashtags_column_order]\
+                .rename(columns=TweetQuery_fields.hashtags_column_names_dict)
+            TWEETS = TWEETS.merge(HASHTAGS, how='left', on='tweet_id')
+        else:
+            HASHTAGS = pd.DataFrame(columns=[TweetQuery_fields.hashtags_column_order])
+            TWEETS = TWEETS.merge(HASHTAGS, how='left', on='tweet_id')
+
+        # MENTIONS
+        if list_of_dataframes[6] is not None:
+            # Get mentioned author names from MENTIONS table and set aside
+            mentioned_author_names = list_of_dataframes[6][['tweet_mentions_author_id', 'tweet_mentions_author_name']]
+        else:
+            # If None, then create empty dataframe
+            mentioned_author_names = pd.DataFrame(columns=['tweet_mentions_author_id', 'tweet_mentions_author_name'])
+        if list_of_dataframes[10] is not None:
+            INTERACTIONS = list_of_dataframes[10].copy()
+            # Get referenced author names from TWEETS table and set aside
+            referenced_author_names = TWEETS[['referenced_tweet_author_id', 'referenced_tweet_author_name']]\
+                .rename(columns={'referenced_tweet_author_id':'tweet_mentions_author_id',
+                                 'referenced_tweet_author_name': 'tweet_mentions_author_name'})
+            # Concatenate mentioned_author and referenced_tweet_author names
+            mentioned_author_names_concat = pd.concat([mentioned_author_names, referenced_author_names], axis=0)\
+                .rename(columns={'tweet_mentions_author_id':'to_user_id'})
+            # Merge author names with INTERACTIONS, rename fields to be compatible with TQ schema
+            interactions_to = INTERACTIONS.merge(mentioned_author_names_concat, how='left', on='to_user_id').drop_duplicates()
+            interactions_to = interactions_to.dropna().rename(columns=TweetQuery_fields.interactions_to_column_names_dict)
+            # Reorder and create MENTIONS table
+            MENTIONS = interactions_to[TweetQuery_fields.MENTIONS_column_order]
+            # Merge MENTIONS table with TWEETS
+            TWEETS = TWEETS.merge(MENTIONS, how='left', on='tweet_id')
+        else:
+            MENTIONS = pd.DataFrame(columns=[TweetQuery_fields.MENTIONS_column_order])
+            TWEETS = TWEETS.merge(MENTIONS, how='left', on='tweet_id')
+
+        # URLs
+        if list_of_dataframes[5] is not None:
+            URLS = list_of_dataframes[5].copy()
+            URLS = URLS.astype(str)
+            URLS['urls_unshortened_url'] = URLS['urls_unwound_url']
+            URLS['urls_domain_path'] = URLS['urls_unwound_url'].str.split('/').str[0:3]
+            URLS['urls_domain_path'] = ['/'.join(map(str, l)) for l in URLS['urls_domain_path']]
+            URLS = URLS[TweetQuery_fields.urls_column_order]
+            TWEETS = TWEETS.merge(URLS, how='left', on='tweet_id')
+        else:
+            URLS = pd.DataFrame(columns=[TweetQuery_fields.urls_column_order])
+            TWEETS = TWEETS.merge(URLS, how='left', on='tweet_id')
+
+
+        TWEETS = TWEETS[TweetQuery_fields.tweet_column_order]\
+            .rename(columns=TweetQuery_fields.tweet_column_names_dict)
+
+        list_of_dataframes = [TWEETS]
+
+        return list_of_dataframes

@@ -17,7 +17,7 @@ cwd = str(os.getcwd()).replace('\\', '/')
 dataset = GBQ.dataset
 folder = dataset
 new_dir = folder + '/'
-dir_name = str(f'{cwd}/{new_dir}')
+dir_name = str(f'{cwd}/my_collections/{new_dir}')
 
 # Specify file paths for outputs and temp csv files
 json_filepath = "collected_json/"
