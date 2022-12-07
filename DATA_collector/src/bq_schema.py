@@ -4,6 +4,8 @@ This file contains the Google BigQuery table schema for each schematype as speci
 
 from google.cloud import bigquery
 from .config import Schematype
+import numpy as np
+import pandas as pd
 
 
 class DATA_schema:
