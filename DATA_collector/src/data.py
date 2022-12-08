@@ -705,6 +705,7 @@ def run_DATA():
             user_proceed = input('>>>').lower()
 
             if user_proceed == 'y':
+                test = False
                 # Set up directories
                 set_up_directories(logfile_filepath, dir_name, folder, json_filepath, csv_filepath, error_filepath)
 
