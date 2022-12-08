@@ -725,7 +725,7 @@ def run_DATA():
                     filecount = filecount + 1
 
                     # For each interval (file), process json
-                    tweet_count = process_json_data(a_file, csv_filepath, bq, project, dataset, query, start_date, end_date, archive_search_counts, tweet_count, schematype)
+                    tweet_count = process_json_data(a_file, csv_filepath, bq, project, dataset, query, start_date, end_date, archive_search_counts, tweet_count, schematype, test)
                     # Notify user of completion
                     notify_completion(bq, search_start_time, project, dataset, start_date, end_date, option_selection, archive_search_counts, subquery=query, interval=0)
             else:
