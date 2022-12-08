@@ -7,6 +7,8 @@ from .config import Schematype
 import numpy as np
 import pandas as pd
 
+from .fields import TCAT_fields, TweetQuery_fields
+
 
 class DATA_schema:
 
