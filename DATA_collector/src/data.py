@@ -64,7 +64,7 @@ def get_pre_search_counts(*args):
 
     return archive_search_counts, readable_time_estimate
 
-def calculate_interval(start_date, end_date, archive_search_counts):
+def calculate_interval(start_date, end_date, archive_search_counts, schematype):
     '''
     Calculates an appropriate interval to serve as number of days per json file collected. Helps to keep file sizes and
     memory usage low.
@@ -77,6 +77,8 @@ def calculate_interval(start_date, end_date, archive_search_counts):
     archive_search_counts = archive_search_counts
     if archive_search_counts > 0:
         interval = search_duration * ave_tweets_per_file / archive_search_counts
+        if schematype == 'TweetQuery':
+            interval = interval / 2
         num_intervals = round(archive_search_counts/ave_tweets_per_file)
         if num_intervals <= 0:
             num_intervals = 1
@@ -524,7 +526,7 @@ def run_DATA():
 
             if archive_search_counts > 0:
 
-                interval, num_intervals = calculate_interval(start_date, end_date, archive_search_counts)
+                interval, num_intervals = calculate_interval(start_date, end_date, archive_search_counts, schematype)
                 # Print search results for user and ask to proceed
                 print(f"""
         \n
@@ -650,7 +652,7 @@ def run_DATA():
 
                         if archive_search_counts > 0:
                             # to_collect, expected files tell the program what to collect and what has already been collected
-                            interval, num_intervals = calculate_interval(start_date, end_date, archive_search_counts)
+                            interval, num_intervals = calculate_interval(start_date, end_date, archive_search_counts, schematype)
                             to_collect, not_to_collect, expected_files = set_up_expected_files(start_date, end_date, json_filepath, option_selection, subquery, interval)
 
                             # Call function collect_archive_data()
