@@ -650,8 +650,8 @@ class SchemaTransform:
             HASHTAGS = pd.DataFrame(columns=[TCAT_fields.hashtags_column_order])
 
         # MENTIONS
-        if list_of_dataframes[10] is not None:
-            INTERACTIONS = list_of_dataframes[10].copy()
+        if list_of_dataframes[11] is not None:
+            INTERACTIONS = list_of_dataframes[11].copy()
             # Get mentions data from INTERACTIONS and TWEETS tables
             interactions_to = INTERACTIONS.dropna().rename(columns=TCAT_fields.interactions_to_column_names_dict)
             interactions_from = TWEETS[['id', 'from_user_id', 'from_user_name']].rename(columns=TCAT_fields.interactions_from_column_names_dict)
@@ -720,14 +720,14 @@ class SchemaTransform:
             TWEETS = TWEETS.merge(HASHTAGS, how='left', on='tweet_id')
 
         # MENTIONS
-        if list_of_dataframes[6] is not None:
+        if list_of_dataframes[7] is not None:
             # Get mentioned author names from MENTIONS table and set aside
-            mentioned_author_names = list_of_dataframes[6][['tweet_mentions_author_id', 'tweet_mentions_author_name']]
+            mentioned_author_names = list_of_dataframes[7][['tweet_mentions_author_id', 'tweet_mentions_author_name']]
         else:
             # If None, then create empty dataframe
             mentioned_author_names = pd.DataFrame(columns=['tweet_mentions_author_id', 'tweet_mentions_author_name'])
-        if list_of_dataframes[10] is not None:
-            INTERACTIONS = list_of_dataframes[10].copy()
+        if list_of_dataframes[11] is not None:
+            INTERACTIONS = list_of_dataframes[11].copy()
             # Get referenced author names from TWEETS table and set aside
             referenced_author_names = TWEETS[['referenced_tweet_author_id', 'referenced_tweet_author_name']]\
                 .rename(columns={'referenced_tweet_author_id':'tweet_mentions_author_id',
@@ -747,8 +747,8 @@ class SchemaTransform:
             TWEETS = TWEETS.merge(MENTIONS, how='left', on='tweet_id')
 
         # URLs
-        if list_of_dataframes[5] is not None:
-            URLS = list_of_dataframes[5].copy()
+        if list_of_dataframes[6] is not None:
+            URLS = list_of_dataframes[6].copy()
             URLS = URLS.astype(str)
             URLS['urls_unshortened_url'] = URLS['urls_unwound_url']
             URLS['urls_domain_path'] = URLS['urls_unwound_url'].str.split('/').str[0:3]
