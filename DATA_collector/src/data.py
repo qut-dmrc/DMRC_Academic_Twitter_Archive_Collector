@@ -195,7 +195,8 @@ def process_json_data(a_file, csv_filepath, bq, project, dataset, subquery, star
             INTERACTIONS = data_processor.build_interactions_table(TWEETS, MENTIONS)
             HASHTAGS = data_processor.build_hashtags_table(TWEETS)
             URLS = data_processor.build_urls_table(TWEETS)
-            AUTHOR_DESCRIPTION = AUTHOR_URLS = MEDIA = POLL_OPTIONS = CONTEXT_ANNOTATIONS = ANNOTATIONS = EDIT_HISTORY = None
+            # todo CASHTAGS = SYMBOLS IN TQ
+            CASHTAGS = AUTHOR_DESCRIPTION = AUTHOR_URLS = MEDIA = POLL_OPTIONS = CONTEXT_ANNOTATIONS = ANNOTATIONS = EDIT_HISTORY = None
 
         # Special case of geo_geo_bbox: convert from column of lists to strings
         if 'geo_geo_bbox' in TWEETS.columns:
