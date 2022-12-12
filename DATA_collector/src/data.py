@@ -58,7 +58,7 @@ def get_pre_search_counts(*args):
         time_estimate = (archive_search_counts*0.4784919736026976)/2
         readable_time_estimate = format_timespan(time_estimate)
     except requests.exceptions.HTTPError:
-        print(f"\nThere seems to be an issue with your query that wasn't caught at the validation stage. If you are searching for tweets in a specific language, make sure you are using the correct lang code!")
+        print(f"\nThere seems to be an issue with your query that wasn't caught at the validation stage. \nIt might be an invalid bearer token.\nIf you are searching for tweets in a specific language, make sure you are using the correct lang code!")
         exit()
 
 
