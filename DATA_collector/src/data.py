@@ -181,6 +181,7 @@ def process_json_data(a_file, csv_filepath, bq, project, dataset, subquery, star
             CONTEXT_ANNOTATIONS = data_processor.build_context_annotations_table(TWEETS)
             ANNOTATIONS = data_processor.build_annotations_table(TWEETS)
             HASHTAGS = data_processor.build_hashtags_table(TWEETS)
+            CASHTAGS = data_processor.build_cashtags_table(TWEETS)
             URLS = data_processor.build_urls_table(TWEETS)
             TWEETS = process_tweets.extract_quote_reply_users(TWEETS, URLS)
             MENTIONS = data_processor.build_mentions_table(entities_mentions)
@@ -215,6 +216,7 @@ def process_json_data(a_file, csv_filepath, bq, project, dataset, subquery, star
                               ANNOTATIONS,
                               CONTEXT_ANNOTATIONS,
                               HASHTAGS,
+                              CASHTAGS,
                               URLS,
                               MENTIONS,
                               AUTHOR_DESCRIPTION,

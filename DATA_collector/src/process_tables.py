@@ -175,8 +175,8 @@ class ProcessTweets:
                                       + ': ' + TWEETS['referenced_tweet_text'], TWEETS['text'])
 
         # If tweet_type = 'retweet', replace original hashtags, mentions, urls and annotations with referenced tweet data
-        retweet_fields = ['entities_hashtags', 'entities_mentions', 'entities_urls', 'entities_annotations']
-        referenced_fields = ['referenced_tweet_hashtags', 'referenced_tweet_mentions', 'referenced_tweet_urls', 'referenced_tweet_annotations']
+        retweet_fields = ['entities_hashtags', 'entities_cashtags', 'entities_mentions', 'entities_urls', 'entities_annotations']
+        referenced_fields = ['referenced_tweet_hashtags', 'referenced_tweet_cashtags', 'referenced_tweet_mentions', 'referenced_tweet_urls', 'referenced_tweet_annotations']
         for rt_field, ref_field in zip(retweet_fields, referenced_fields):
             if ref_field in TWEETS.columns:
                 if rt_field in TWEETS.columns:
@@ -314,6 +314,23 @@ class ProcessTables:
                 # Create empty df with starter columns. Mentions and urls are added to this diagonally.
                 author_descr = pd.DataFrame(index=[0],
                                             columns=[f'{desc_type}_description{nan_col}' for nan_col in DATA_fields.author_desc_hashtags_cols])
+
+            # Description cashtags
+            if f'{desc_type}_entities.description.cashtags' in desc_col.columns:
+                descr_ctags = desc_col[[f'{desc_type}_id', f'{desc_type}_entities.description.cashtags']] \
+                    .dropna() \
+                    .set_index([f'{desc_type}_id'])[f'{desc_type}_entities.description.cashtags'] \
+                    .apply(pd.Series) \
+                    .stack() \
+                    .reset_index()
+                descr_ctags_tags = pd.json_normalize(descr_ctags[0]) \
+                    .add_prefix(f'{desc_type}_description_cashtags_')
+                author_cashtags = pd.concat([descr_ctags[f'{desc_type}_id'], descr_ctags_tags], axis=1)
+                author_descr = pd.concat([author_descr, author_cashtags])
+            else:
+                # Create empty df with starter columns. Mentions and urls are added to this diagonally.
+                author_descr = author_descr
+                author_descr[[f'{desc_type}_description{nan_col}' for nan_col in DATA_fields.author_desc_cashtags_cols]] = np.nan
 
             # Description mentions
             if f'{desc_type}_entities.description.mentions' in desc_col.columns:
@@ -567,6 +584,38 @@ class ProcessTables:
         logging.info('HASHTAGS table built')
 
         return HASHTAGS
+
+    def build_cashtags_table(self, TWEETS):
+        '''
+        Builds cashtags table from nested 'entities_cashtags' field. Extracts column, expands and flattens
+        data. Links to TWEETS table via tweet_id.
+        '''
+
+        if 'entities_cashtags' in TWEETS.columns:
+            entities_cashtags = TWEETS[['tweet_id', 'entities_cashtags']].dropna()
+            if len(entities_cashtags) > 0:
+                entities_cashtags = entities_cashtags.set_index(['tweet_id'])['entities_cashtags'] \
+                    .apply(pd.Series) \
+                    .stack() \
+                    .reset_index()
+                entities_cashtags_tag = pd.json_normalize(entities_cashtags[0]).add_prefix('cashtags_')
+                if 'cashtags_text' in entities_cashtags_tag:
+                    entities_cashtags_tag = entities_cashtags_tag.rename(columns={'hashtags_text':'hashtags_tag'})
+
+                CASHTAGS = pd.concat([entities_cashtags['tweet_id'], entities_cashtags_tag], axis=1) \
+                    .dropna(subset='cashtags_tag') \
+                    .reset_index(drop=True) \
+                    .reindex(columns=DATA_fields.cashtags_column_order) \
+                    .drop_duplicates() \
+                    .reset_index(drop=True)
+            else:
+                CASHTAGS = None
+        else:
+            CASHTAGS = None
+
+        logging.info('CASHTAGS table built')
+
+        return CASHTAGS
 
     def extract_entities_data(self, TWEETS):
         '''

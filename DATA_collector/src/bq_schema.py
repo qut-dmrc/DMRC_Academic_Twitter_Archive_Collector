@@ -39,6 +39,8 @@ class DATA_schema:
                              description="Whether this Tweet contains a media item (image, video or animated GIF)"),
         bigquery.SchemaField("has_hashtags", "BOOL", mode="NULLABLE",
                              description="Whether this Tweet contains hashtags"),
+        bigquery.SchemaField("has_cashtags", "BOOL", mode="NULLABLE",
+                             description="Whether this Tweet contains cashtags"),
         bigquery.SchemaField("has_urls", "BOOL", mode="NULLABLE",
                              description="Whether this Tweet contains urls"),
         bigquery.SchemaField("has_annotations", "BOOL", mode="NULLABLE",
@@ -226,6 +228,17 @@ class DATA_schema:
                              description="The text of the hashtag within in the Tweet")
     ]
 
+    cashtags_schema = [
+        bigquery.SchemaField("tweet_id", "STRING", mode="REQUIRED",
+                             description="Unique ID for this Tweet (from Twitter)"),
+        bigquery.SchemaField("cashtags_start", "STRING", mode="NULLABLE",
+                             description="The start position (zero-based) of the recognized cashtag within the Tweet. All start indices are inclusive"),
+        bigquery.SchemaField("cashtags_end", "STRING", mode="NULLABLE",
+                             description="The end position (zero-based) of the recognized cashtag within the Tweet. This end index is exclusive"),
+        bigquery.SchemaField("cashtags_tag", "STRING", mode="NULLABLE",
+                             description="The text of the cashtag within in the Tweet")
+    ]
+
     urls_schema = [
         bigquery.SchemaField("tweet_id", "STRING", mode="REQUIRED",
                              description="Unique ID for this tweet (from Twitter)"),
@@ -290,6 +303,10 @@ class DATA_schema:
                              description=""),
         bigquery.SchemaField("author_description_hashtags_end", "STRING", mode="NULLABLE", description=""),
         bigquery.SchemaField("author_description_hashtags_tag", "STRING", mode="NULLABLE", description=""),
+        bigquery.SchemaField("author_description_cashtags_start", "STRING", mode="NULLABLE",
+                             description=""),
+        bigquery.SchemaField("author_description_cashtags_end", "STRING", mode="NULLABLE", description=""),
+        bigquery.SchemaField("author_description_cashtags_tag", "STRING", mode="NULLABLE", description=""),
         bigquery.SchemaField("author_description_mentions_start", "STRING", mode="NULLABLE",
                              description=""),
         bigquery.SchemaField("author_description_mentions_end", "STRING", mode="NULLABLE", description=""),
@@ -347,6 +364,7 @@ class DATA_schema:
                    'ANNOTATIONS.csv',
                    'CONTEXT_ANNOTATIONS.csv',
                    'HASHTAGS.csv',
+                   'CASHTAGS.csv',
                    'URLS.csv',
                    'MENTIONS.csv',
                    'AUTHOR_DESCRIPTION.csv',
@@ -360,6 +378,7 @@ class DATA_schema:
                       annotations_schema,
                       context_annotations_schema,
                       hashtags_schema,
+                      cashtags_schema,
                       urls_schema,
                       mentions_schema,
                       author_description_schema,
@@ -373,6 +392,7 @@ class DATA_schema:
                           'annotations',
                           'context_annotations',
                           'hashtags',
+                          'cashtags',
                           'urls',
                           'mentions',
                           'author_description',

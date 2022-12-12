@@ -10,6 +10,7 @@ class TWEET_fields:
         'type',
         'text',
         'entities.hashtags',
+        'entities.cashtags',
         'entities.mentions',
         'entities.urls',
         'entities.annotations',
@@ -36,6 +37,7 @@ class TWEET_fields:
         'type': 'tweet_type',
         'text': 'referenced_tweet_text',
         'entities.hashtags': 'referenced_tweet_hashtags',
+        'entities.cashtags': 'referenced_tweet_cashtags',
         'entities.mentions': 'referenced_tweet_mentions',
         'entities.urls': 'referenced_tweet_urls',
         'entities.annotations': 'referenced_tweet_annotations',
@@ -60,6 +62,7 @@ class TWEET_fields:
         'attachments_media',
         'entities_mentions',
         'entities_hashtags',
+        'entities_cashtags',
         'entities_urls',
         'entities_annotations',
         'context_annotations'
@@ -69,6 +72,7 @@ class TWEET_fields:
         'has_media',
         'has_mention',
         'has_hashtags',
+        'has_cashtags',
         'has_urls',
         'has_annotations',
         'has_context_annotations'
@@ -86,6 +90,7 @@ class TWEET_fields:
         'has_mention',
         'has_media',
         'has_hashtags',
+        'has_cashtags',
         'has_urls',
         'has_annotations',
         'has_context_annotations'
@@ -132,6 +137,7 @@ class DATA_fields:
         'has_mention',
         'has_media',
         'has_hashtags',
+        'has_cashtags',
         'has_urls',
         'has_annotations',
         'has_context_annotations',
@@ -200,6 +206,13 @@ class DATA_fields:
         'hashtags_tag'
     ]
 
+    cashtags_column_order = [
+        'tweet_id',
+        'cashtags_start',
+        'cashtags_end',
+        'cashtags_tag'
+    ]
+
     urls_column_order = [
         'tweet_id',
         'urls_start',
@@ -260,6 +273,9 @@ class DATA_fields:
         'author_description_hashtags_start',
         'author_description_hashtags_end',
         'author_description_hashtags_tag',
+        'author_description_cashtags_start',
+        'author_description_cashtags_end',
+        'author_description_cashtags_tag',
         'author_description_mentions_start',
         'author_description_mentions_end',
         'author_description_mentions_username',
@@ -275,6 +291,13 @@ class DATA_fields:
         '_hashtags_start',
         '_hashtags_end',
         '_hashtags_tag'
+    ]
+
+    author_desc_cashtags_cols = [
+        '_id',
+        '_cashtags_start',
+        '_cashtags_end',
+        '_cashtags_tag'
     ]
 
     author_desc_mentions_cols = [
