@@ -14,6 +14,7 @@ tweet_schema
         has_mention                                             BOOL           Whether this Tweet mentions a user or entity
         has_media                                               BOOL           Whether this Tweet contains a media item (image    video or animated GIF)
         has_hashtags                                            BOOL           Whether this Tweet contains hashtags
+        has_cashtags                                            BOOL           Whether this Tweet contains cashtags
         has_urls                                                BOOL           Whether this Tweet contains urls
         has_annotations                                         BOOL           Whether this Tweet has accompanying annotations
         has_context_annotations                                 BOOL           Whether this has accompanying context annotations
@@ -167,7 +168,10 @@ author_description_schema
         author_id                                             STRING         Unique ID for this author (from Twitter)
         author_description_hashtags_start                     STRING         
         author_description_hashtags_end                       STRING         
-        author_description_hashtags_tag                       STRING         
+        author_description_hashtags_tag                       STRING
+        author_description_cashtags_start                     STRING
+        author_description_cashtags_end                       STRING
+        author_description_cashtags_tag                       STRING
         author_description_mentions_start                     STRING         
         author_description_mentions_end                       STRING         
         author_description_mentions_username                  STRING         
