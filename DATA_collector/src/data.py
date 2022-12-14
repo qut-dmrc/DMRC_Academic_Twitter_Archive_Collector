@@ -550,7 +550,7 @@ def run_DATA():
             ** Remember to monitor the space on your hard drive! **
             \n 
             \n
-            Proceed? y/n""")
+            \tProceed? y/n""")
 
 
                     user_proceed = input('>>>').lower()
@@ -607,22 +607,26 @@ def run_DATA():
 
                 # Print queries for user to accept
                 print(f'''
-                You are about to search the following queries:\n''')
+    -----------------------------------------
+            \n
+    You are about to search the following queries:\n\n''')
                 for item in query:
-                    print(f'{item}\n')
+                    print(f'\t\t\t\t{item}\n')
 
                 print(f'''
-                \n Total queries: {len(query)}''')
+                \n\t\t\t\tTotal queries: {len(query)}''')
 
                 print(f'''
-                \n
-                Please check the below details carefully!
-                \n
-                Start date: {start_date}
-                End date: {end_date}
-                Destination database: {project}.{dataset}
-                Schema type: {schematype}
-                \n\n\nProceed? y/n''')
+    \n
+    -----------------------------------------
+    \n
+    Please check the below details carefully!
+    \n
+    Start date: {start_date}
+    End date: {end_date}
+    Destination database: {project}.{dataset}
+    Schema type: {schematype}
+                \n\n\n\tProceed? y/n''')
 
                 user_proceed = input('>>>').lower()
 
@@ -711,7 +715,7 @@ def run_DATA():
                 print(f'''
                 {item}''')
             print(f'''\n
-            Total files to process: {len(json_input_files)}\n\n\n\nProceed? y/n''')
+            Total files to process: {len(json_input_files)}\n\n\n\n\tProceed? y/n''')
 
             user_proceed = input('>>>').lower()
 

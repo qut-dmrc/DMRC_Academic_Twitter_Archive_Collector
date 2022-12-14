@@ -108,13 +108,13 @@ class ValidateParams:
         if None in [query, bearer_token, access_key, start_date, end_date, project, dataset]:
             print("""
             \n 
-            Exiting...
+        Exiting...
             \n""")
             exit()
         else:
             print("""
             \n
-            Config input valid!
+        Config input valid!
             \n""")
 
             return query, bearer_token, access_key, start_date, end_date, project, dataset
