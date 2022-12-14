@@ -1,8 +1,9 @@
 # Fill and rename this file to 'config.yml'
 
 query: 'string'                                         # Search string (up to 1024 characters)
+                                                        # OR a list of search strings (up to 1024 characters each) e.g. ['cats OR kittens', 'dogs OR puppies', 'birds chicks from:albomp']
 
-start_date: '2022-04-23 00:00:00+00:00'                 # "yyyy-mm-dd hh:mm:ss+hh:mm"
+start_date: '2006-03-23 00:00:00+00:00'                 # "yyyy-mm-dd hh:mm:ss+hh:mm"
 end_date: '2022-07-19 00:00:00+00:00'                   # "yyyy-mm-dd hh:mm:ss+hh:mm"
 
 bearer_token: ''                                        # your Twitter Academic API bearer token

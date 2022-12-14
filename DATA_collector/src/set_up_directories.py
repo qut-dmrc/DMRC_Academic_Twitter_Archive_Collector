@@ -122,7 +122,7 @@ def set_log_file_path(logfile_filepath, folder):
         logging.info(f"log files will be written to this existing location")
     logging.info('-----------------------------------------------------------------------------------------')
 
-def set_up_expected_files(start_date, end_date, json_filepath, option_selection, query, interval):
+def set_up_expected_files(start_date, end_date, json_filepath, option_selection, query, dataset, interval):
     '''
     Divides search into multiple queries, based on the interval chosen in config.yml.
     This saves on memory by 'chunking' long and voluminous searches into separate collections based on number of days
@@ -138,7 +138,7 @@ def set_up_expected_files(start_date, end_date, json_filepath, option_selection,
     # Generate dictionary of file names and start and end dates
     while current_date < end_date:
         expected_files[
-            saved_search_path + f"{query}_{current_date.isoformat()}_tweets.jsonl".replace(":", "")] = (
+            saved_search_path + f"{dataset}_{current_date.isoformat()}_tweets.jsonl".replace(":", "")] = (
             current_date,
             current_date + window_length
         )

@@ -77,8 +77,8 @@ def calculate_interval(start_date, end_date, archive_search_counts, schematype):
     archive_search_counts = archive_search_counts
     if archive_search_counts > 0:
         interval = search_duration * ave_tweets_per_file / archive_search_counts
-        if schematype == 'TweetQuery':
-            interval = interval / 2
+        # if schematype == 'TweetQuery':
+        #     interval = interval / 2
         num_intervals = round(archive_search_counts/ave_tweets_per_file)
         if num_intervals <= 0:
             num_intervals = 1
@@ -245,7 +245,7 @@ def process_json_data(a_file, csv_filepath, bq, project, dataset, subquery, star
                 write_processed_data_to_csv(tweetframe, csv_file, csv_filepath)
             if archive_search_counts > 0:
                 percent_collected = tweet_count / archive_search_counts * 100
-                logging.info(f'{tweet_count} of {archive_search_counts} tweets collected ({round(percent_collected, 1)}%)')
+                logging.info(f'Processed {tweet_count} of {archive_search_counts} collected tweets ({round(percent_collected, 1)}%)')
 
             # Write temp csv files to BigQuery tables
             push_processed_tables_to_bq(bq, project, dataset, list_of_tablenames, csv_filepath, list_of_csv, subquery, start_date, end_date, list_of_schema, list_of_dataframes, schematype)
@@ -511,47 +511,116 @@ def run_DATA():
             project = GBQ.project_id
             dataset = GBQ.dataset
 
+            if type(query) == str:
+                # Init ValidateParams class
+                valdate_params = ValidateParams()
 
-            # Init ValidateParams class
-            valdate_params = ValidateParams()
+                # Validate search parameters
+                query, bearer_token, access_key, start_date, end_date, project, dataset = valdate_params.validate_search_parameters(query, bearer_token, start_date, end_date, project, dataset)
 
-            # Validate search parameters
-            query, bearer_token, access_key, start_date, end_date, project, dataset = valdate_params.validate_search_parameters(query, bearer_token, start_date, end_date, project, dataset)
+                # Set schema type
+                schema_funcs = SchemaFuncs()
+                schematype = schema_funcs.set_schema_type(Schematype)
 
-            # Set schema type
-            schema_funcs = SchemaFuncs()
-            schematype = schema_funcs.set_schema_type(Schematype)
+                # Initiate a Twarc client instance
+                client = Twarc2(bearer_token=bearer_token)
 
-            # Initiate a Twarc client instance
-            client = Twarc2(bearer_token=bearer_token)
+                # Pre-search archive counts
+                # subquery = query
+                print("Getting Tweet count estimate for your query. Please wait...")
+                archive_search_counts, readable_time_estimate = get_pre_search_counts(client, query, start_date, end_date)
 
-            # Pre-search archive counts
-            # subquery = query
-            print("Getting Tweet count estimate for your query. Please wait...")
-            archive_search_counts, readable_time_estimate = get_pre_search_counts(client, query, start_date, end_date)
+                if archive_search_counts > 0:
 
-            if archive_search_counts > 0:
+                    interval, num_intervals = calculate_interval(start_date, end_date, archive_search_counts, schematype)
+                    # Print search results for user and ask to proceed
+                    print(f"""
+            \n
+            Please check the below details carefully, and ensure you have enough room in your academic project bearer token quota!
+            \n
+            Your query: {query}
+            Start date: {start_date}
+            End date: {end_date}
+            Destination database: {project}.{dataset}
+            Schema type: {schematype}
+            \n
+            Your archive search will collect approximately {archive_search_counts} tweets (upper estimate).
+            The collection will be distributed across approximately {num_intervals} json files.
+            \n
+            ** Remember to monitor the space on your hard drive! **
+            \n 
+            \n
+            Proceed? y/n""")
 
-                interval, num_intervals = calculate_interval(start_date, end_date, archive_search_counts, schematype)
-                # Print search results for user and ask to proceed
-                print(f"""
-        \n
-        Please check the below details carefully, and ensure you have enough room in your academic project bearer token quota!
-        \n
-        Your query: {query}
-        Start date: {start_date}
-        End date: {end_date}
-        Destination database: {project}.{dataset}
-        Schema type: {schematype}
-        \n
-        Your archive search will collect approximately {archive_search_counts} tweets (upper estimate).
-        The collection will be distributed across approximately {num_intervals} json files.
-        \n
-        ** Remember to monitor the space on your hard drive! **
-        \n 
-        \n
-        Proceed? y/n""")
 
+                    user_proceed = input('>>>').lower()
+
+                    if user_proceed == 'y':
+                        sleep(1)
+                        set_up_directories(logfile_filepath, dir_name, folder, json_filepath, csv_filepath, error_filepath)
+
+                        # Access BigQuery
+                        os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = access_key[0]
+                        bq = Client(project=project)
+
+                        # Set table variable to none, if it gets a value it can be queried
+                        table = 0
+                        tweet_count = 0
+                        query_count = 1
+
+                        try:
+                            # Get current datetime for calculating duration
+                            search_start_time = datetime.now()
+                            # to_collect, expected files tell the program what to collect and what has already been collected
+                            to_collect, not_to_collect, expected_files = set_up_expected_files(start_date, end_date, json_filepath, option_selection, dataset, interval)
+                            # Call function collect_archive_data()
+                            collect_archive_data(bq, project, dataset, to_collect, not_to_collect, expected_files, client, query, start_date, end_date, csv_filepath, archive_search_counts, tweet_count, query, query_count, schematype)
+                            # Notify user of completion
+                            notify_completion(bq, search_start_time, project, dataset, start_date, end_date, option_selection, archive_search_counts, subquery=query, interval=interval)
+
+                        except Exception as error:
+                            traceback_info = capture_error_string(error, error_filepath)
+                            logging.info(traceback_info)
+                            print_error(dataset, traceback_info)
+                            # logging.info('Error email sent to admin.')
+                    else:
+                        exit()
+
+                else:
+                    print_no_results(start_date, end_date, query)
+
+            elif type(query) == list:
+                # Init ValidateParams class
+                validate_params = ValidateParams()
+
+                # Validate search parameters
+                query, bearer_token, access_key, start_date, end_date, project, dataset = validate_params.validate_search_parameters(query, bearer_token, start_date, end_date, project, dataset)
+
+                # Init SchemaFuncs class
+                schema_funcs = SchemaFuncs()
+
+                # Set schema type
+                schematype = schema_funcs.set_schema_type(Schematype)
+
+                # Initiate a Twarc client instance
+                client = Twarc2(bearer_token=bearer_token)
+
+                # Print queries for user to accept
+                print(f'''
+                You are about to search the following queries:\n''')
+                for item in query:
+                    print(item)
+                print(f'''
+                \n
+                Please check the below details carefully, and ensure you have enough room in your academic project bearer token quota!
+                \n
+                Your query: {query}
+                Start date: {start_date}
+                End date: {end_date}
+                Destination database: {project}.{dataset}
+                Schema type: {schematype}
+                \n
+                Total queries: {len(query)}\n\n\nProceed? y/n''')
 
                 user_proceed = input('>>>').lower()
 
@@ -566,17 +635,37 @@ def run_DATA():
                     # Set table variable to none, if it gets a value it can be queried
                     table = 0
                     tweet_count = 0
-                    query_count = 1
+                    query_count = 0
 
                     try:
-                        # Get current datetime for calculating duration
-                        search_start_time = datetime.now()
-                        # to_collect, expected files tell the program what to collect and what has already been collected
-                        to_collect, not_to_collect, expected_files = set_up_expected_files(start_date, end_date, json_filepath, option_selection, dataset, interval)
-                        # Call function collect_archive_data()
-                        collect_archive_data(bq, project, dataset, to_collect, not_to_collect, expected_files, client, query, start_date, end_date, csv_filepath, archive_search_counts, tweet_count, query, query_count, schematype)
-                        # Notify user of completion
-                        notify_completion(bq, search_start_time, project, dataset, start_date, end_date, option_selection, archive_search_counts, subquery=query, interval=interval)
+                        for subquery in query:
+                            query_count = query_count + 1
+
+                            # Get current datetime for calculating duration
+                            search_start_time = datetime.now()
+                            if 'url' in subquery:
+                                subquery_formatted = subquery
+                            else:
+                                subquery_formatted = subquery
+
+                            # Pre-search archive counts
+                            logging.info('-----------------------------------------------------------------------------------------')
+                            logging.info(f'Getting tweet counts for query: {subquery_formatted}')
+                            archive_search_counts, readable_time_estimate = get_pre_search_counts(client, subquery_formatted, start_date, end_date)
+
+                            logging.info(f'Archive counts: {archive_search_counts}')
+
+                            if archive_search_counts > 0:
+                                # to_collect, expected files tell the program what to collect and what has already been collected
+                                interval, num_intervals = calculate_interval(start_date, end_date, archive_search_counts, schematype)
+                                to_collect, not_to_collect, expected_files = set_up_expected_files(start_date, end_date, json_filepath, option_selection, subquery, dataset, interval)
+
+                                # Call function collect_archive_data()
+                                collect_archive_data(bq, project, dataset, to_collect, not_to_collect, expected_files, client, subquery_formatted, start_date, end_date, csv_filepath, archive_search_counts, tweet_count, query, query_count, schematype)
+                                # Notify user of completion
+                                notify_completion(bq, search_start_time, project, dataset, start_date, end_date, option_selection, archive_search_counts, subquery=subquery_formatted, interval=interval)
+                            else:
+                                logging.info(f'Archive_counts: {archive_search_counts}')
 
                     except Exception as error:
                         traceback_info = capture_error_string(error, error_filepath)
@@ -585,100 +674,6 @@ def run_DATA():
                         # logging.info('Error email sent to admin.')
                 else:
                     exit()
-
-            else:
-                print_no_results(start_date, end_date, query)
-
-        elif option_selection == "lv":
-
-            # Set search parameters
-            query = Query.query_list
-            bearer_token = Tokens.bearer_token
-            start_date = Query.start_date
-            end_date = Query.end_date
-            project = GBQ.project_id
-            dataset = GBQ.dataset
-
-
-            # Init ValidateParams class
-            valdate_params = ValidateParams()
-
-            # Validate search parameters
-            query, bearer_token, access_key, start_date, end_date, project, dataset = valdate_params.validate_search_parameters(query, bearer_token, start_date, end_date, project, dataset)
-
-            # Init SchemaFuncs class
-            schema_funcs = SchemaFuncs()
-
-            # Set schema type
-            schematype = schema_funcs.set_schema_type(Schematype)
-
-            # Initiate a Twarc client instance
-            client = Twarc2(bearer_token=bearer_token)
-
-            # Print queries for user to accept
-            print('''
-            You are about to search the following queries:\n''')
-            for item in query:
-                print(item)
-            print(f'''
-            Your date range:{start_date} - {end_date}\n
-            Your data will be uploaded to: {project}.{dataset}''')
-
-            print(f'''\n
-            Total queries: {len(query)}\n\n\nProceed? y/n''')
-
-            user_proceed = input('>>>').lower()
-
-            if user_proceed == 'y':
-                sleep(1)
-                set_up_directories(logfile_filepath, dir_name, folder, json_filepath, csv_filepath, error_filepath)
-
-                # Access BigQuery
-                os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = access_key[0]
-                bq = Client(project=project)
-
-                # Set table variable to none, if it gets a value it can be queried
-                table = 0
-                tweet_count = 0
-                query_count = 0
-
-                try:
-                    for subquery in query:
-                        query_count = query_count + 1
-
-                        # Get current datetime for calculating duration
-                        search_start_time = datetime.now()
-                        if 'url' in subquery:
-                            subquery_formatted = subquery
-                        else:
-                            subquery_formatted = f'@{subquery} OR from:{subquery}'
-
-                        # Pre-search archive counts
-                        logging.info('-----------------------------------------------------------------------------------------')
-                        logging.info(f'Getting tweet counts for query: {subquery_formatted}')
-                        archive_search_counts, readable_time_estimate = get_pre_search_counts(client, subquery_formatted, start_date, end_date)
-
-                        logging.info(f'Archive counts: {archive_search_counts}')
-
-                        if archive_search_counts > 0:
-                            # to_collect, expected files tell the program what to collect and what has already been collected
-                            interval, num_intervals = calculate_interval(start_date, end_date, archive_search_counts, schematype)
-                            to_collect, not_to_collect, expected_files = set_up_expected_files(start_date, end_date, json_filepath, option_selection, subquery, interval)
-
-                            # Call function collect_archive_data()
-                            collect_archive_data(bq, project, dataset, to_collect, not_to_collect, expected_files, client, subquery_formatted, start_date, end_date, csv_filepath, archive_search_counts, tweet_count, query, query_count, schematype)
-                            # Notify user of completion
-                            notify_completion(bq, search_start_time, project, dataset, start_date, end_date, option_selection, archive_search_counts, subquery=subquery_formatted, interval=interval)
-                        else:
-                            logging.info(f'Archive_counts: {archive_search_counts}')
-
-                except Exception as error:
-                    traceback_info = capture_error_string(error, error_filepath)
-                    logging.info(traceback_info)
-                    print_error(dataset, traceback_info)
-                    # logging.info('Error email sent to admin.')
-            else:
-                exit()
 
         elif option_selection == '2':
 

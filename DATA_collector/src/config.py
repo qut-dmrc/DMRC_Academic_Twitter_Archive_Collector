@@ -19,10 +19,9 @@ except FileNotFoundError:
 class Query():
     if type(config['query']) == str:
         query = config['query']
-        query_list = None
     else:
-        query_list = config['query']
-        query = None
+        query = config['query']
+
 
     start_date = dt.datetime.fromisoformat(config['start_date'])
     end_date = dt.datetime.fromisoformat(config['end_date'])
