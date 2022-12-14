@@ -41,7 +41,10 @@ def get_pre_search_counts(*args):
 
         # Append each page of data to list
         tweet_counts_data = []
+        page_count = 0
         for page in count_tweets:
+            page_count = page_count + 1
+            print(f"\rCounting Tweets, page {page_count}...", end="")
             tweet_counts_data.append(page)
 
         # Combine all ["meta"]["total_tweet_count"] and sum for total tweets
@@ -105,6 +108,7 @@ def collect_archive_data(bq, project, dataset, to_collect, not_to_collect, expec
             start, end = expected_files[a_file]
             if type(query) == list:
                 logging.info(f'Query {query_count} of {len(list(query))}')
+
             logging.info(f'Query: {subquery} from {start} to {end}')
 
             # Twarc search_all
@@ -527,7 +531,7 @@ def run_DATA():
 
                 # Pre-search archive counts
                 # subquery = query
-                print("Getting Tweet count estimate for your query. Please wait...")
+                print("Getting Tweet count estimate for your query. Please wait...\n")
                 archive_search_counts, readable_time_estimate = get_pre_search_counts(client, query, start_date, end_date)
 
                 if archive_search_counts > 0:
@@ -572,7 +576,7 @@ def run_DATA():
                             # Get current datetime for calculating duration
                             search_start_time = datetime.now()
                             # to_collect, expected files tell the program what to collect and what has already been collected
-                            to_collect, not_to_collect, expected_files = set_up_expected_files(start_date, end_date, json_filepath, option_selection, dataset, interval)
+                            to_collect, not_to_collect, expected_files = set_up_expected_files(start_date, end_date, json_filepath, option_selection,  query, dataset, interval, query_count)
                             # Call function collect_archive_data()
                             collect_archive_data(bq, project, dataset, to_collect, not_to_collect, expected_files, client, query, start_date, end_date, csv_filepath, archive_search_counts, tweet_count, query, query_count, schematype)
                             # Notify user of completion
@@ -664,7 +668,7 @@ def run_DATA():
                             if archive_search_counts > 0:
                                 # to_collect, expected files tell the program what to collect and what has already been collected
                                 interval, num_intervals = calculate_interval(start_date, end_date, archive_search_counts, schematype)
-                                to_collect, not_to_collect, expected_files = set_up_expected_files(start_date, end_date, json_filepath, option_selection, subquery, dataset, interval)
+                                to_collect, not_to_collect, expected_files = set_up_expected_files(start_date, end_date, json_filepath, option_selection, subquery, dataset, interval, query_count)
 
                                 # Call function collect_archive_data()
                                 collect_archive_data(bq, project, dataset, to_collect, not_to_collect, expected_files, client, subquery_formatted, start_date, end_date, csv_filepath, archive_search_counts, tweet_count, query, query_count, schematype)

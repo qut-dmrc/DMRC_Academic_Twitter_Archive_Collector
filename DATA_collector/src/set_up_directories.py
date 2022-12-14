@@ -122,7 +122,7 @@ def set_log_file_path(logfile_filepath, folder):
         logging.info(f"log files will be written to this existing location")
     logging.info('-----------------------------------------------------------------------------------------')
 
-def set_up_expected_files(start_date, end_date, json_filepath, option_selection, query, dataset, interval):
+def set_up_expected_files(start_date, end_date, json_filepath, option_selection, query, dataset, interval, query_count):
     '''
     Divides search into multiple queries, based on the interval chosen in config.yml.
     This saves on memory by 'chunking' long and voluminous searches into separate collections based on number of days
@@ -130,19 +130,26 @@ def set_up_expected_files(start_date, end_date, json_filepath, option_selection,
     and so on. Interval is generated automatically in data.calculate_interval().
     '''
 
+    if query_count == None:
+        query_count = ''
+
     window_length = dt.timedelta(days=interval)
     expected_files = dict()
     current_date = start_date
     saved_search_path = json_filepath
 
+
     # Generate dictionary of file names and start and end dates
+    # TODO make last filename end date correct
     while current_date < end_date:
         expected_files[
-            saved_search_path + f"{dataset}_{current_date.isoformat()}_tweets.jsonl".replace(":", "")] = (
+            saved_search_path + f"{dataset}_{query_count}_{current_date.isoformat()}_{(current_date+window_length).isoformat()}_tweets.jsonl".replace(":", "").replace(" ", "")] = (
             current_date,
             current_date + window_length
         )
         current_date += window_length
+
+    # for item in expected_files:
 
     # TODO make this nicer - this is very makeshift.
     #  The idea is to change the last end date in the dict to the end date in the config.
