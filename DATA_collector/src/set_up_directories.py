@@ -132,18 +132,22 @@ def set_up_expected_files(start_date, end_date, json_filepath, option_selection,
 
     if query_count == None:
         query_count = ''
+    elif query_count == 1:
+        query_count = ''
 
     window_length = dt.timedelta(days=interval)
     expected_files = dict()
     current_date = start_date
     saved_search_path = json_filepath
 
-
+    if option_selection == 'lv':
+        print(option_selection)
+        dataset = query
     # Generate dictionary of file names and start and end dates
     # TODO make last filename end date correct
     while current_date < end_date:
         expected_files[
-            saved_search_path + f"{dataset}_{query_count}_{current_date.isoformat()}_{(current_date+window_length).isoformat()}_tweets.jsonl".replace(":", "").replace(" ", "")] = (
+            saved_search_path + f"{dataset}{query_count}_{current_date.isoformat()}_{(current_date+window_length).isoformat()}_tweets.jsonl".replace(":", "").replace(" ", "")] = (
             current_date,
             current_date + window_length
         )
