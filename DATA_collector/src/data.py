@@ -535,7 +535,6 @@ def run_DATA():
                 archive_search_counts, readable_time_estimate = get_pre_search_counts(client, query, start_date, end_date)
 
                 if archive_search_counts > 0:
-
                     interval, num_intervals = calculate_interval(start_date, end_date, archive_search_counts, schematype)
                     # Print search results for user and ask to proceed
                     print(f"""
