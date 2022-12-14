@@ -616,7 +616,7 @@ def run_DATA():
 
                 print(f'''
                 \n
-                Please check the below details carefully, and ensure you have enough room in your academic project bearer token quota!
+                Please check the below details carefully!
                 \n
                 Start date: {start_date}
                 End date: {end_date}
