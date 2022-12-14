@@ -609,18 +609,20 @@ def run_DATA():
                 print(f'''
                 You are about to search the following queries:\n''')
                 for item in query:
-                    print(item)
+                    print(f'{item}\n')
+
+                print(f'''
+                \n Total queries: {len(query)}''')
+
                 print(f'''
                 \n
                 Please check the below details carefully, and ensure you have enough room in your academic project bearer token quota!
                 \n
-                Your query: {query}
                 Start date: {start_date}
                 End date: {end_date}
                 Destination database: {project}.{dataset}
                 Schema type: {schematype}
-                \n
-                Total queries: {len(query)}\n\n\nProceed? y/n''')
+                \n\n\nProceed? y/n''')
 
                 user_proceed = input('>>>').lower()
 
