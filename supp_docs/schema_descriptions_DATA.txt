@@ -18,7 +18,7 @@ tweet_schema
         has_urls                                                BOOL           Whether this Tweet contains urls
         has_annotations                                         BOOL           Whether this Tweet has accompanying annotations
         has_context_annotations                                 BOOL           Whether this has accompanying context annotations
-        lang                                                    STRING         Language of the Tweet    if detected by Twitter
+        lang                                                    STRING         Language of the Tweet, if detected by Twitter
         possibly_sensitive                                      BOOL           Indicates whether the URL contained in the Tweet may contain content or media identified as sensitive content
         conversation_id                                         STRING         The Tweet ID of the original Tweet of the conversation
         reply_settings                                          STRING         Shows who can reply to a given Tweet
@@ -88,7 +88,7 @@ media_schema
         media_duration_ms                                     STRING         Duration of attached media in milliseconds    if video or animated GIF
         media_preview_image_url                               STRING         URL to the static placeholder preview of this content    if video or animated GIF
         media_public_metrics_view_count                       INTEGER        Count of views of media
-        media_alt_text                                        STRING         
+        media_alt_text                                        STRING         Alternative text of media
     
 
 
@@ -120,7 +120,16 @@ hashtags_schema
         tweet_id                                              STRING         Unique ID for this Tweet (from Twitter)
         hashtags_start                                        STRING         The start position (zero-based) of the recognized Hashtag within the Tweet. All start indices are inclusive
         hashtags_end                                          STRING         The end position (zero-based) of the recognized Hashtag within the Tweet. This end index is exclusive
-        hashtags_tag                                          STRING         The text of the hashtag within in the Tweet
+        hashtags_tag                                          STRING         The text of the Hashtag within in the Tweet
+
+
+
+cashtags_schema
+---------------
+        tweet_id                                              STRING         Unique ID for this Tweet (from Twitter)
+        cashtags_start                                        STRING         The start position (zero-based) of the recognized Cashtag within the Tweet. All start indices are inclusive
+        cashtags_end                                          STRING         The end position (zero-based) of the recognized Cashtag within the Tweet. This end index is exclusive
+        cashtags_tag                                          STRING         The text of the Cashtag within in the Tweet
 
 
 
@@ -132,9 +141,9 @@ urls_schema
         urls_url                                              STRING         The URL in the format tweeted by the user
         urls_expanded_url                                     STRING         The fully resolved URL
         urls_display_url                                      STRING         The URL as displayed in the Twitter client
-        urls_status                                           STRING         
+        urls_status                                           STRING         The HTTP response status code for the URL; 200=Ok, 300=Redirect, 400=Client error, 500=Server error
         urls_unwound_url                                      STRING         The full destination URL
-        urls_images                                           STRING         
+        urls_images                                           STRING
         urls_title                                            STRING         
         urls_description                                      STRING         
     
@@ -146,40 +155,40 @@ mentions_schema
         tweet_mentions_author_start                           STRING         The start position (zero-based) of the recognized user mention within the Tweet. All start indices are inclusive
         tweet_mentions_author_end                             STRING         The end position (zero-based) of the recognized user mention within the Tweet. This end index is exclusive
         tweet_mentions_author_username                        STRING         The part of text recognized as a user mention
-        tweet_mentions_author_id                              STRING         
-        tweet_mentions_author_protected                       BOOL           
-        tweet_mentions_author_location                        STRING         
-        tweet_mentions_author_verified                        BOOL           
-        tweet_mentions_author_profile_image_url               STRING         
-        tweet_mentions_author_description                     STRING         
-        tweet_mentions_author_created_at                      TIMESTAMP      
-        tweet_mentions_author_pinned_tweet_id                 STRING         
-        tweet_mentions_author_url                             STRING         
-        tweet_mentions_author_name                            STRING         
-        tweet_mentions_author_public_metrics_followers_count  INTEGER        
-        tweet_mentions_author_public_metrics_following_count  INTEGER        
-        tweet_mentions_author_public_metrics_tweet_count      INTEGER        
-        tweet_mentions_author_public_metrics_listed_count     INTEGER        
+        tweet_mentions_author_id                              STRING         The ID of the author mentioned in the Tweet
+        tweet_mentions_author_protected                       BOOL           Whether the Tweets of the mentioned author are visible only to followers
+        tweet_mentions_author_location                        STRING         The location of the mentioned author
+        tweet_mentions_author_verified                        BOOL           Whether the account of the mentioned author is verified
+        tweet_mentions_author_profile_image_url               STRING         The profile image URL of the mentioned author
+        tweet_mentions_author_description                     STRING         The profile description of the mentioned author
+        tweet_mentions_author_created_at                      TIMESTAMP      The date that the mentioned author was created at
+        tweet_mentions_author_pinned_tweet_id                 STRING         The ID of the mentioned author's pinned Tweet
+        tweet_mentions_author_url                             STRING         The mentioned author's profile URL
+        tweet_mentions_author_name                            STRING         The mentioned author's name
+        tweet_mentions_author_public_metrics_followers_count  INTEGER        The number of entites following the mentioned author
+        tweet_mentions_author_public_metrics_following_count  INTEGER        The number of entities the mentioned author follows
+        tweet_mentions_author_public_metrics_tweet_count      INTEGER        The total number of Tweets posted by the mentioned author
+        tweet_mentions_author_public_metrics_listed_count     INTEGER        The number of public lists that the mentioned author is a member of
 
 
 
 author_description_schema
 -------------------------
         author_id                                             STRING         Unique ID for this author (from Twitter)
-        author_description_hashtags_start                     STRING         
-        author_description_hashtags_end                       STRING         
-        author_description_hashtags_tag                       STRING
-        author_description_cashtags_start                     STRING
-        author_description_cashtags_end                       STRING
-        author_description_cashtags_tag                       STRING
-        author_description_mentions_start                     STRING         
-        author_description_mentions_end                       STRING         
-        author_description_mentions_username                  STRING         
-        author_description_urls_start                         STRING         
-        author_description_urls_end                           STRING         
-        author_description_urls_url                           STRING         
-        author_description_urls_expanded_url                  STRING         
-        author_description_urls_display_url                   STRING         
+        author_description_hashtags_start                     STRING         The start position (zero-based) of the recognized Hashtag within the author description. All start indices are inclusive
+        author_description_hashtags_end                       STRING         The end position (zero-based) of the recognized Hashtag within the author description. This end index is exclusive
+        author_description_hashtags_tag                       STRING         The text of the Hashtag within in the author description
+        author_description_cashtags_start                     STRING         The start position (zero-based) of the recognized Cashtag within the author description. All start indices are inclusive
+        author_description_cashtags_end                       STRING         The end position (zero-based) of the recognized Cashtag within the author description. This end index is exclusive
+        author_description_cashtags_tag                       STRING         The text of the Cashtag within in the author description
+        author_description_mentions_start                     STRING         The start position (zero-based) of the recognized mentioned entity within the author description. All start indices are inclusive
+        author_description_mentions_end                       STRING         The end position (zero-based) of the recognized mentioned entity within the author description. This end index is exclusive
+        author_description_mentions_username                  STRING         The username of the recognized mentioned entity within in the author description
+        author_description_urls_start                         STRING         The start position (zero-based) of the recognized URL within the author description. All start indices are inclusive
+        author_description_urls_end                           STRING         The end position (zero-based) of the recognized URL within the author description. This end index is exclusive
+        author_description_urls_url                           STRING         The recognised URL within in the author description
+        author_description_urls_expanded_url                  STRING         The recognised URL within in the author description (fully resolved)
+        author_description_urls_display_url                   STRING         The recognised URL within in the author description (display)
     
 
 
@@ -207,8 +216,8 @@ interactions_schema
 -------------------
         tweet_id                                              STRING         Unique ID for tweet
         tweet_type                                            STRING         Unique ID for this poll (from Twitter)
-        to_user_id                                            STRING         
-        to_user_username                                      STRING         
+        to_user_id                                            STRING         The ID of the user that the Tweet author has referenced
+        to_user_username                                      STRING         The username of the user that the Tweet author has referenced
     
 
 

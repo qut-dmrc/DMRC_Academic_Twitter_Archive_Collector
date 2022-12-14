@@ -1,0 +1,55 @@
+tweet_schema
+------------
+        id                                  STRING                description           Unique ID for this Tweet (from Twitter)
+        time                                TIMESTAMP             description           When the Tweet was created (UTC)
+        created_at                          STRING                description           When the Tweet was created (UTC)
+        from_user_name                      STRING                description           The username of the user who posted this Tweet
+        text                                STRING                description           Text of the Tweet
+        filter_level                        STRING                description
+        possibly_sensitive                  STRING                description           Indicates whether the URL contained in the Tweet may contain content or media identified as sensitive content
+        withheld_copyright                  INTEGER               description
+        withheld_scope                      INTEGER               description
+        truncated                           STRING                description
+        retweet_count                       INTEGER               description           Count of retweets of Tweet
+        favorite_count                      INTEGER               description           Count of likes of Tweet
+        lang                                STRING                description           Language of the Tweet, if detected by Twitter
+        to_user_name                        STRING                description
+        in_reply_to_status_id               STRING                description
+        quoted_status_id                    STRING                description
+        source                              STRING                description
+        location                            STRING                description
+        lat                                 FLOAT                 description
+        lng                                 FLOAT                 description
+        from_user_id                        STRING                description
+        from_user_realname                  STRING                description
+        from_user_verified                  BOOLEAN               description
+        from_user_description               STRING                description
+        from_user_url                       STRING                description
+        from_user_profile_image_url         STRING                description
+        from_user_utcoffset                 INTEGER               description
+        from_user_timezone                  INTEGER               description
+        from_user_lang                      INTEGER               description
+        from_user_tweetcount                INTEGER               description
+        from_user_followercount             INTEGER               description
+        from_user_friendcount               INTEGER               description
+        from_user_favourites_count          INTEGER               description
+        from_user_listed                    INTEGER               description
+        from_user_withheld_scope            INTEGER               description
+        from_user_created_at                STRING                description
+
+
+hashtags_schema
+---------------
+        tweet_id                            STRING                description           Unique ID for this Tweet (from Twitter)
+        hashtag                             STRING                description
+
+
+mentions_schema
+---------------
+        tweet_id                            STRING                description           Unique ID for this Tweet (from Twitter)
+        user_from_id                        STRING                description
+        user_from_name                      STRING                description
+        user_to_id                          STRING                description
+        user_to_name                        STRING                description
+        mention_type                        STRING                description
+

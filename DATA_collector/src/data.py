@@ -136,7 +136,12 @@ def process_json_data(a_file, csv_filepath, bq, project, dataset, subquery, star
     '''
 
     # Process json 50,000 lines at a time
-    for chunk in pd.read_json(a_file, lines=True, dtype=False, chunksize=50000):
+    if schematype == 'TweetQuery':
+        chunksize = 10000
+    else:
+        chunksize = 50000
+
+    for chunk in pd.read_json(a_file, lines=True, dtype=False, chunksize=chunksize):
         tweets = chunk
         # Rename 'id' field for clarity.
         try:
@@ -615,6 +620,10 @@ def run_DATA():
             You are about to search the following queries:\n''')
             for item in query:
                 print(item)
+            print(f'''
+            Your date range:{start_date} - {end_date}\n
+            Your data will be uploaded to: {project}.{dataset}''')
+
             print(f'''\n
             Total queries: {len(query)}\n\n\nProceed? y/n''')
 
