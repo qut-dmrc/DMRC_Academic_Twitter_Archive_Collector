@@ -74,7 +74,10 @@ This tool is intended for researchers who wish to collect data from the Twitter 
 ####
 8. Open `DATA_collector/config/config_template.yml`.
       1. Set your query parameters:
-         * <b>query:</b> string containing keyword(s) and/or phrase(s), e.g. 'winter OR cold'
+         * <b>query:</b> 
+           * EITHER a string containing keyword(s) and/or phrase(s) up to 1024 characters each, e.g. 'winter OR cold' 
+           * OR a list of search strings (up to 1024 characters each) e.g. ['cats OR kittens', 'dogs OR puppies', 'birds chicks from:albomp']
+
          * <b>start_date:</b> the earliest date to search, in UTC time.
          * <b>end_date:</b> the latest date to search, in UTC time.
       ####
