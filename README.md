@@ -1,8 +1,6 @@
 # DMRC Academic Twitter Archive Collector
 
 <br>
-<br>
-<br>
 
 ### Overview
 
@@ -110,6 +108,30 @@ There is a very good chance that (beneficial!) changes have been made to this re
 <br>
 <br>
 
+
+### Running DATA
+
+------------------------------------
+When you run DATA, you will be asked to select one of two options:
+
+![img_1.png](img_1.png)
+
+#### If you select option 1:
+If your query is a string (i.e. `cats dogs`), DATA will automatically get the counts for your query and ask you if you would like to proceed with your search: 
+<br>
+<br>
+![img_2.png](img_2.png)
+<br>
+<br>
+If your query is a list of strings, i.e. `['cats dogs', 'cats OR dogs', 'cats OR dogs OR birds']`, you will be asked if you would like to check the volume of each query. If you select 'y', a .csv file will be written to your directory containing the counts for each query. If you select 'n', your search will commence.
+<br>
+<br>
+![img_3.png](img_3.png)
+<br>
+<br>
+![img_4.png](img_4.png)
+<br>
+<br>
 ### Output
 
 ------------------------------------
@@ -213,3 +235,16 @@ This log file contains all outputs and can aid in investigating any errors that 
 <br>
 <br>
 
+<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;___________<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;|______|&nbsp;&nbsp;&nbsp;&nbsp;\<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;o&nbsp;&nbsp;o&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;\&nbsp;&nbsp;&nbsp;V&nbsp;&nbsp;/<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;/&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;\<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;|<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;|<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;------m---m-----<br />
+&nbsp;&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;D.A.T.A.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;|<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;-------------------<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;\/<br />   
+<br>

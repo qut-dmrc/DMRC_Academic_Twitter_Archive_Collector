@@ -8,6 +8,7 @@ import humanfriendly
 from humanfriendly import format_timespan
 import traceback
 import re
+import csv
 
 from twarc import Twarc2, expansions
 from google.cloud import bigquery
@@ -67,6 +68,54 @@ def get_pre_search_counts(*args):
 
     return archive_search_counts, readable_time_estimate
 
+def get_batch_pre_search_counts(query, start_date, end_date, client, dataset):
+
+    # Make directory to save counts data into
+    dir_name = f'{cwd}/my_collections/{dataset}'
+    # set_directory(dir_name, folder=dataset)
+    set_up_directories(logfile_filepath, dir_name, folder, json_filepath, csv_filepath, error_filepath)
+    counts_list = []
+
+    field_names = ['Query', 'Start_date', 'End_date', 'Count']
+    with open(f'{dir_name}/{dataset}.csv', 'w') as f:
+        writer = csv.DictWriter(f, fieldnames=field_names)
+        writer.writeheader()
+
+        for keyword in query:
+            if 'url' in keyword:
+                query = keyword
+            else:
+                query = keyword
+            # Run counts_all search
+            count_tweets = client.counts_all(query=query, start_time=start_date, end_time=end_date)
+            time.sleep(0.5)
+            # Append each page of data to list
+            tweet_counts_data = []
+
+            page_count = 0
+            for page in count_tweets:
+                page_count = page_count + 1
+                print(f"\rCounting Tweets, page {page_count}...", end="")
+                tweet_counts_data.append(page)
+
+            # Combine all ["meta"]["total_tweet_count"] and sum for total tweets
+            tweet_counts = []
+            for i in range(len(tweet_counts_data)):
+                total = (tweet_counts_data[i]["meta"]["total_tweet_count"])
+                tweet_counts.append(total)
+
+            # Get total tweet counts
+            total_tweet_counts = sum(tweet_counts)
+            print(f'\n{query}:\n{total_tweet_counts} tweets\n')
+            counts_data = f'{query}, {start_date}, {end_date}, {total_tweet_counts}'
+            counts_list.append({'Query': query, 'Start_date': start_date, 'End_date': end_date, 'Count': total_tweet_counts})
+
+            f.write(counts_data + '\n')
+
+        archive_search_counts = counts_list
+
+    return archive_search_counts
+
 def calculate_interval(start_date, end_date, archive_search_counts, schematype):
     '''
     Calculates an appropriate interval to serve as number of days per json file collected. Helps to keep file sizes and
@@ -99,17 +148,16 @@ def collect_archive_data(bq, project, dataset, to_collect, not_to_collect, expec
     Leads to the process_json_data() function.
     '''
 
+    logging.info('-----------------------------------------------------------------------------------------')
     logging.info('Commencing data collection...')
     # Collect archive data one interval at a time using the Twarc search_all endpoint
     if len(to_collect) > 0:
         for a_file in to_collect:
-            # logging.info('-----------------------------------------------------------------------------------------')
-            logging.info(f'Collecting file {a_file}')
             start, end = expected_files[a_file]
             if type(query) == list:
                 logging.info(f'Query {query_count} of {len(list(query))}')
-
             logging.info(f'Query: {subquery} from {start} to {end}')
+            logging.info(f'Collecting file {a_file}')
 
             # Twarc search_all
             search_results = client.search_all(query=subquery, start_time=start, end_time=end, max_results=100)
@@ -427,7 +475,7 @@ def capture_error_string(error, error_filepath):
 
 def notify_completion(bq, search_start_time, project, dataset, start_date, end_date, option_selection, archive_search_counts, subquery, interval):
     '''
-    Calculates duration of search/processing and sends emails to user notifying them of completion.
+    Notifies user of completion.
     '''
 
     search_end_time = datetime.now()
@@ -445,65 +493,41 @@ def notify_completion(bq, search_start_time, project, dataset, start_date, end_d
         lv0_tweet_count = query_total_record_count(table, bq)
         time.sleep(3)
         print_completion(start_date, end_date,
-                              lv0_tweet_count, search_start_time, search_end_time, readable_duration,
-                              number_rows=table.num_rows, project_name=table.project, dataset_name=table.dataset_id,
-                              query=subquery)
-        # logging.info('Completion email sent to user.')
+                              lv0_tweet_count, search_start_time, search_end_time, readable_duration, number_rows=table.num_rows, project_name=table.project, dataset_name=table.dataset_id, query=subquery)
+
     else:
         time.sleep(10)
         print_no_results(start_date, end_date, query=subquery)
-        # logging.info('No results! Email sent to user.')
 
     if option_selection == '2':
         logging.info('json processing complete!')
+        logging.info('-----------------------------------------------------------------------------------------')
     else:
         logging.info('Archive search complete!')
-
-        # Store search data for working out time estimates
-        with open('duration_log.txt', 'a') as f:
-            f.write(
-                f'{search_start_time}, {search_end_time}, {search_duration}, {archive_search_counts}, {interval}\n')
-
+        logging.info('-----------------------------------------------------------------------------------------')
 
 
 def run_DATA():
-    print("""
-    \n
-                                ___________
-                                  |_____|  \  
-                                  | o o |   *
-                                   \ V / 
-                                   /   \ 
-                                  |     |
-                                  |     |
-                              -----m---m-----
-                              |  Thank You! |
-                              ---------------
-                                    \/   
+    '''
+    The starting point. Asks user to select an option from the following:
+        1. Search archive
+            a) If config.Query is a string:
+                DATA will automatically get the Tweet volume via Twarc's counts function. The user will be asked to
+                proceed. If 'y', search/process/push will commence; if 'n', program will exit.
+            b) If config.Query is a list of strings:
+                DATA will list each query and ask the user if they would like to get the volume for each query.
+                    i) If 'y', the volume of each query will be reteieved and saved to a csv file in the
+                    DATA_collector/my_collections/this_collection directory.
+                    Once this is complete, DATA will ask the user if they would like to proceed with the search. If 'y',
+                    search will commence; if 'n', program will exit.
+                    ii) If 'n', search/process/push will commence.
+        2. Process from json
+            DATA will look for .jsonl files in the DATA_collector/json_input_files directory, then ask the user if they
+            would like to proceed. If 'y', files will be processed and pushed to the specified Google BigQuery dataset.
+            If 'n', program will exit.
+    '''
 
-    \n
-    Thank you for using the DMRC Academic Twitter Archive (DATA) Collector!
-    \n
-    If you use this tool to collect data for a publication, please cite me as: 
-    \n
-    Vodden, Laura. (2022). DMRC Academic Twitter Archive (DATA) Collector. Version 1 
-    (Beta). Brisbane: Digital Media Research Centre, Queensland University of Technology. 
-    https://github.com/qut-dmrc/DMRC_Academic_Twitter_Archive_Collector.git
-
-    --------------------------------------------------------------------------
-    \n""")
-
-    time.sleep(2)
-
-    print("""
-    Please make a selection from the following options:
-    \n
-        1 - Search Archive
-        2 - Process JSON File(s)
-        
-    """)
-
-    option_selection = input('>>>')
+    option_selection = print_welcome_screen()
 
     try:
         if option_selection == "1":
@@ -515,57 +539,38 @@ def run_DATA():
             project = GBQ.project_id
             dataset = GBQ.dataset
 
+            # Init ValidateParams class
+            validate_params = ValidateParams()
+
+            # Validate search parameters
+            query, bearer_token, access_key, start_date, end_date, project, dataset = validate_params.validate_search_parameters(
+                query, bearer_token, start_date, end_date, project, dataset)
+
+            # Init SchemaFuncs class
+            schema_funcs = SchemaFuncs()
+
+            # Set schema type
+            schematype = schema_funcs.set_schema_type(Schematype)
+
+            # Initiate a Twarc client instance
+            client = Twarc2(bearer_token=bearer_token)
+
+            # Access BigQuery
+            os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = access_key[0]
+            bq = Client(project=project)
+
             if type(query) == str:
-                # Init ValidateParams class
-                valdate_params = ValidateParams()
-
-                # Validate search parameters
-                query, bearer_token, access_key, start_date, end_date, project, dataset = valdate_params.validate_search_parameters(query, bearer_token, start_date, end_date, project, dataset)
-
-                # Set schema type
-                schema_funcs = SchemaFuncs()
-                schematype = schema_funcs.set_schema_type(Schematype)
-
-                # Initiate a Twarc client instance
-                client = Twarc2(bearer_token=bearer_token)
-
-                # Pre-search archive counts
-                # subquery = query
                 print("Getting Tweet count estimate for your query. Please wait...\n")
                 archive_search_counts, readable_time_estimate = get_pre_search_counts(client, query, start_date, end_date)
 
                 if archive_search_counts > 0:
                     interval, num_intervals = calculate_interval(start_date, end_date, archive_search_counts, schematype)
                     # Print search results for user and ask to proceed
-                    print(f"""
-            \n
-            Please check the below details carefully, and ensure you have enough room in your academic project bearer token quota!
-            \n
-            Your query: {query}
-            Start date: {start_date}
-            End date: {end_date}
-            Destination database: {project}.{dataset}
-            Schema type: {schematype}
-            \n
-            Your archive search will collect approximately {archive_search_counts} tweets (upper estimate).
-            The collection will be distributed across approximately {num_intervals} json files.
-            \n
-            ** Remember to monitor the space on your hard drive! **
-            \n 
-            \n
-            \tProceed? y/n""")
-
-
-                    user_proceed = input('>>>').lower()
+                    user_proceed = get_user_confirmation_string_search(query, start_date, end_date, project, dataset, schematype, archive_search_counts, num_intervals)
 
                     if user_proceed == 'y':
                         sleep(1)
                         set_up_directories(logfile_filepath, dir_name, folder, json_filepath, csv_filepath, error_filepath)
-
-                        # Access BigQuery
-                        os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = access_key[0]
-                        bq = Client(project=project)
-
                         # Set table variable to none, if it gets a value it can be queried
                         table = 0
                         tweet_count = 0
@@ -585,104 +590,133 @@ def run_DATA():
                             traceback_info = capture_error_string(error, error_filepath)
                             logging.info(traceback_info)
                             print_error(dataset, traceback_info)
-                            # logging.info('Error email sent to admin.')
+
                     else:
                         exit()
 
                 else:
                     print_no_results(start_date, end_date, query)
 
+
             elif type(query) == list:
-                # Init ValidateParams class
-                validate_params = ValidateParams()
-
-                # Validate search parameters
-                query, bearer_token, access_key, start_date, end_date, project, dataset = validate_params.validate_search_parameters(query, bearer_token, start_date, end_date, project, dataset)
-
-                # Init SchemaFuncs class
-                schema_funcs = SchemaFuncs()
-
-                # Set schema type
-                schematype = schema_funcs.set_schema_type(Schematype)
-
-                # Initiate a Twarc client instance
-                client = Twarc2(bearer_token=bearer_token)
-
-                # Print queries for user to accept
-                print(f'''
-    -----------------------------------------
-            \n
-    You are about to search the following queries:\n\n''')
-                for item in query:
-                    print(f'\t\t\t\t{item}\n')
-
-                print(f'''
-                \n\t\t\t\tTotal queries: {len(query)}''')
-
-                print(f'''
-    \n
-    -----------------------------------------
-    \n
-    Please check the below details carefully!
-    \n
-    Start date: {start_date}
-    End date: {end_date}
-    Destination database: {project}.{dataset}
-    Schema type: {schematype}
-                \n\n\n\tProceed? y/n''')
-
-                user_proceed = input('>>>').lower()
-
+                user_proceed = get_user_confirmation_batch_counts(query, start_date, end_date, project, dataset, schematype)
                 if user_proceed == 'y':
-                    sleep(1)
-                    set_up_directories(logfile_filepath, dir_name, folder, json_filepath, csv_filepath, error_filepath)
+                    archive_search_counts = get_batch_pre_search_counts(query, start_date, end_date, client, dataset)
+                    # Print search results for user and ask to proceed
+                    user_proceed = get_user_confirmation_batch_search(dataset)
 
-                    # Access BigQuery
-                    os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = access_key[0]
-                    bq = Client(project=project)
+                    if user_proceed == 'y':
+                        # Move to next section and search
+                        user_proceed = 'n'
+                    else:
+                        print('Exiting...')
+                        exit()
 
+                if user_proceed == 'n':
+
+                    # set_up_directories(logfile_filepath, dir_name, folder, json_filepath, csv_filepath, error_filepath)
                     # Set table variable to none, if it gets a value it can be queried
                     table = 0
                     tweet_count = 0
                     query_count = 0
 
-                    try:
-                        for subquery in query:
-                            query_count = query_count + 1
+                    if 'archive_search_counts' in locals():
+                        counts = []
+                        for item in archive_search_counts:
+                            count = item['Count']
+                            counts.append(count)
+                    else:
+                        counts = [None]*len(query)
 
+                    try:
+                        for subquery, count in zip(query, counts):
+                            query_count = query_count + 1
                             # Get current datetime for calculating duration
                             search_start_time = datetime.now()
-                            if 'url' in subquery:
-                                subquery_formatted = subquery
-                            else:
-                                subquery_formatted = subquery
 
-                            # Pre-search archive counts
-                            logging.info('-----------------------------------------------------------------------------------------')
-                            logging.info(f'Getting tweet counts for query: {subquery_formatted}')
-                            archive_search_counts, readable_time_estimate = get_pre_search_counts(client, subquery_formatted, start_date, end_date)
+                            if count == None:
+                                # Pre-search archive counts
+                                logging.info('-----------------------------------------------------------------------------------------')
+                                logging.info(f'Getting tweet counts for query: {subquery}')
+                                archive_search_counts, readable_time_estimate = get_pre_search_counts(client, subquery, start_date, end_date)
+                                count = archive_search_counts
 
-                            logging.info(f'Archive counts: {archive_search_counts}')
+                            logging.info(f'Archive counts: {count}')
 
-                            if archive_search_counts > 0:
+                            if count > 0:
                                 # to_collect, expected files tell the program what to collect and what has already been collected
-                                interval, num_intervals = calculate_interval(start_date, end_date, archive_search_counts, schematype)
+                                interval, num_intervals = calculate_interval(start_date, end_date, count, schematype)
                                 to_collect, not_to_collect, expected_files = set_up_expected_files(start_date, end_date, json_filepath, option_selection, subquery, dataset, interval, query_count)
-
                                 # Call function collect_archive_data()
-                                collect_archive_data(bq, project, dataset, to_collect, not_to_collect, expected_files, client, subquery_formatted, start_date, end_date, csv_filepath, archive_search_counts, tweet_count, query, query_count, schematype)
+                                collect_archive_data(bq, project, dataset, to_collect, not_to_collect, expected_files, client, subquery, start_date, end_date, csv_filepath, count, tweet_count, query, query_count, schematype)
                                 # Notify user of completion
-                                notify_completion(bq, search_start_time, project, dataset, start_date, end_date, option_selection, archive_search_counts, subquery=subquery_formatted, interval=interval)
+                                notify_completion(bq, search_start_time, project, dataset, start_date, end_date, option_selection, count, subquery=subquery, interval=interval)
                             else:
-                                logging.info(f'Archive_counts: {archive_search_counts}')
+                                logging.info(f'Archive_counts: {count}')
 
                     except Exception as error:
                         traceback_info = capture_error_string(error, error_filepath)
                         logging.info(traceback_info)
                         print_error(dataset, traceback_info)
-                        # logging.info('Error email sent to admin.')
+
                 else:
                     exit()
+
+        elif option_selection == '2':
+            # Set project parameters
+            query = 'Process from json file'
+            project = GBQ.project_id
+            dataset = GBQ.dataset
+            archive_search_counts = 0
+            tweet_count = 0
+
+            # Init ValidateParams class
+            valdate_params = ValidateParams()
+            # Validate parameters
+            query, start_date, end_date, dataset, access_key = valdate_params.validate_project_parameters(project,
+                                                                                                          dataset)
+            # Init SchemaFuncs class
+            schema_funcs = SchemaFuncs()
+            # Set schema type
+            schematype = schema_funcs.set_schema_type(Schematype)
+
+            # Get json files from 'json_input_files' directory
+            json_input_files = get_json_input_files()
+
+            user_proceed = get_user_confirmation_json_process(project, dataset, json_input_files)
+
+            if user_proceed == 'y':
+                test = False
+                # Set up directories
+                set_up_directories(logfile_filepath, dir_name, folder, json_filepath, csv_filepath, error_filepath)
+
+                logging.info('-----------------------------------------------------------------------------------------')
+                logging.info('Processing from existing json file(s)...')
+
+                # Access BigQuery
+                os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = access_key[0]
+                bq = Client(project=project)
+
+                # Get current datetime for calculating duration
+                search_start_time = datetime.now()
+
+                filecount = 1
+
+                for a_file in json_input_files:
+                    logging.info( '-----------------------------------------------------------------------------------------')
+                    logging.info(f'Processing file {a_file}')
+                    logging.info(f'File {filecount} of {len(json_input_files)}')
+
+                    filecount = filecount + 1
+
+                    # For each interval (file), process json
+                    tweet_count = process_json_data(a_file, csv_filepath, bq, project, dataset, query, start_date, end_date, archive_search_counts, tweet_count, schematype, test)
+
+                    # Notify user of completion
+                    notify_completion(bq, search_start_time, project, dataset, start_date, end_date, option_selection, archive_search_counts, subquery=query, interval=0)
+
+            else:
+                exit()
 
         elif option_selection == 'lv':
             # Set search parameters
@@ -709,32 +743,20 @@ def run_DATA():
             # Initiate a Twarc client instance
             client = Twarc2(bearer_token=bearer_token)
 
-            # Print queries for user to accept
-            print(f'''
-                -----------------------------------------
-                        \n
-                You are about to search the following queries:\n\n''')
-            for item in query:
-                print(f'\t\t\t\t{item}\n')
-
-            print(f'''
-                            \n\t\t\t\tTotal queries: {len(query)}''')
-
-            print(f'''
-                \n
-                -----------------------------------------
-                \n
-                Please check the below details carefully!
-                \n
-                Start date: {start_date}
-                End date: {end_date}
-                Destination database: {project}.{dataset}
-                Schema type: {schematype}
-                            \n\n\n\tProceed? y/n''')
-
-            user_proceed = input('>>>').lower()
-
+            user_proceed = get_user_confirmation_batch_counts(query, start_date, end_date, project, dataset, schematype)
             if user_proceed == 'y':
+                archive_search_counts = get_batch_pre_search_counts(query, start_date, end_date, client, dataset)
+                # Print search results for user and ask to proceed
+                user_proceed = get_user_confirmation_batch_search(dataset)
+
+                if user_proceed == 'y':
+                    # Move to next section and search
+                    user_proceed = 'n'
+                else:
+                    print('Exiting...')
+                    exit()
+
+            if user_proceed == 'n':
                 sleep(1)
                 set_up_directories(logfile_filepath, dir_name, folder, json_filepath, csv_filepath, error_filepath)
 
@@ -753,17 +775,13 @@ def run_DATA():
 
                         # Get current datetime for calculating duration
                         search_start_time = datetime.now()
-                        if 'url' in subquery:
-                            subquery_formatted = subquery
-                        else:
-                            subquery_formatted = subquery
 
                         # Pre-search archive counts
                         logging.info(
                             '-----------------------------------------------------------------------------------------')
-                        logging.info(f'Getting tweet counts for query: {subquery_formatted}')
+                        logging.info(f'Getting tweet counts for query: {subquery}')
                         archive_search_counts, readable_time_estimate = get_pre_search_counts(client,
-                                                                                              subquery_formatted,
+                                                                                              subquery,
                                                                                               start_date, end_date)
 
                         logging.info(f'Archive counts: {archive_search_counts}')
@@ -779,13 +797,9 @@ def run_DATA():
                                                                                                interval, query_count)
 
                             # Call function collect_archive_data()
-                            collect_archive_data(bq, project, dataset, to_collect, not_to_collect, expected_files,
-                                                 client, subquery_formatted, start_date, end_date, csv_filepath,
-                                                 archive_search_counts, tweet_count, query, query_count, schematype)
+                            collect_archive_data(bq, project, dataset, to_collect, not_to_collect, expected_files, client, subquery, start_date, end_date, csv_filepath, archive_search_counts, tweet_count, query, query_count, schematype)
                             # Notify user of completion
-                            notify_completion(bq, search_start_time, project, dataset, start_date, end_date,
-                                              option_selection, archive_search_counts, subquery=subquery_formatted,
-                                              interval=interval)
+                            notify_completion(bq, search_start_time, project, dataset, start_date, end_date, option_selection, archive_search_counts, subquery=subquery, interval=interval)
                         else:
                             logging.info(f'Archive_counts: {archive_search_counts}')
 
@@ -793,75 +807,10 @@ def run_DATA():
                     traceback_info = capture_error_string(error, error_filepath)
                     logging.info(traceback_info)
                     print_error(dataset, traceback_info)
-                    # logging.info('Error email sent to admin.')
+
             else:
                 exit()
 
-        elif option_selection == '2':
-
-            # Set parameters
-            query = 'Process from json file'
-            project = GBQ.project_id
-            dataset = GBQ.dataset
-
-            archive_search_counts = 0
-            tweet_count = 0
-
-            # Init ValidateParams class
-            valdate_params = ValidateParams()
-
-            # Validate parameters
-            query, start_date, end_date, dataset, access_key = valdate_params.validate_project_parameters(project, dataset)
-
-            # Init SchemaFuncs class
-            schema_funcs = SchemaFuncs()
-
-            # Set schema type
-            schematype = schema_funcs.set_schema_type(Schematype)
-
-            # subquery = query
-
-            # Get json files from 'json_input_files' directory
-            json_input_files = get_json_input_files()
-
-            # Print files to be processed for user to accept
-            print(f'''
-            The following files will be processed and uploaded to {project}.{dataset}:''')
-            for item in json_input_files:
-                print(f'''
-                {item}''')
-            print(f'''\n
-            Total files to process: {len(json_input_files)}\n\n\n\n\tProceed? y/n''')
-
-            user_proceed = input('>>>').lower()
-
-            if user_proceed == 'y':
-                test = False
-                # Set up directories
-                set_up_directories(logfile_filepath, dir_name, folder, json_filepath, csv_filepath, error_filepath)
-
-                logging.info('-----------------------------------------------------------------------------------------')
-                logging.info('Processing from existing json file(s)...')
-
-                # Access BigQuery
-                os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = access_key[0]
-                bq = Client(project=project)
-
-                # Get current datetime for calculating duration
-                search_start_time = datetime.now()
-                filecount = 1
-                for a_file in json_input_files:
-                    logging.info('-----------------------------------------------------------------------------------------')
-                    logging.info(f'Processing file {a_file}')
-                    logging.info(f'File {filecount} of {len(json_input_files)}')
-                    filecount = filecount + 1
-
-                    # For each interval (file), process json
-                    tweet_count = process_json_data(a_file, csv_filepath, bq, project, dataset, query, start_date, end_date, archive_search_counts, tweet_count, schematype, test)
-                    # Notify user of completion
-                    notify_completion(bq, search_start_time, project, dataset, start_date, end_date, option_selection, archive_search_counts, subquery=query, interval=0)
-            else:
-                exit()
         else:
             print('Invalid selection')
 

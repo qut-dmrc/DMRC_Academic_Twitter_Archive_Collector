@@ -145,6 +145,7 @@ def set_up_expected_files(start_date, end_date, json_filepath, option_selection,
         dataset = query
     # Generate dictionary of file names and start and end dates
     # TODO make last filename end date correct
+
     while current_date < end_date:
         expected_files[
             saved_search_path + f"{dataset}{query_count}_{current_date.isoformat()}_{(current_date+window_length).isoformat()}_tweets.jsonl".replace(":", "").replace(" ", "")] = (
