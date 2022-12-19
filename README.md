@@ -29,7 +29,7 @@ This tool is intended for researchers who wish to collect data from the Twitter 
 ### What You Will Need
 
 ------------------------------------
-1. Python 3.8 or newer
+1. [Python 3.8](https://www.python.org ) or newer (if using a work or university PC, ensure you comply with the organisation's installation guidelines)
 2. A valid [Twitter Academic API bearer token](https://developer.twitter.com/en/products/twitter-api/academic-research)
 3. A valid [Google service account and json key](https://cloud.google.com/iam/docs/creating-managing-service-account-keys)
 4. `xGB` free on your local drive for json file storage (the following are estimates and may differ depending on the data collected; you can store these files elsewhere after collection; see <b>Managing Disk Space</b>, below):
@@ -58,7 +58,7 @@ This tool is intended for researchers who wish to collect data from the Twitter 
 
 1. Navigate to a location with enough space to download tweets (refer to <b>What You Will Need</b> section, above) and create a new folder: `mkdir DATA_Collector`.
 2. Navigate into your new directory (`cd DATA_Collector`) and create your virtual environment: `python -m venv DATA_env`.
-3. Activate your virtual environment: `cd DATA_env/Scripts`, then `activate`.
+3. Activate your virtual environment: `cd DATA_env/Scripts`, then `activate`. You should now see (DATA_env) before your path.
 4. Navigate up two levels: `cd ..`, followed by `cd ..`. You should now be in the directory you created in step 1.
 
 5. Clone this repository: `git clone https://github.com/qut-dmrc/DMRC_Academic_Twitter_Archive_Collector.git` and navigate into the cloned directory: `cd DMRC_Academic_Twitter_Archive_Collector`.
@@ -248,6 +248,13 @@ This log file contains all outputs and can aid in investigating any errors that 
 <br>
 <br>
 
+### Frequently Asked Questions
+
+------------------------------------
+Refer to FAQs
+<br>
+<br>
+<br>
 
 ### Problems?
 
