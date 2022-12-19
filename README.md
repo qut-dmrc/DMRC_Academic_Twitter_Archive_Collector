@@ -156,7 +156,7 @@ Depending on the schema type selected, the tool will produce data as shown below
 | TweetQuery  | Backfill/append archive data to an existing TweetQuery table                                           | 1        | tweets_flat                                                                                                                                                                                                                           |
 
 
-A detailed overview of the tables and fields is located at `DMRC_Academic_Twitter_Archive_Collector/supp_docs/schema_descriptions.txt`
+A detailed overview of the tables and fields is located [here](https://github.com/qut-dmrc/DMRC_Academic_Twitter_Archive_Collector/tree/main/supp_docs).
 <br>
 
 <br>
@@ -251,7 +251,7 @@ This log file contains all outputs and can aid in investigating any errors that 
 ### Frequently Asked Questions
 
 ------------------------------------
-Refer to FAQs
+Refer to [FAQs](https://github.com/qut-dmrc/DMRC_Academic_Twitter_Archive_Collector/blob/main/FAQs.md)
 <br>
 <br>
 <br>
@@ -260,19 +260,4 @@ Refer to FAQs
 
 ------------------------------------
 This is an ongoing development project. If you have any problems or further questions, please send an email to laura.vodden@qut.edu.au.
-
-<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;___________<br />
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;|______|&nbsp;&nbsp;&nbsp;&nbsp;\<br />
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;o&nbsp;&nbsp;o&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*<br />
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;\&nbsp;&nbsp;&nbsp;V&nbsp;&nbsp;/<br />
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;/&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;\<br />
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;|<br />
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;|<br />
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;------m---m-----<br />
-&nbsp;&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;Thank You!&nbsp;&nbsp;|<br />
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;-------------------<br />
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;\/<br />   
-<br>
-
 
