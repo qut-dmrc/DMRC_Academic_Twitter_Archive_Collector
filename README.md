@@ -5,13 +5,13 @@
 ### Overview
 
 ------------------------------------
-The <b>DMRC Academic Twitter Archive (DATA)</b> Collector uses the Twarc Python library to collect tweets from Twitter's archive, via the API 2.0 for academic research. It then processes the collected .json files and pushes the data to a designated Google BigQuery database.
+The <b>DMRC Academic Twitter Archive (DATA)</b> Collector uses the [Twarc Python library](https://twarc-project.readthedocs.io/en/latest/twarc2_en_us/) to collect tweets from Twitter's archive, via the API 2.0 for academic research. It then processes the collected .json files and pushes the data to a designated Google BigQuery database.
 Tweets can be collected from as far back as 22 Mar, 2006. 
 
 This tool can also be used to append archive data to an existing <b>TCAT</b> or <b>TweetQuery</b> dataset, and can serve as a backfill tool to supplement previously-collected datasets.
 
 
-You can now also upload a previously collected Twitter API 2.0 json file (e.g. from Twitter's Tweet Downloader) to be processed and pushed to Google BigQuery * . 
+You can now also upload a previously collected Twitter API 2.0 json file (e.g. from [Twitter's Tweet Downloader](https://developer.twitter.com/apitools/downloader)) to be processed and pushed to Google BigQuery * . 
 
 <br>
 <br>
@@ -42,6 +42,7 @@ This tool is intended for researchers who wish to collect data from the Twitter 
 | 5,000,000  | 16 - 18   |
 | 10,000,000 | 30 - 35   |
 
+
 <br>
 <br>
 <br>
@@ -54,27 +55,30 @@ This tool is intended for researchers who wish to collect data from the Twitter 
 <br>  
 
 #### `In cmd/terminal:`
-1. Clone this repository to a location with enough space to download tweets (refer to <b>What You Will Need</b> section, above): 
-`git clone https://github.com/qut-dmrc/DMRC_Academic_Twitter_Archive_Collector.git`.
+
+1. Navigate to a location with enough space to download tweets (refer to <b>What You Will Need</b> section, above) and create a new folder: `mkdir DATA_Collector`.
+2. Create your virtual environment: `python -m venv DATA_env`.
+3. Activate your virtual environment: `cd DATA_env/Scripts`, then `activate`.
+4. Navigate up two levels: `cd ..`, followed by `cd ..`. You should now be in the directory you created in step 1.
+
+5. Clone this repository: `git clone https://github.com/qut-dmrc/DMRC_Academic_Twitter_Archive_Collector.git` and navigate into the cloned directory: `cd DMRC_Academic_Twitter_Archive_Collector`.
 ####
-2. Navigate to the cloned  directory: `cd DMRC_Academic_Twitter_Archive_Collector`.
+6. Install venv requirements: `python -m pip install -r requirements.txt`.
 ####
-3. Install venv requirements: `python -m pip install -r requirements.txt`.
-####
-4. Navigate to the collector: `cd DATA_collector`.
+7. Navigate to the collector: `cd DATA_collector`.
 ####
 <br>  
 
 #### `In your file explorer:`
-6. Navigate to the DATA_collector directory (e.g. `C:/Users/You/Desktop/DMRC_Academic_Twitter_Archive_Collector/DATA_collector`).
+8. Navigate to the `DATA_collector` directory (e.g. `C:/Users/You/Desktop/DMRC_Academic_Twitter_Archive_Collector/DATA_collector`).
 ####
-7. Place your Google BigQuery service key json file into the `DATA_collector/access_key` directory.
+9. Place your Google BigQuery service key json file into the `DATA_collector/access_key` directory.
 ####
-8. Open `DATA_collector/config/config_template.yml`.
+10. Open `DATA_collector/config/config_template.yml`.
       1. Set your query parameters:
          * <b>query:</b> 
-           * EITHER a string containing keyword(s) and/or phrase(s) up to 1024 characters each, e.g. 'winter OR cold' 
-           * OR a list of search strings (up to 1024 characters each) e.g. ['cats OR kittens', 'dogs OR puppies', 'birds chicks from:albomp']
+           * EITHER a string containing keyword(s) and/or phrase(s) up to 1024 characters each, e.g. `'cats OR kittens'` 
+           * OR a list of search strings (up to 1024 characters each) e.g. `['cats OR kittens', 'dogs OR puppies', 'birds chicks from:albomp']`
 
          * <b>start_date:</b> the earliest date to search, in UTC time.
          * <b>end_date:</b> the latest date to search, in UTC time.
@@ -84,16 +88,16 @@ This tool is intended for researchers who wish to collect data from the Twitter 
       ####
       3. Set your Google BigQuery project and dataset:
          * <b>project_id:</b> name of the relevant Google BigQuery billing project. Must match the provided service account key.
-         * <b>dataset:</b> the name of your intended dataset, e.g. 'winter2022'. If it already exists, the data will be appended to the existing dataset; if it does not exist, a new dataset will be created.
+         * <b>dataset:</b> the name of your intended dataset, e.g. `'twitter_pets_2022'`. <b>IMPORTANT</b>: If the dataset already exists, the data will be appended to the existing dataset; if it does not exist, a new dataset will be created.
       ####
       4. Choose your <b>schema type</b> (DATA, TCAT, TweetQuery). `DATA = True` by default. Refer to <b>Output</b>, below, for schema details.
 ####
-9. Rename `config_template.yml` to `config.yml`.
+11. Rename `config_template.yml` to `config.yml`.
 ####
 <br>  
 
 #### `In cmd/terminal:` 
-10. Run `python ./run.py`.
+12. Run `python ./run.py`.
 ###
 ####
 After you run `run.py`, you will be prompted to verify your query config details. If everything is correct, type `y`, otherwise, type `n` to exit and change your input.
@@ -114,22 +118,30 @@ There is a very good chance that (beneficial!) changes have been made to this re
 ------------------------------------
 When you run DATA, you will be asked to select one of two options:
 
-![](imgs/img_1.png)
+![](imgs/img.png)
 
-#### If you select option 1:
+#### <u>If you select option 1</u>:
 If your query is a string (i.e. `cats dogs`), DATA will automatically get the counts for your query and ask you if you would like to proceed with your search: 
 <br>
 <br>
 ![](imgs/img_2.png)
 <br>
 <br>
-If your query is a list of strings, i.e. `['cats dogs', 'cats OR dogs', 'cats OR dogs OR birds']`, you will be asked if you would like to check the volume of each query. If you select 'y', a .csv file will be written to your directory containing the counts for each query. If you select 'n', your search will commence.
+If your query is a list of strings, i.e. `['cats dogs', 'cats OR dogs', 'cats OR dogs OR birds']`, you will be asked if you would like to check the volume of each query. If you select 'y', a .csv file will be written to your directory containing the counts for each query. If you select 'n', you will be asked if you would like to commence your search without running the counts first (i.e. if you already have the counts).
 <br>
 <br>
 ![](imgs/img_3.png)
 <br>
-<br>
+
 ![](imgs/img_4.png)
+
+
+#### <u>If you select option 2</u>:
+
+Option 2 allows the user to process tweets collected using Twarc2, provided the data were collected from the archive endpoint. Additionally, a file collected using DATA (and located in the `my_collections/your_directory/collected_json` directory) can be moved into `DATA_collector/json_input_files` and reprocessed. Files from [Twitter's Tweet Downloader](https://developer.twitter.com/apitools/downloader) can be similarly processed from this directory, but this function is in testing. Refer to <b>Uploading a .json file to be processed</b> section, below.
+<br>
+<br>
+<br>
 <br>
 <br>
 ### Output
@@ -167,18 +179,18 @@ Queries are case insensitive.
 
 #### Operator logic
 
-| Operator    | Logic    | Example                           | What it does                                                                            |
-|-------------|----------|-----------------------------------|-----------------------------------------------------------------------------------------|
-|   | AND      | frosty snowman                    | searches for tweets that contain keywords 'frosty' AND 'snowman'                        |
-| OR          | OR       | frosty OR snowman                 | searches for tweets that contain keywords 'frosty' OR 'snowman'                         |
-| -           | NOT      | frosty -snowman                   | searches for tweets that contain keywords 'frosty', but NOT 'snowman'                   |
-| (&nbsp;&nbsp;) | Grouping | (frosty OR snowman) (carrot nose) | searches for tweets that contain keywords 'frosty' or 'snowman' AND 'carrot' AND 'nose' |  
-| " "       | Exact string | "frosty the snowman" | searches for the exact string as a keyword, e.g. "frosty the snowman" OR carrot |
+| Operator    | Logic    | Example                          | What it does                                                                 |
+|-------------|----------|----------------------------------|------------------------------------------------------------------------------|
+|   | AND      | cats kittens                     | searches for tweets that contain keywords 'cats' AND 'kittens'               |
+| OR          | OR       | cats OR kittens                  | searches for tweets that contain keywords 'cats' OR 'kittens'                |
+| -           | NOT      | cats -kittens                    | searches for tweets that contain keywords 'cats', but NOT 'kittens'          |
+| (&nbsp;&nbsp;) | Grouping | (cats OR kittens) (dogs puppies) | searches for tweets that contain keywords 'cats' or 'kittens' AND 'dogs' AND 'puppies' |  
+| " "       | Exact string | "cats are cute"                  | searches for the exact string as a keyword, e.g. "cats are cute"             |
 
 <br>
 
 #### Order of operations
-AND operators are evaluated before OR operators. For example, 'frosty OR snowman carrot' will be evaluated as 'frosty OR (snowman AND carrot)'.
+AND operators are evaluated before OR operators. For example, 'cats OR dogs puppies' will be evaluated as 'cats OR (dogs AND puppies)'.
 ####
 <br>
 <br>
@@ -231,9 +243,16 @@ Be sure not to remove the current collection file (the newest file in the direct
 ####
 A timestamped log file will be generated at location `DATA_collector/logging` each time you run a collection.
 This log file contains all outputs and can aid in investigating any errors that may arise.
+####
 <br>
 <br>
 <br>
+
+
+### Problems?
+
+------------------------------------
+This is an ongoing development project. If you have any problems or further questions, please send an email to laura.vodden@qut.edu.au.
 
 <br>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;___________<br />
@@ -244,7 +263,9 @@ This log file contains all outputs and can aid in investigating any errors that 
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;|<br />
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;|<br />
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;------m---m-----<br />
-&nbsp;&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;D.A.T.A.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;|<br />
+&nbsp;&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;Thank You!&nbsp;&nbsp;|<br />
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;-------------------<br />
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;\/<br />   
 <br>
+
+

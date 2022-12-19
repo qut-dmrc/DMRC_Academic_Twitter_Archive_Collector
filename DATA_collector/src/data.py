@@ -114,6 +114,9 @@ def get_batch_pre_search_counts(query, start_date, end_date, client, dataset):
 
         archive_search_counts = counts_list
 
+    # print("""\n\t\tYour counts data can be found in DATA_collector/my_collections/{dataset}.
+    # Please check this file to ensure you have enough quota in your API bearer token to run these searches.""")
+
     return archive_search_counts
 
 def calculate_interval(start_date, end_date, archive_search_counts, schematype):
@@ -542,9 +545,11 @@ def run_DATA():
             # Init ValidateParams class
             validate_params = ValidateParams()
 
-            # Validate search parameters
-            query, bearer_token, access_key, start_date, end_date, project, dataset = validate_params.validate_search_parameters(
-                query, bearer_token, start_date, end_date, project, dataset)
+            access_key = validate_params.validate_google_access_key(cwd, project)
+
+            # Access BigQuery
+            os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = access_key[0]
+            bq = Client(project=project)
 
             # Init SchemaFuncs class
             schema_funcs = SchemaFuncs()
@@ -552,12 +557,14 @@ def run_DATA():
             # Set schema type
             schematype = schema_funcs.set_schema_type(Schematype)
 
+            # Validate search parameters
+            query, bearer_token, start_date, end_date, project, dataset = validate_params.validate_search_parameters(
+                query, bearer_token, start_date, end_date, project, dataset, bq, schematype)
+
+
             # Initiate a Twarc client instance
             client = Twarc2(bearer_token=bearer_token)
 
-            # Access BigQuery
-            os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = access_key[0]
-            bq = Client(project=project)
 
             if type(query) == str:
                 print("Getting Tweet count estimate for your query. Please wait...\n")
@@ -599,22 +606,27 @@ def run_DATA():
 
 
             elif type(query) == list:
-                user_proceed = get_user_confirmation_batch_counts(query, start_date, end_date, project, dataset, schematype)
-                if user_proceed == 'y':
+
+                # Ask user if they would like to run batch counts on their list of queries
+                counts_proceed = get_user_confirmation_batch_counts(query, start_date, end_date, project, dataset, schematype)
+
+                # If yes, run counts and ask to proceed with search
+                if counts_proceed == 'y':
                     archive_search_counts = get_batch_pre_search_counts(query, start_date, end_date, client, dataset)
                     # Print search results for user and ask to proceed
-                    user_proceed = get_user_confirmation_batch_search(dataset)
+                    search_proceed = get_user_confirmation_batch_search(dataset)
 
-                    if user_proceed == 'y':
-                        # Move to next section and search
-                        user_proceed = 'n'
-                    else:
-                        print('Exiting...')
-                        exit()
+                # If no, ask if user would like to proceed with search without counts
+                elif counts_proceed == 'n':
+                    search_proceed = get_user_confirmation_batch_search(dataset)
 
-                if user_proceed == 'n':
+                else:
+                    exit()
 
-                    # set_up_directories(logfile_filepath, dir_name, folder, json_filepath, csv_filepath, error_filepath)
+                # If yes, commence search
+                if search_proceed == 'y':
+
+                    set_up_directories(logfile_filepath, dir_name, folder, json_filepath, csv_filepath, error_filepath)
                     # Set table variable to none, if it gets a value it can be queried
                     table = 0
                     tweet_count = 0
@@ -658,9 +670,9 @@ def run_DATA():
                         traceback_info = capture_error_string(error, error_filepath)
                         logging.info(traceback_info)
                         print_error(dataset, traceback_info)
-
                 else:
                     exit()
+
 
         elif option_selection == '2':
             # Set project parameters
@@ -671,14 +683,21 @@ def run_DATA():
             tweet_count = 0
 
             # Init ValidateParams class
-            valdate_params = ValidateParams()
-            # Validate parameters
-            query, start_date, end_date, dataset, access_key = valdate_params.validate_project_parameters(project,
-                                                                                                          dataset)
+            validate_params = ValidateParams()
+
+            access_key = validate_params.validate_google_access_key(cwd, project)
+
+            # Access BigQuery
+            os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = access_key[0]
+            bq = Client(project=project)
+
             # Init SchemaFuncs class
             schema_funcs = SchemaFuncs()
             # Set schema type
             schematype = schema_funcs.set_schema_type(Schematype)
+
+            # Validate parameters
+            query, start_date, end_date, dataset = validate_params.validate_project_parameters(project, dataset, bq, schematype)
 
             # Get json files from 'json_input_files' directory
             json_input_files = get_json_input_files()
@@ -693,9 +712,6 @@ def run_DATA():
                 logging.info('-----------------------------------------------------------------------------------------')
                 logging.info('Processing from existing json file(s)...')
 
-                # Access BigQuery
-                os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = access_key[0]
-                bq = Client(project=project)
 
                 # Get current datetime for calculating duration
                 search_start_time = datetime.now()
@@ -730,15 +746,21 @@ def run_DATA():
             # Init ValidateParams class
             validate_params = ValidateParams()
 
-            # Validate search parameters
-            query, bearer_token, access_key, start_date, end_date, project, dataset = validate_params.validate_search_parameters(
-                query, bearer_token, start_date, end_date, project, dataset)
+            access_key = validate_params.validate_google_access_key(cwd, project)
+
+            # Access BigQuery
+            os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = access_key[0]
+            bq = Client(project=project)
 
             # Init SchemaFuncs class
             schema_funcs = SchemaFuncs()
 
             # Set schema type
             schematype = schema_funcs.set_schema_type(Schematype)
+
+            # Validate search parameters
+            query, bearer_token, start_date, end_date, project, dataset = validate_params.validate_search_parameters(
+                query, bearer_token, start_date, end_date, project, dataset, bq, schematype)
 
             # Initiate a Twarc client instance
             client = Twarc2(bearer_token=bearer_token)
@@ -759,10 +781,6 @@ def run_DATA():
             if user_proceed == 'n':
                 sleep(1)
                 set_up_directories(logfile_filepath, dir_name, folder, json_filepath, csv_filepath, error_filepath)
-
-                # Access BigQuery
-                os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = access_key[0]
-                bq = Client(project=project)
 
                 # Set table variable to none, if it gets a value it can be queried
                 table = 0

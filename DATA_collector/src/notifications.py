@@ -23,8 +23,8 @@ def print_welcome_screen():
         \n
         If you use this tool to collect data for a publication, please cite me as: 
         \n
-        Vodden, Laura. (2022). DMRC Academic Twitter Archive (DATA) Collector. Version 1 
-        (Beta). Brisbane: Digital Media Research Centre, Queensland University of Technology. 
+        Vodden, Laura. (2022). DMRC Academic Twitter Archive (DATA) Collector. Version 1. 
+        Brisbane: Digital Media Research Centre, Queensland University of Technology. 
         https://github.com/qut-dmrc/DMRC_Academic_Twitter_Archive_Collector.git
 
         --------------------------------------------------------------------------
@@ -88,7 +88,6 @@ def get_user_confirmation_batch_counts(query, start_date, end_date, project, dat
         Schema type: {schematype}
                     \n\n\n\tWould you like to run a batch counts analysis for these queries before your search (this will not affect your API quota)?
                     \n\tThis could take a while if you have many queries.
-                    \n\tIf you select 'n', your search will commence.
                     \n\ty/n\n''')
 
     user_proceed = input('>>>').lower()
@@ -97,9 +96,8 @@ def get_user_confirmation_batch_counts(query, start_date, end_date, project, dat
 
 def get_user_confirmation_batch_search(dataset):
     print(f"""
-    \n\t\tYour counts data can be found in DATA_collector/my_collections/{dataset}.
-    Please check this file to ensure you have enough quota in your API bearer token to run these searches.
                 \n\t\tWould you like to search these queries?
+                \n\t\t  ** Remember to monitor the space on your hard drive! **
                 \n\t\ty/n
                 """)
 

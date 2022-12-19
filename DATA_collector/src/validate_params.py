@@ -5,8 +5,10 @@ Contains functions for validating user input
 import pandas as pd
 import re
 import pytz
+from google.cloud.exceptions import NotFound
 
 from .set_up_directories import *
+from .bq_schema import DATA_schema, TCAT_schema, TweetQuery_schema
 
 pd.options.mode.chained_assignment = None
 import warnings
@@ -15,8 +17,31 @@ warnings.simplefilter(action='ignore', category=pd.errors.PerformanceWarning)
 
 
 class ValidateParams:
+    def validate_google_access_key(self, cwd, project):
+        '''
+        Checks that the Google access key supplied is valid for the project specified in config.yml
+        '''
 
-    def validate_search_parameters(self, query, bearer_token, start_date, end_date, project, dataset):
+        # Check for Google access key; looks for .json service account key in the 'access_key' dir
+        if glob.glob(f'{cwd}/access_key/*.json'):
+            access_key = glob.glob(f'{cwd}/access_key/*.json')
+            with open(access_key[0], 'r') as f:
+                contents = f.read()
+                if f'"project_id": "{project}"' in contents:
+                    access_key = access_key
+                else:
+                    access_key = None
+                    print(
+                        f'The Google service key provided is not valid for the project specified in config.yml.'
+                        f'\nPlease ensure it is the correct one for the {project} project.')
+        else:
+            access_key = None
+            print(f'Please enter a valid Google service account access key.')
+            exit()
+
+        return access_key
+
+    def validate_search_parameters(self, query, bearer_token, start_date, end_date, project, dataset, bq, schematype):
         '''
         Validates search parameters when Option 1 (Search Archive) selected.
         Unable to check bearer token validity beyond ensuring it is in config.yml; checks for presence only.
@@ -57,13 +82,6 @@ class ValidateParams:
             bearer_token = None
             print('Please enter a valid bearer token for Twitter API access.')
 
-        # Check for Google access key; looks for .json service account key in the 'access_key' dir
-        if glob.glob(f'{cwd}/access_key/*.json'):
-            access_key = glob.glob(f'{cwd}/access_key/*.json')
-        else:
-            access_key = None
-            print('Please enter a valid Google service account access key')
-
         # Ensure start date is in the past, but must be before end date
         if start_date < end_date:
             start_date = start_date
@@ -81,7 +99,7 @@ class ValidateParams:
             end_date = None
             print('End date cannot be in the future.')
 
-        # Check project name entered; checks len for presence of a project string and checks invalid characters
+        # Check project name entered; checks len for presence of a project string and checks invalid character.
         if len(project) > 0:
             if bool(re.match("^[A-Za-z0-9-]*$", project)) == True:
                 project = project
@@ -92,10 +110,43 @@ class ValidateParams:
             project = None
             print('No project in config.')
 
-        # Check dataset name entered; checks len for presence of a dataset string and checks invalid characters
+        # Check dataset name entered; checks len for presence of a dataset string and checks invalid characters. If
+        # specified dataset already exists, ask user to confirm if it is ok to append to that dataset. Otherwise, exit.
         if len(dataset) > 0:
             if bool(re.match("^[A-Za-z0-9_]*$", dataset)) == True:
                 dataset = dataset
+                # Create dataset if one does not exist
+                try:
+                    ds = bq.get_dataset(dataset)
+                    print(f"""The {project}.{dataset} dataset already exists. If you choose to proceed, your data will be appended to this dataset.
+                          \n\tOk? y/n""")
+
+                    user_input = input('>>>').lower()
+
+                    if user_input == 'y':
+                        # Check that the specified schematype matches the schema of the destination dataset
+                        if schematype == 'TweetQuery':
+                            table = bq.get_table(f'{project}.{dataset}.tweets_flat')  # Make an API request.
+                            chosen_schema = TweetQuery_schema.tweets_flat_schema
+                        elif schematype == 'TCAT':
+                            table = bq.get_table(f'{project}.{dataset}.tweets')  # Make an API request.
+                            chosen_schema = TCAT_schema.tweet_schema
+                        else:
+                            table = bq.get_table(f'{project}.{dataset}.tweets')  # Make an API request.
+                            chosen_schema = DATA_schema.tweet_schema
+
+                        dest_schema = table.schema
+
+                        if len(chosen_schema) == len(dest_schema):
+                            dataset = dataset
+                        else:
+                            print(f'\nTo append to this dataset, please ensure the schema specified in config.yml matches that of {project}.{dataset}.')
+                            dataset = None
+                    else:
+                        exit()
+
+                except NotFound:
+                    pass
             else:
                 print('Invalid dataset name. Dataset names may contain letters, numbers and underscores.')
                 dataset = None
@@ -104,8 +155,9 @@ class ValidateParams:
             print('No dataset in config.')
 
 
+
         # If any of the above parameters are None, exit program; else, proceed.
-        if None in [query, bearer_token, access_key, start_date, end_date, project, dataset]:
+        if None in [query, bearer_token, start_date, end_date, project, dataset]:
             print("""
             \n 
         Exiting...
@@ -117,9 +169,9 @@ class ValidateParams:
         Config input valid!
             \n""")
 
-            return query, bearer_token, access_key, start_date, end_date, project, dataset
+            return query, bearer_token, start_date, end_date, project, dataset
 
-    def validate_project_parameters(self, project, dataset):
+    def validate_project_parameters(self, project, dataset, bq, schematype):
         '''
         Validates project parameters when Option 2 (Process from .json) is selected.
         If parameter is invalid, then parameter=None and program will notify user and exit.
@@ -129,14 +181,7 @@ class ValidateParams:
         start_date = ''
         end_date = ''
 
-        # Check for Google access key; looks for .json service account key in the 'access_key' dir
-        if glob.glob(f'{cwd}/access_key/*.json'):
-            access_key = glob.glob(f'{cwd}/access_key/*.json')
-        else:
-            access_key = None
-            print('Please enter a valid Google service account access key')
-
-        # Check project name entered; checks len for presence of a project string and checks invalid characters
+        # Check project name entered; checks len for presence of a project string and checks invalid character.
         if len(project) > 0:
             if bool(re.match("^[A-Za-z0-9-]*$", project)) == True:
                 project = project
@@ -147,10 +192,44 @@ class ValidateParams:
             project = None
             print('No project in config.')
 
-        # Check dataset name entered; checks len for presence of a dataset string and checks invalid characters
+        # Check dataset name entered; checks len for presence of a dataset string and checks invalid characters. If
+        # specified dataset already exists, ask user to confirm if it is ok to append to that dataset. Otherwise, exit.
         if len(dataset) > 0:
             if bool(re.match("^[A-Za-z0-9_]*$", dataset)) == True:
                 dataset = dataset
+                # Create dataset if one does not exist
+                try:
+                    ds = bq.get_dataset(dataset)
+                    print(f"""The {project}.{dataset} dataset already exists. Your data will be appended to this dataset.
+                              \nOk? y/n""")
+
+                    user_input = input('>>>').lower()
+
+                    if user_input == 'y':
+                        # Check that the specified schematype matches the schema of the destination dataset
+                        if schematype == 'TweetQuery':
+                            table = bq.get_table(f'{project}.{dataset}.tweets_flat')  # Make an API request.
+                            chosen_schema = TweetQuery_schema.tweets_flat_schema
+                        elif schematype == 'TCAT':
+                            table = bq.get_table(f'{project}.{dataset}.tweets')  # Make an API request.
+                            chosen_schema = TCAT_schema.tweet_schema
+                        else:
+                            table = bq.get_table(f'{project}.{dataset}.tweets')  # Make an API request.
+                            chosen_schema = DATA_schema.tweet_schema
+
+                        dest_schema = table.schema
+
+                        if len(chosen_schema) == len(dest_schema):
+                            dataset = dataset
+                        else:
+                            print(
+                                f'\nTo append to this dataset, please ensure the schema specified in config.yml matches that of {project}.{dataset}.')
+                            dataset = None
+                    else:
+                        exit()
+
+                except NotFound:
+                    pass
             else:
                 print('Invalid dataset name. Dataset names may contain letters, numbers and underscores.')
                 dataset = None
@@ -158,4 +237,5 @@ class ValidateParams:
             dataset = None
             print('No dataset in config.')
 
-        return query, start_date, end_date, dataset, access_key
+        return query, start_date, end_date, dataset
+
