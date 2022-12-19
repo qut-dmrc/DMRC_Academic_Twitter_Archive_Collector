@@ -46,3 +46,15 @@ According to Twitter, the counts endpoint is not subject to the same compliance 
 
 <br>
 <br>
+
+#### I lost my connection/Windows forced an update/something went wrong during processing/uploading to BigQuery. Do I have to re-collect these files?
+If you've had an external issue, and this issue occurred during the <i>processing</i> or <i>uploading</i> stage, you can move your collected json files from `DATA_collector/my_collections/your_directory/collected_json` to `DATA_collector/json_input_files`. Run DATA again and select option 2 to process the files without re-collecting. If the issue was a program error, send an email with the log file attached to laura.vodden@qut.edu.au.
+
+<br>
+<br>
+
+#### Where can I find my log file?
+Log files are located in `DATA_collector/logging`.
+
+<br>
+<br>
