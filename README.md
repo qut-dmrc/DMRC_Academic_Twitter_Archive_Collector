@@ -56,7 +56,7 @@ This tool is intended for researchers who wish to collect data from the Twitter 
 
 #### `In cmd/terminal:`
 
-1. Navigate to a location with enough space to download tweets (refer to <b>What You Will Need</b> section, above) and create a new folder: `mkdir DATA_Collector`.
+1. Navigate to a location with enough space to download tweets (refer to <b>What You Will Need</b> section, above) and create a new folder: `mkdir DMRC_DATA`.
 2. Navigate into your new directory (`cd DATA_Collector`) and create your virtual environment: `python -m venv DATA_env`.
 3. Activate your virtual environment: `cd DATA_env/Scripts`, then `activate`. You should now see (DATA_env) before your path.
 4. Navigate up two levels: `cd ..`, followed by `cd ..`. You should now be in the directory you created in step 1.
