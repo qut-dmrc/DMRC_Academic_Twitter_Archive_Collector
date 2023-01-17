@@ -19,7 +19,7 @@
 3.	Near the top of the Service Accounts pane, click ‘Create Service Account’.
 4.	Give your service account a name (i.e. laura_serviceaccount). A Service Account ID will be generated. Optionally, give your service account a description.
 5.	Click ‘Create and Continue’.
-6.	Grant ‘BigQuery User’ AND 'BigQuery Data Viewer' permissions to this service account (filter to search list).
+6.	Grant `BigQuery User` AND `BigQuery Data Viewer` permissions to this service account (filter to search list).
 7.	Click continue
 8.	Ignore step 3 and click ‘Done’.
 9.	Your Service Account will now appear in the list in the Service Account pane. Click the three dots to the left under ‘Actions’ and select ‘Manage Keys’.
