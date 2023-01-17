@@ -1,4 +1,4 @@
-## Setting up a Google Service Account and Acquiring json key
+## Setting up a Google Service Account and generating a json key
 
 ### Google Cloud project setup
 
