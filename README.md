@@ -61,8 +61,8 @@ This tool is intended for researchers who wish to collect data from the Twitter 
 3. Activate your virtual environment: `cd DATA_env/Scripts`, then `activate`. You should now see (DATA_env) before your path.
 4. Navigate up two levels: `cd ..`, followed by `cd ..`. You should now be in the directory you created in step 1.
 
-5. Clone this repository: `git clone https://github.com/qut-dmrc/DMRC_Academic_Twitter_Archive_Collector.git` and navigate into the cloned directory: `cd DMRC_Academic_Twitter_Archive_Collector`.
-    <b>ALTERNATIVELY</b>: Click the green 'Code' button at the top left of the [repository](https://github.com/qut-dmrc/DMRC_Academic_Twitter_Archive_Collector) pane, select 'Download ZIP' and extract the contents to your new DMRC_DATA            directory. 
+5. Clone this repository: `git clone https://github.com/qut-dmrc/DMRC_Academic_Twitter_Archive_Collector.git`.
+    <b>ALTERNATIVELY</b>: Click the green 'Code' button at the top left of the [repository](https://github.com/qut-dmrc/DMRC_Academic_Twitter_Archive_Collector) pane, select 'Download ZIP' and extract the contents to your new DMRC_DATA directory. Navigate into the cloned directory: `cd DMRC_Academic_Twitter_Archive_Collector`.
 ####
 6. Install venv requirements: `python -m pip install -r requirements.txt`.
 ####
