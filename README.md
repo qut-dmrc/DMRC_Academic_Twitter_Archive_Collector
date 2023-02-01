@@ -29,7 +29,7 @@ This tool is intended for researchers who wish to collect data from the Twitter 
 ### What You Will Need
 
 ------------------------------------
-1. [Python 3.8](https://www.python.org ) or newer (if using a work or university PC, ensure you comply with the organisation's installation guidelines)
+1. [Python 3.8 to 3.10](https://www.python.org ) (if using a work or university PC, ensure you comply with the organisation's installation guidelines)
 2. A valid [Twitter Academic API bearer token](https://developer.twitter.com/en/products/twitter-api/academic-research)
 3. A valid [Google service account and json key](https://github.com/qut-dmrc/DMRC_Academic_Twitter_Archive_Collector/blob/main/how_to_set_up_google_service_account.md)
 4. `xGB` free on your local drive for json file storage (the following are estimates and may differ depending on the data collected; you can store these files elsewhere after collection; see <b>Managing Disk Space</b>, below):
