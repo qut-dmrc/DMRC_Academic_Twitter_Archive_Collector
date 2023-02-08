@@ -146,6 +146,15 @@ def set_up_expected_files(start_date, end_date, json_filepath, option_selection,
     # Generate dictionary of file names and start and end dates
     # TODO make last filename end date correct
 
+    # if interval == 1:
+    #     while current_date < end_date:
+    #         expected_files[
+    #             saved_search_path + f"{dataset}{query_count}_{current_date.isoformat()[:-6]}_{end_date.isoformat()[:-6]}_tweets.jsonl".replace(":", "").replace(" ", "")] = (
+    #             current_date,
+    #             current_date + window_length
+    #         )
+    #         current_date += window_length
+    # else:
     while current_date < end_date:
         expected_files[
             saved_search_path + f"{dataset}{query_count}_{current_date.isoformat()[:-6]}_{(current_date+window_length).isoformat()[:-6]}_tweets.jsonl".replace(":", "").replace(" ", "")] = (
@@ -159,15 +168,30 @@ def set_up_expected_files(start_date, end_date, json_filepath, option_selection,
     # TODO make this nicer - this is very makeshift.
     #  The idea is to change the last end date in the dict to the end date in the config.
     #  It is based on the window length so usually the end date is extended to the next interval.
+
+    last_file_start_date = current_date-window_length
+    last_file_end_date = end_date
+    last_file_name = saved_search_path + f"{dataset}{query_count}_{last_file_start_date.isoformat()[:-6]}_{last_file_end_date.isoformat()[:-6]}_tweets.jsonl".replace(":", "").replace(" ", "")
+
+    # Converting tuples to lists so that the last expected file can be edited
     kvps = list(expected_files.items())
     kvps_list = list(kvps[-1])
+
+    # Change last expected file filename
+    kvps_list[0] = last_file_name
     kvps_list_list = list(kvps_list[-1])
+
+    # Change last expected file end date
     kvps_list_list[-1] = Query.end_date
+
+    # Convert backt to tuples
     kvps_list_list = tuple(kvps_list_list)
     kvps_list[-1] = kvps_list_list
     kvps[-1] = tuple(kvps_list)
 
+    # New expected files with correct end date
     expected_files = dict(kvps)
+
     collected_files = glob.glob(saved_search_path + "*jsonl")
     collected_files = set([filename.replace('\\', '/') for filename in collected_files])
     files_to_collect = set(expected_files) - collected_files
