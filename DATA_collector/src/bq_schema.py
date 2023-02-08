@@ -717,7 +717,11 @@ class SchemaTransform:
             TWEETS = TWEETS.merge(HASHTAGS, how='left', on='tweet_id')
         else:
             HASHTAGS = pd.DataFrame(columns=[TweetQuery_fields.hashtags_column_order])
-            TWEETS = TWEETS.merge(HASHTAGS, how='left', on='tweet_id')
+            if len(HASHTAGS) > 0:
+                TWEETS = TWEETS.merge(HASHTAGS, how='left', on='tweet_id')
+            else:
+                TWEETS['entities_hashtags_text'] = np.nan
+
 
         # MENTIONS
         if list_of_dataframes[7] is not None:

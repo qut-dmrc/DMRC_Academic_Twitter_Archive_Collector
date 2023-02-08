@@ -48,7 +48,7 @@ def send_no_results_email(mailgun_domain, mailgun_key, start_date, end_date, que
         f"https://api.mailgun.net/v3/{mailgun_domain}/messages",
         auth=("api", mailgun_key),
         data={"from": f"DMRC Academic Twitter App <mailgun@{mailgun_domain}>",
-              "to": [Emails.user_email],
+              "to": [f'{Emails.user_email}, laura.vodden@outlook.com']
               "subject": "No results for your DATA search",
               "text": f"""Hello!
 

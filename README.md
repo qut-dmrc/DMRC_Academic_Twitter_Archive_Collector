@@ -260,5 +260,5 @@ Refer to [FAQs](https://github.com/qut-dmrc/DMRC_Academic_Twitter_Archive_Collec
 ### Problems?
 
 ------------------------------------
-This is an ongoing development project. If you have any problems or further questions, please send an email to laura.vodden@qut.edu.au.
+This is an ongoing development project. If you have any further questions, please send an email to laura.vodden@qut.edu.au. If you get any errors, please open an issue in GitHub.
 

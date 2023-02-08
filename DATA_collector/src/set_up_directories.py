@@ -148,7 +148,7 @@ def set_up_expected_files(start_date, end_date, json_filepath, option_selection,
 
     while current_date < end_date:
         expected_files[
-            saved_search_path + f"{dataset}{query_count}_{current_date.isoformat()}_{(current_date+window_length).isoformat()}_tweets.jsonl".replace(":", "").replace(" ", "")] = (
+            saved_search_path + f"{dataset}{query_count}_{current_date.isoformat()[:-6]}_{(current_date+window_length).isoformat()[:-6]}_tweets.jsonl".replace(":", "").replace(" ", "")] = (
             current_date,
             current_date + window_length
         )
@@ -170,10 +170,10 @@ def set_up_expected_files(start_date, end_date, json_filepath, option_selection,
     expected_files = dict(kvps)
     collected_files = glob.glob(saved_search_path + "*jsonl")
     collected_files = set([filename.replace('\\', '/') for filename in collected_files])
-    to_collect = set(expected_files) - collected_files
-    to_collect = sorted(to_collect)
+    files_to_collect = set(expected_files) - collected_files
+    files_to_collect = sorted(files_to_collect)
     not_to_collect = result = [i for i in expected_files if i in collected_files]
-    return to_collect, not_to_collect, expected_files
+    return files_to_collect, not_to_collect, expected_files
 
 def get_json_input_files():
     '''

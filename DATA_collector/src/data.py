@@ -62,7 +62,7 @@ def get_pre_search_counts(*args):
         time_estimate = (archive_search_counts*0.4784919736026976)/2
         readable_time_estimate = format_timespan(time_estimate)
     except requests.exceptions.HTTPError:
-        print(f"\nThere seems to be an issue with your query that wasn't caught at the validation stage. \nIt might be an invalid bearer token.\nIf you are searching for tweets in a specific language, make sure you are using the correct lang code!")
+        print(f"\nThere seems to be an issue with your query that wasn't caught at the validation stage. \nIt might be an invalid bearer token.\nIf you are searching for a phrase containing 'and', ensure you wrap your query in double quotes within single quotes.\nIf you are searching for tweets in a specific language, make sure you are using the correct lang code!")
         exit()
 
 
@@ -131,10 +131,12 @@ def calculate_interval(start_date, end_date, archive_search_counts, schematype):
     ave_tweets_per_file = 100000
     archive_search_counts = archive_search_counts
     if archive_search_counts > 0:
-        interval = search_duration * ave_tweets_per_file / archive_search_counts
-        # if schematype == 'TweetQuery':
-        #     interval = interval / 2
-        num_intervals = round(archive_search_counts/ave_tweets_per_file)
+        if archive_search_counts > ave_tweets_per_file:
+            interval = search_duration * ave_tweets_per_file / archive_search_counts
+            num_intervals = round(archive_search_counts/ave_tweets_per_file)
+        else:
+            interval = search_duration
+            num_intervals = 1
         if num_intervals <= 0:
             num_intervals = 1
     else:
