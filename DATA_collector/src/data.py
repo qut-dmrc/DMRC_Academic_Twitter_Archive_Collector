@@ -562,7 +562,7 @@ def run_DATA():
             access_key = validate_params.validate_google_access_key(cwd, project)
 
             # Access BigQuery
-            os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = access_key[0]
+            os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = access_key
             bq = Client(project=project)
 
             # Init SchemaFuncs class

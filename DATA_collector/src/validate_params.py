@@ -6,6 +6,8 @@ import pandas as pd
 import re
 import pytz
 from google.cloud.exceptions import NotFound
+from google.cloud.bigquery.client import Client
+from google.auth.exceptions import DefaultCredentialsError
 
 from .set_up_directories import *
 from .bq_schema import DATA_schema, TCAT_schema, TweetQuery_schema
@@ -23,23 +25,32 @@ class ValidateParams:
         '''
 
         # Check for Google access key; looks for .json service account key in the 'access_key' dir
-        if glob.glob(f'{cwd}/access_key/*.json'):
-            access_key = glob.glob(f'{cwd}/access_key/*.json')
-            with open(access_key[0], 'r') as f:
+        for potential_key in glob.glob(f'{cwd}/access_key/*.json'):
+            with open(potential_key, 'r') as f:
                 contents = f.read()
                 if f'"project_id": "{project}"' in contents:
-                    access_key = access_key
+                    return potential_key
                 else:
-                    access_key = None
+                    # A key for a different project may still work. Try it out.
+                    os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = potential_key
+                    try:
+                        bq = Client(project=project)
+                        
+                        # see if the project we are looking for is in the list of available projects
+                        available_projects = bq.list_projects()
+                        for auth_project in available_projects:
+                            if str.lower(project) == str.lower(auth_project.friendly_name):
+                                return potential_key
+                    except (TypeError, DefaultCredentialsError):
+                        pass
+                    
                     print(
-                        f'The Google service key provided is not valid for the project specified in config.yml.'
+                        f'The Google service key provided in {potential_key} is not valid for the project specified in config.yml.'
                         f'\nPlease ensure it is the correct one for the {project} project.')
-        else:
-            access_key = None
-            print(f'Please enter a valid Google service account access key.')
-            exit()
-
-        return access_key
+                    continue  # move on to next key in the folder
+        
+        print(f'Please enter a valid Google service account access key.')
+        exit()
 
     def validate_search_parameters(self, query, bearer_token, start_date, end_date, project, dataset, bq, schematype):
         '''
