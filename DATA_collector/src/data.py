@@ -22,7 +22,6 @@ from .fields import DATA_fields, TCAT_fields, TweetQuery_fields, TWEET_fields
 from .set_up_directories import *
 from .validate_params import ValidateParams
 from .process_tables import ProcessTweets, ProcessTables
-from .process_from_v1 import ProcessV1JSON
 
 pd.options.mode.chained_assignment = None
 import warnings
@@ -316,158 +315,6 @@ def process_json_data(a_file, csv_filepath, bq, project, dataset, subquery, star
 
             # Write temp csv files to BigQuery tables
             push_processed_tables_to_bq(bq, project, dataset, list_of_tablenames, csv_filepath, list_of_csv, subquery, start_date, end_date, list_of_schema, list_of_dataframes, schematype)
-
-    return tweet_count, list_of_dataframes
-
-def process_v1_json(a_file, csv_filepath, bq, project, dataset, subquery, start_date, end_date, archive_search_counts, tweet_count, schematype, test):
-    '''
-        For each file collected, process 50,000 lines at a time. This keeps memory usage low while processing at a reasonable rate.
-        Un-nests each tweet object, flattens main Tweet table, then sorts nested columns into separate, flattened tables.
-        All tables are connected to the main Tweet table by either 'tweet_id', 'author_id' or 'poll_id'.
-        '''
-
-    # Process json 50,000 lines at a time
-    if schematype == 'TweetQuery':
-        chunksize = 10000
-    else:
-        chunksize = 50000
-
-    for chunk in pd.read_json(a_file, lines=True, dtype=False, chunksize=chunksize):
-        tweets = chunk
-        # Rename 'id' field for clarity.
-        try:
-            tweets = tweets.rename(columns={'id': 'tweet_id',
-                                            'id_str': 'tweet_id',
-                                            'full_text': 'tweet_text',
-                                            'in_reply_to_status_id_str': 'in_reply_to_status_id',
-                                            'in_reply_to_user_id_str': 'in_reply_to_user_id',
-                                            'in_reply_to_screen_name': 'in_reply_to_username',
-                                            'user': 'author',
-                                            'quoted_status_id_str': 'quoted_status_id',
-                                            'quote_count': 'public_metrics_quote_count',
-                                            'reply_count': 'public_metrics_reply_count',
-                                            'retweet_count': 'public_metrics_retweet_count',
-                                            'favorite_count': 'public_metrics_like_count',
-                                            'extended_entities': 'media',
-                                            'retweeted_status': 'referenced_tweets'
-                                            }, errors='ignore')
-            tweets['tweet_id'] = tweets['tweet_id'].astype(object)
-        except KeyError:
-            print("No 'id' or 'id_str' fields found in dataframe. Exiting...")
-
-        # Init v1 json class
-        v1_processor = ProcessV1JSON()
-
-        # Call function to flatten top level tweets and merge with one-to-one nested columns
-        tweets_flat = v1_processor.flatten_top_tweet_level(tweets)
-        # Start reference_levels_list with tweets_flat only; append lower reference levels to this list
-        reference_levels_list = [tweets_flat]
-
-        reference_levels_list = v1_processor.unpack_referenced_tweets_v1(reference_levels_list)
-        # Get pre-defined fields from fields.py (DATA class)
-        up_a_level_column_list = TWEET_fields.up_a_level_column_list
-        # Copy data from reference levels to previous level, as 'referenced_tweet' columns. This creates 'TWEET' table
-        TWEETS = v1_processor.move_referenced_tweet_data_up(reference_levels_list, up_a_level_column_list)
-
-
-        #TODO add referenced_tweets
-
-
-        # Address retweet truncation issue
-        # # Init ProcessTweets class
-        # process_tweets = ProcessTweets()
-        TWEETS = v1_processor.fix_retweet_truncation(TWEETS)
-
-
-
-        logging.info('TWEETS table built')
-
-        logging.info('Unpacking one-to-many nested columns...')
-
-
-    # getting from process_from_json
-        # Pull entities_mentions from TWEETS for building MENTIONS, AUTHOR DESCRIPTION, AUTHOR_URLS
-        if 'entities_user_mentions' in TWEETS.columns:
-            entities_mentions = v1_processor.extract_entities_data(TWEETS)
-        else:
-            entities_mentions = pd.DataFrame()
-
-
-        # Depending on schema chosen, proceed with table building
-        if Schematype.DATA == True:
-            AUTHOR_DESCRIPTION = None
-            AUTHOR_URLS = v1_processor.build_author_urls_table(TWEETS, entities_mentions)
-            MEDIA = v1_processor.build_media_table(TWEETS)
-            POLL_OPTIONS = None
-            CONTEXT_ANNOTATIONS = None
-            ANNOTATIONS = None
-            HASHTAGS = v1_processor.build_hashtags_table(TWEETS)
-            CASHTAGS = v1_processor.build_cashtags_table(TWEETS)
-            URLS = v1_processor.build_urls_table(TWEETS)
-            TWEETS = v1_processor.extract_quote_reply_users(TWEETS, URLS)
-            MENTIONS = v1_processor.build_mentions_table(entities_mentions)
-            INTERACTIONS = v1_processor.build_interactions_table(TWEETS, URLS, MENTIONS)
-            EDIT_HISTORY = None
-        else:
-            TWEETS = TWEETS.loc[TWEETS['reference_level'] == '0']
-            MENTIONS = v1_processor.build_mentions_table(entities_mentions)
-            INTERACTIONS = v1_processor.build_interactions_table(TWEETS, MENTIONS)
-            HASHTAGS = v1_processor.build_hashtags_table(TWEETS)
-            URLS = v1_processor.build_urls_table(TWEETS)
-            # todo CASHTAGS = SYMBOLS IN TQ
-            CASHTAGS = AUTHOR_DESCRIPTION = AUTHOR_URLS = MEDIA = POLL_OPTIONS = CONTEXT_ANNOTATIONS = ANNOTATIONS = EDIT_HISTORY = None
-
-        # Special case of geo_geo_bbox: convert from column of lists to strings
-        if 'geo_geo_bbox' in TWEETS.columns:
-            TWEETS['geo_geo_bbox'] = TWEETS['geo_geo_bbox'].fillna('')
-            TWEETS['geo_geo_bbox'] = [','.join(map(str, l)) for l in TWEETS['geo_geo_bbox']]
-
-        TWEETS = v1_processor.process_created_at_fields(TWEETS)
-        TWEETS = v1_processor.process_boolean_cols(TWEETS)
-        TWEETS = TWEETS.rename(columns={
-            'tweet_text': 'text_trunc',
-            'text': 'tweet_text'}) \
-            .reset_index(drop=True) \
-            .reindex(columns=DATA_fields.tweet_column_order) \
-            .drop_duplicates()
-
-        TWEETS = v1_processor.fill_blanks_and_nas(TWEETS)
-
-        TWEETS = TWEETS.astype(TWEET_fields.tweet_table_dtype_dict)
-
-        list_of_dataframes = [TWEETS,
-                              MEDIA,
-                              ANNOTATIONS,
-                              CONTEXT_ANNOTATIONS,
-                              HASHTAGS,
-                              CASHTAGS,
-                              URLS,
-                              MENTIONS,
-                              AUTHOR_DESCRIPTION,
-                              AUTHOR_URLS,
-                              POLL_OPTIONS,
-                              INTERACTIONS,
-                              EDIT_HISTORY]
-
-        if test == False:
-            # Init SchemaFuncs class
-            schema_funcs = SchemaFuncs()
-
-            # Proceed according to schema chosen
-            list_of_dataframes, list_of_csv, list_of_tablenames, list_of_schema, tweet_count = schema_funcs.get_schema_type(
-                list_of_dataframes, tweet_count)
-
-            # For each processed json, write to temp csv file
-            for tweetframe, csv_file in zip(list_of_dataframes, list_of_csv):
-                write_processed_data_to_csv(tweetframe, csv_file, csv_filepath)
-            if archive_search_counts > 0:
-                percent_collected = tweet_count / archive_search_counts * 100
-                logging.info(
-                    f'Processed {tweet_count} of {archive_search_counts} collected tweets ({round(percent_collected, 1)}%)')
-
-            # Write temp csv files to BigQuery tables
-            push_processed_tables_to_bq(bq, project, dataset, list_of_tablenames, csv_filepath, list_of_csv, subquery,
-                                        start_date, end_date, list_of_schema, list_of_dataframes, schematype)
 
     return tweet_count, list_of_dataframes
 
@@ -894,8 +741,6 @@ def run_DATA():
 
                     # For each interval (file), process json
                     tweet_count = process_json_data(a_file, csv_filepath, bq, project, dataset, query, start_date, end_date, archive_search_counts, tweet_count, schematype, test)
-
-                    # tweet_count = process_v1_json(a_file, csv_filepath, bq, project, dataset, query, start_date, end_date, archive_search_counts, tweet_count, schematype, test)
 
 
                     # Notify user of completion

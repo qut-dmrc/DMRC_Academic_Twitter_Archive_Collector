@@ -192,7 +192,7 @@ def set_up_expected_files(start_date, end_date, json_filepath, option_selection,
     # New expected files with correct end date
     expected_files = dict(kvps)
 
-    collected_files = glob.glob(saved_search_path + "*jsonl")
+    collected_files = glob.glob(saved_search_path + "*json")
     collected_files = set([filename.replace('\\', '/') for filename in collected_files])
     files_to_collect = set(expected_files) - collected_files
     files_to_collect = sorted(files_to_collect)
@@ -205,8 +205,11 @@ def get_json_input_files():
     '''
     json_input_filepath = f'{cwd}/json_input_files/'
     json_input_files = glob.glob(json_input_filepath + "*jsonl")
-    # json_input_filepath = '//rstore.qut.edu.au/projects/cif/auspubsphere/dmrc_DATA_collection/x_journalism/collected_json/'
-    # json_input_files = glob.glob(json_input_filepath + "*jsonl")
+
+    # json_input_filepath = '//rstore.qut.edu.au/projects/cif/auspubsphere/dmrc_DATA_collection/ausvotes2022_backfill/processed/'
+    # json_input_file = glob.glob(json_input_filepath + "*.json")
+    # json_input_files = [filename.replace('\\', '/') for filename in json_input_file]
+
     # json_input_filepath = 'C:/Users/vodden/PycharmProjects/AWS_boto/pulled_files/done/'
     # json_input_files = glob.glob(json_input_filepath + "*jsonl")
 
