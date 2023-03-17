@@ -1,8 +1,39 @@
-import io
+from io import StringIO, BytesIO
 import pytest
+import pandas as pd
+import json
+
+TEST_ENCODINGS = ['utf-8', 'utf-16', 'utf-32']
 
 @pytest.fixture
-def json_issue_2():
+def three_tweets_with_breaks():
+    tweet = """
+        {"text": "normal \r\ntweet\r with\n \r #hashtag"}
+        {"text": "roles.\rtext\r#Chashtag"}
+        {"text": "normal tweet\r\n without\n\r \n \rhashtag"}
+    """
+    yield StringIO(tweet)
+
+@pytest.fixture
+def json_issue_2_minimal():
+    tweet = """
+        {"text": "normal \r\ntweet\r with\n \r #hashtag"}
+        {"text": "roles.\rtext\ud83d\ude02\ud83d\ude02\r#Chashtag"}
+        {"text": "normal LOVE LOVE him\ud83d\ude02\ud83d\ude02\r#CharlieAn\rhashtag"}
+    """
+    yield StringIO(tweet)
+
+@pytest.fixture
+def json_issue_2_minimal_binary():
+    tweet = b"""\uFEFF
+                {"text": "normal \r\ntweet\r with\n \r #hashtag"}
+                {"text": "roles.\rtext\ud83d\ude02\ud83d\ude02\r#Chashtag"}
+                {"text": "normal tweet\r\n without\n\r \n \rhashtag"}
+                """
+    yield BytesIO(tweet)
+
+@pytest.fixture
+def json_issue_2_complete():
     tweet = """{"context_annotations": [{"domain": {"id": "86", "name": "Movie", "description": "A film like Rogue One: A Star Wars Story"}, "entity": {"id": "1397956463998369794", "name": "Charlie and the Chocolate Factory"}}, 
     {"domain": {"id": "131", "name": "Unified Twitter Taxonomy", "description": "A taxonomy of user interests. "}, "entity": {"id": "1303715075421646849", "name": "Actors"}}, {"domain": {"id": "10", "name": "Person", 
     "description": "Named people in the world like Nelson Mandela"}, "entity": {"id": "878236727621459968", "name": "Johnny Depp", "description": "Johnny Depp"}}, {"domain": {"id": "56", "name": "Actor", 
@@ -30,20 +61,90 @@ def json_issue_2():
                 "verified": false, "name": "Yemi", "description": "Living my best life.", "protected": false, "public_metrics": {"followers_count": 10738, "following_count": 1287, "tweet_count": 353943, "listed_count": 113}, 
                 "location": "A place called forward ", "created_at": "2012-12-28T23:37:33.000Z"}, "__twarc": {"url": "REMOVED", "version": "2.13.0", "retrieved_at": "2023-03-15T15:53:19+00:00"}}"""
     
-    yield io.StringIO(tweet)
+    yield StringIO(tweet)
+    
+
+def test_pandas_read_write_newlines(three_tweets_with_breaks: StringIO):
+    df = pd.read_json(three_tweets_with_breaks, lines=True, dtype=False, encoding='utf-8', encoding_errors='backslashreplace', orient='records')
+    assert df.shape[0] == 3
+    
+    csv_buffer = StringIO()
+    df.to_csv(csv_buffer,index=False, escapechar='|', encoding='utf-8', errors='backslashreplace', header=False)
+
+    # check we wrote all wrotes to csv
+    csv_buffer.seek(0)
+    test_output = csv_buffer.readlines()
+    assert len(test_output) == 3
+    pass
+
+def test_json_surrogate_fails(json_issue_2_minimal: StringIO):
+    with pytest.raises(json.JSONDecodeError):
+        json.load(json_issue_2_minimal)
+
+def test_json_surrogate_fails_binary(json_issue_2_minimal: BytesIO):
+    with pytest.raises(json.JSONDecodeError):
+        json.load(json_issue_2_minimal)
+
+def test_pandas_surrogate_fails(json_issue_2_minimal: StringIO):
+    for encoding in TEST_ENCODINGS:
+        json_issue_2_minimal.seek(0)
+        with pytest.raises(UnicodeEncodeError):
+            df = pd.read_json(json_issue_2_minimal, encoding=encoding, lines=True, orient='records')
+            pass
+
+def test_pandas_surrogate_fails_complete(json_issue_2_complete: StringIO):
+    for encoding in TEST_ENCODINGS:
+        json_issue_2_complete.seek(0)
+        with pytest.raises((UnicodeEncodeError, AssertionError)):
+            df = pd.read_json(json_issue_2_complete, encoding=encoding, lines=True, orient='records')
+            pass
+
+def test_pandas_read_binary(json_issue_2_minimal_binary: StringIO):
+    df = pd.read_json(json_issue_2_minimal, encoding='utf-8')
+
+def test_pandas_to_csv_surrogate_fails(json_issue_2_minimal: StringIO):
+    with pytest.raises(UnicodeEncodeError):
+        df = df.to_csv(json_issue_2_minimal,index=False, escapechar='|', encoding='utf-8', errors='backslashreplace')
+
+def test_pandas_utf16(json_issue_2_minimal: StringIO):    
+    test_input = BytesIO(json_issue_2_minimal.encode('utf-8', errors='backslashreplace'))
+    df = pd.read_json(test_input, lines=True, dtype=False, encoding='utf-8', encoding_errors='backslashreplace', orient='records')
+    
+    # check we read all input and only produced three rows
+    assert len(df['text'].values) == 3
+    assert df.shape[0] == 3
+
+    csv_buffer = StringIO()
+    df.to_csv(csv_buffer,index=False, escapechar='|', encoding='utf-8', errors='backslashreplace')
+
+    # check we wrote all wrotes to csv
+    csv_buffer.seek(0)
+    test_output = csv_buffer.readlines()
+    assert len(test_output) == 3
+    pass
 
 
-def test_unicode_retweets(json_issue_2):
+def test_utf16_retweets(json_issue_2_complete):
     from DATA_collector.src.config import Schematype
     from DATA_collector.src.data import process_json_data
-    tweet_count, list_of_dataframes = process_json_data(json_issue_2, csv_filepath=None, bq=None, project=None, dataset=None, subquery=None, start_date=None, end_date=None, archive_search_counts=0, tweet_count=0, schematype=Schematype.DATA, test=True)
+    tweet_count, list_of_dataframes = process_json_data(json_issue_2_complete, csv_filepath=None, bq=None, project=None, dataset=None, subquery=None, start_date=None, end_date=None, archive_search_counts=0, tweet_count=0, schematype=Schematype.DATA, test=True)
 
     tweets = list_of_dataframes[0]
-    csv_buffer = io.StringIO()
+    csv_buffer = BytesIO()
     tweet_rows = tweets.to_csv(csv_buffer,index=False, escapechar='|')
     
-    # We expec only one row:
+    # We expect only one row:
     assert len(tweet_rows) == 1
 
-    print(tweet_rows)
 
+def test_utf16_retweets_surrogates(json_issue_2_complete):
+    from DATA_collector.src.config import Schematype
+    from DATA_collector.src.data import process_json_data
+    tweet_count, list_of_dataframes = process_json_data(json_issue_2_complete, csv_filepath=None, bq=None, project=None, dataset=None, subquery=None, start_date=None, end_date=None, archive_search_counts=0, tweet_count=0, schematype=Schematype.DATA, test=True)
+
+    tweets = list_of_dataframes[0]
+    csv_buffer = BytesIO()
+    tweet_rows = tweets.to_csv(csv_buffer,index=False, escapechar='|', encoding='utf-8', errors='ignore')
+    
+    # We expect only one row:
+    assert len(tweet_rows) == 1

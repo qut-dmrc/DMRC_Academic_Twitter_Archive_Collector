@@ -145,7 +145,7 @@ def calculate_interval(start_date, end_date, archive_search_counts, schematype):
 
     return interval, num_intervals
 
-def collect_archive_data(bq, project, dataset, to_collect, not_to_collect, expected_files, client, subquery, start_date, end_date, csv_filepath, archive_search_counts, tweet_count, query, query_count, schematype):
+def collect_archive_data(bq, project, dataset, to_collect, not_to_collect, expected_files, client, subquery, start_date, end_date, csv_filepath, archive_search_counts, tweet_count, query, query_count, schematype, local_json_only=False):
     '''
     Uses a dictionary containing expected filename, start_date and end-date, generated in set_up_directories.py.
     For each file in the dictionary, a separate query is run, resulting in e.g. 1 file per day if interval = 1.
@@ -175,17 +175,21 @@ def collect_archive_data(bq, project, dataset, to_collect, not_to_collect, expec
                     with open(a_file, "a") as f:
                         f.write(json_object + "\n")
 
-            # Start processing collected file
-            if os.path.isfile(a_file):
-                logging.info(f'Processing tweet data...')
-                # Process json data
-                tweet_count, list_of_dataframes = process_json_data(a_file, csv_filepath, bq, project, dataset, subquery, start_date, end_date, archive_search_counts, tweet_count, schematype, test=False)
+            if not local_json_only:
+                # Start processing collected file
+                if os.path.isfile(a_file):
+                    logging.info(f'Processing tweet data...')
+                    # Process json data
+                    tweet_count, list_of_dataframes = process_json_data(a_file, csv_filepath, bq, project, dataset, subquery, start_date, end_date, archive_search_counts, tweet_count, schematype, test=False)
+            else:
+                logging.info('JSON files dumped to disk, but this run will not process JSON files further or upload results to BigQuery.')
+
 
     else:
         print_already_collected(dataset, not_to_collect)
         exit()
 
-def process_json_data(a_file, csv_filepath, bq, project, dataset, subquery, start_date, end_date, archive_search_counts, tweet_count, schematype, test):
+def process_json_data(a_file, csv_filepath, bq, project, dataset, subquery, start_date, end_date, archive_search_counts, tweet_count, schematype, test, local_json_only=False):
     '''
     For each file collected, process 50,000 lines at a time. This keeps memory usage low while processing at a reasonable rate.
     Un-nests each tweet object, flattens main Tweet table, then sorts nested columns into separate, flattened tables.
@@ -572,7 +576,7 @@ def run_DATA():
             schematype = schema_funcs.set_schema_type(Schematype)
 
             # Validate search parameters
-            query, bearer_token, start_date, end_date, project, dataset = validate_params.validate_search_parameters(
+            query, bearer_token, start_date, end_date, project, dataset, local_json_only = validate_params.validate_search_parameters(
                 query, bearer_token, start_date, end_date, project, dataset, bq, schematype)
 
 
@@ -603,7 +607,7 @@ def run_DATA():
                             # to_collect, expected files tell the program what to collect and what has already been collected
                             to_collect, not_to_collect, expected_files = set_up_expected_files(start_date, end_date, json_filepath, option_selection,  query, dataset, interval, query_count)
                             # Call function collect_archive_data()
-                            collect_archive_data(bq, project, dataset, to_collect, not_to_collect, expected_files, client, query, start_date, end_date, csv_filepath, archive_search_counts, tweet_count, query, query_count, schematype)
+                            collect_archive_data(bq, project, dataset, to_collect, not_to_collect, expected_files, client, query, start_date, end_date, csv_filepath, archive_search_counts, tweet_count, query, query_count, schematype, local_json_only=local_json_only)
                             # Notify user of completion
                             notify_completion(bq, search_start_time, project, dataset, start_date, end_date, option_selection, archive_search_counts, subquery=query, interval=interval)
 
@@ -740,7 +744,7 @@ def run_DATA():
                     filecount = filecount + 1
 
                     # For each interval (file), process json
-                    tweet_count = process_json_data(a_file, csv_filepath, bq, project, dataset, query, start_date, end_date, archive_search_counts, tweet_count, schematype, test)
+                    tweet_count, list_of_dataframes = process_json_data(a_file, csv_filepath, bq, project, dataset, query, start_date, end_date, archive_search_counts, tweet_count, schematype, test)
 
 
                     # Notify user of completion
@@ -774,7 +778,7 @@ def run_DATA():
             schematype = schema_funcs.set_schema_type(Schematype)
 
             # Validate search parameters
-            query, bearer_token, start_date, end_date, project, dataset = validate_params.validate_search_parameters(
+            query, bearer_token, start_date, end_date, project, dataset, local_json_only = validate_params.validate_search_parameters(
                 query, bearer_token, start_date, end_date, project, dataset, bq, schematype)
 
             # Initiate a Twarc client instance

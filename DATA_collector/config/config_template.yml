@@ -14,3 +14,5 @@ dataset: 'dataset'                                      # Desired dataset name
 DATA: True
 TCAT: False
 TweetQuery: False
+
+local_json_only: False      # defaults to False. Setting this to True will skip steps after saving the JSON files to local disk.
