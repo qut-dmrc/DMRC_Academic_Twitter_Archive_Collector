@@ -189,7 +189,7 @@ def collect_archive_data(bq, project, dataset, to_collect, not_to_collect, expec
         print_already_collected(dataset, not_to_collect)
         exit()
 
-def process_json_data(a_file, csv_filepath, bq, project, dataset, subquery, start_date, end_date, archive_search_counts, tweet_count, schematype, test, local_json_only=False):
+def process_json_data(a_file, csv_filepath, bq, project, dataset, subquery, start_date, end_date, archive_search_counts, tweet_count, schematype, test):
     '''
     For each file collected, process 50,000 lines at a time. This keeps memory usage low while processing at a reasonable rate.
     Un-nests each tweet object, flattens main Tweet table, then sorts nested columns into separate, flattened tables.
@@ -678,7 +678,7 @@ def run_DATA():
                                 interval, num_intervals = calculate_interval(start_date, end_date, count, schematype)
                                 to_collect, not_to_collect, expected_files = set_up_expected_files(start_date, end_date, json_filepath, option_selection, subquery, dataset, interval, query_count)
                                 # Call function collect_archive_data()
-                                collect_archive_data(bq, project, dataset, to_collect, not_to_collect, expected_files, client, subquery, start_date, end_date, csv_filepath, count, tweet_count, query, query_count, schematype)
+                                collect_archive_data(bq, project, dataset, to_collect, not_to_collect, expected_files, client, subquery, start_date, end_date, csv_filepath, count, tweet_count, query, query_count, schematype, local_json_only=local_json_only)
                                 # Notify user of completion
                                 notify_completion(bq, search_start_time, project, dataset, start_date, end_date, option_selection, count, subquery=subquery, interval=interval)
                             else:
@@ -834,7 +834,7 @@ def run_DATA():
                                                                                                interval, query_count)
 
                             # Call function collect_archive_data()
-                            collect_archive_data(bq, project, dataset, to_collect, not_to_collect, expected_files, client, subquery, start_date, end_date, csv_filepath, archive_search_counts, tweet_count, query, query_count, schematype)
+                            collect_archive_data(bq, project, dataset, to_collect, not_to_collect, expected_files, client, subquery, start_date, end_date, csv_filepath, archive_search_counts, tweet_count, query, query_count, schematype, local_json_only=local_json_only)
                             # Notify user of completion
                             notify_completion(bq, search_start_time, project, dataset, start_date, end_date, option_selection, archive_search_counts, subquery=subquery, interval=interval)
                         else:
