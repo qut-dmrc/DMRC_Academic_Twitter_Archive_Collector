@@ -559,6 +559,8 @@ def run_DATA():
             end_date = Query.end_date
             project = GBQ.project_id
             dataset = GBQ.dataset
+            
+            local_json_only = GBQ.local_json_only
 
             # Init ValidateParams class
             validate_params = ValidateParams()
@@ -577,7 +579,7 @@ def run_DATA():
 
             # Validate search parameters
             query, bearer_token, start_date, end_date, project, dataset, local_json_only = validate_params.validate_search_parameters(
-                query, bearer_token, start_date, end_date, project, dataset, bq, schematype)
+                query, bearer_token, start_date, end_date, project, dataset, bq, schematype, local_json_only=local_json_only)
 
 
             # Initiate a Twarc client instance

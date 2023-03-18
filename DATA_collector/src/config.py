@@ -44,6 +44,8 @@ class Tokens():
 class GBQ():
     project_id = config['project_id']
     dataset = config['dataset']
+    
+    local_json_only = config.get('local_json_only', False)
 
 
 # class Emails():
