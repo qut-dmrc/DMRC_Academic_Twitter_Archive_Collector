@@ -1,0 +1,14 @@
+DATA_collector/config/config.yml
+DATA_collector/access_key/*json
+config.yml
+.idea
+authorized_keys
+.env
+.ipynb_checkpoints
+__pycache__/
+.pytest_cache
+.vscode
+*.log
+*.key
+*.egg-info
+tests/data/issue_2.csv

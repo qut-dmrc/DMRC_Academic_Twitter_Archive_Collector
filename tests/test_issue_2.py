@@ -146,3 +146,19 @@ def test_retweets_integrated():
     assert len(output) == 2  # includes header
     assert ISSUE_2_CORRECT_TEXT in output
 
+
+def test_newlines_integrated():
+    from DATA_collector.src.config import Schematype
+    from DATA_collector.src.data import process_json_data, write_processed_data_to_csv
+    
+    tweet_count, list_of_dataframes = process_json_data(ISSUE_2_JSON_B, csv_filepath=None, bq=None, project=None, dataset=None, subquery=None, start_date=None, end_date=None, archive_search_counts=0, tweet_count=0, schematype=Schematype.DATA, test=True)
+
+    tweets = list_of_dataframes[0]
+    write_processed_data_to_csv(tweets, csv_file='', csv_filepath=ISSUE_2_CSV)
+    
+    with open(ISSUE_2_CSV) as f:
+        output = f.readlines()
+        
+    # We expect only one row:
+    assert len(output) == 2  # includes header
+
