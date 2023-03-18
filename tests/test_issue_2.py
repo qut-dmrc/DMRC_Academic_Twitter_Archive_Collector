@@ -1,3 +1,4 @@
+import csv
 from io import StringIO, BytesIO
 import pytest
 import pandas as pd
@@ -5,9 +6,10 @@ import json
 
 
 TEST_ENCODINGS = ['utf-8', 'utf-16', 'utf-32']
-ISSUE_2_JSON = '../tests/data/issue_2.json'
+ISSUE_2_JSON = '../tests/data/issue_002a.json'
 ISSUE_2_CSV = '../tests/data/issue_2.csv'
 ISSUE_2_CORRECT_TEXT = "LOVE LOVE him😂😂"
+ISSUE_2_JSON_B = '../tests/data/issue_002b.json'
 
 @pytest.fixture
 def three_tweets_with_breaks():
@@ -113,6 +115,20 @@ def test_pandas_read_write():
         
     assert len(output) == 1  # no header
     assert ISSUE_2_CORRECT_TEXT in output[0]
+    
+def test_pandas_read_write_b():    
+    df = pd.read_json(ISSUE_2_JSON_B, lines=True, dtype=False, encoding='utf-8', orient='records')
+    
+    # check we read all input
+    assert len(df['text'].values) == 1
+    
+    df.to_csv(ISSUE_2_CSV,index=False, escapechar='|', encoding='utf-8', header=False, quoting=csv.QUOTE_ALL)
+
+    # check we wrote all wrotes to csv -- and no more
+    with open(ISSUE_2_CSV) as f:
+        output = f.readlines()
+        
+    assert len(output) == 1  # no header
 
 def test_retweets_integrated():
     from DATA_collector.src.config import Schematype
