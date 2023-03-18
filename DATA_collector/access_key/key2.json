@@ -1,0 +1,13 @@
+{
+    "type": "service_account",
+    "project_id": "observatory-158104",
+    "private_key_id": "c0df8a860fb17916ea9196b178a4b197df4246eb",
+    "private_key": "-----BEGIN PRIVATE KEY-----\nMIIEvQIBADANBgkqhkiG9w0BAQEFAASCBKcwggSjAgEAAoIBAQDInlCg6CyFCGHf\n93BBzsAgILJQUuml8n1MmUZegT9XgYD+XWg5LNOXI2xYJVfIGoyraTBeH1WzDGYO\nJc8eZXkxj9ir0r61p6zAiRmoPiixSdCqzVtoozLcyJ3gfNSjCsnDKcS+gS26Tfwm\nLxdGN3apkCcYkl0uORJmoLOOBG2HqAagIQMKbetaB/6tF/q7Sw5uVKi18ze8M8wh\nLfoyOeRyykapyUsbdtRMN5rjqDQnjUmqHTX7rT5uJDphiQlyWOC2TTBK3A6Ss52k\nYkphkQctnYVQ+jgGg1m0dmCXaptN25qQT/i46lhdpIJj5gRTPRX+13nsaYtpaYHn\n13DVz8w7AgMBAAECggEAHSASz5F1aSji4LuREhS8gs2MZanr3to6A6Va+HxmIEOe\nYQ9Zgrd1zoLnh1KAkH3+PyJp0bhV3kUmCdbGX4DW2/GowKU7Z678nwUocur3SGnR\ngAKJS0MqLrB3bzBgRH1b9lf5hrjFVT9eJIMAq4KA2TQi4Ofa3EuP1tNszejpp+Bk\nqbjwIuGURRTHpf1RzJ+4subbCrzLix60mMaRN7LG3jTirzyJwfMJ5vMdkEHidxiJ\n6Yn53aJb9agFSlhZL9GQkW7onHaJhCVkdBWYkQvNVkB9finuiJ9qR/hmZqIbCqoU\nD/wR0jMe9YDxsRPuRy5ROAQjtanNb+CP2UgD6PP3/QKBgQDmvMcYdd0xY+xKiHmF\nGGiMbE9xyufM5vZfeBjUhSDvL3+sRKAfAKwXd/k2mirvnRLiFL5MX0iUHUkccbNj\nYiGo8qWdzZq2HeEdHyOJcVOF9aiX69MVWbehXO/oPLdUf76xJVdZ1va8MPWSYKg8\nQq/qUpiHbcQXLeY8T+RZvDHJlQKBgQDelVje69tmmfB4+AXMgTl118oaV1VZKGaO\n8IqUdKljqOxTjC6zocy/AkDFyRSVMW5/lPF5Ri3sAdUom9s0N+HcUsGhOVOI5W13\nWJfBciJKzJQO3MfCwKdtExkBXDvZJ5mdy8bILTJWe98G/XQD2PJvZoWjMZYZ7hp3\nOfgygUbqjwKBgC1N+7mtytSbzhWEXnfnpv+LdL3fHUx6PP3Z0uZHjYPpS6RDhT0R\nILkq8V/rPWr26HJDqGnOe625YlWXbaWh6wIFQseNS0de7oiNSKj/+2peJdBOmY+j\nog6o9OIgqc6JlqOptVEKiD/DTTSEjgPnBCt6NEDDKLF0bbSB61BDR3NRAoGBAJ0r\nrj5zI1DW4LQ6xrV6hl2NC5wAETdMzOagOerMWhQSYxY3xX54gQBbketXqt4SsqkK\nPlzZTnH5dVAghe/gie8uzKWQukjPYLXGbBpgApD41o+MHM6LhW4C70RDocscKGAB\nVZNiPspM29auv+47ki1Roony6L/UnwGTgIwBN1dHAoGAJi9BfvObau5wtkla9ou9\nQk+G8ZAGBlcA45E9DZnCyGLcZIb88gI59QMRi+5EB/FwZ5Omyz2DhKdFYfDuXw9T\nlkAUf4/3HQRRU8dlrhiODrZsiv6QMKHVyi8lddjAHGP8MZxDGAjnohDo/iOAMsuQ\n137GI+I7rQGLPNFQlbR6mwM=\n-----END PRIVATE KEY-----\n",
+    "client_email": "nic-analysis@observatory-158104.iam.gserviceaccount.com",
+    "client_id": "103349166239974933949",
+    "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+    "token_uri": "https://accounts.google.com/o/oauth2/token",
+    "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
+    "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/nic-analysis%40observatory-158104.iam.gserviceaccount.com"
+  }
+  
