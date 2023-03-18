@@ -105,12 +105,12 @@ def test_pandas_read_write():
     assert len(df['text'].values) == 1
     assert ISSUE_2_CORRECT_TEXT in df.loc[0, 'text']
     
-    csv_buffer = StringIO()
-    df.to_csv(csv_buffer,index=False, escapechar='|', encoding='utf-8', header=False)
+    df.to_csv(ISSUE_2_CSV,index=False, escapechar='|', encoding='utf-8', header=False)
 
     # check we wrote all wrotes to csv -- and no more
-    csv_buffer.seek(0)
-    output = csv_buffer.readlines()
+    with open(ISSUE_2_CSV) as f:
+        output = f.readlines()
+        
     assert len(output) == 1  # no header
     assert ISSUE_2_CORRECT_TEXT in output[0]
 
