@@ -562,21 +562,20 @@ def run_DATA():
             validate_params = ValidateParams()
             
             local_json_only = GBQ.local_json_only
-            if not local_json_only:
-                project = GBQ.project_id
-                dataset = GBQ.dataset
+            project = GBQ.project_id
+            dataset = GBQ.dataset
 
-                access_key = validate_params.validate_google_access_key(cwd, project)
+            access_key = validate_params.validate_google_access_key(cwd, project)
 
-                # Access BigQuery
-                os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = access_key
-                bq = Client(project=project)
+            # Access BigQuery
+            os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = access_key
+            bq = Client(project=project)
 
-                # Init SchemaFuncs class
-                schema_funcs = SchemaFuncs()
+            # Init SchemaFuncs class
+            schema_funcs = SchemaFuncs()
 
-                # Set schema type
-                schematype = schema_funcs.set_schema_type(Schematype)
+            # Set schema type
+            schematype = schema_funcs.set_schema_type(Schematype)
 
             # Validate search parameters
             query, bearer_token, start_date, end_date, project, dataset = validate_params.validate_search_parameters(
