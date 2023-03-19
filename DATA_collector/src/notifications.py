@@ -44,6 +44,14 @@ def print_welcome_screen():
 
     return option_selection
 
+def get_user_confirmation_no_gbq():
+    
+    print("Your config has the 'local_json_only' flag set. Tweets will NOT be uploaded to BigQuery.\n\nDo you wish to proceed? y/n\n")
+
+    user_proceed = input('>>>').lower()
+
+    return user_proceed
+
 def get_user_confirmation_string_search(query, start_date, end_date, project, dataset, schematype, archive_search_counts, num_intervals):
     print(f"""
     \n

@@ -52,7 +52,7 @@ class ValidateParams:
         print(f'Please enter a valid Google service account access key.')
         exit()
 
-    def validate_search_parameters(self, query, bearer_token, start_date, end_date, project, dataset, bq, schematype, local_json_only=False):
+    def validate_search_parameters(self, query, bearer_token, start_date, end_date, project, dataset, bq, schematype, local_json_only):
         '''
         Validates search parameters when Option 1 (Search Archive) selected.
         Unable to check bearer token validity beyond ensuring it is in config.yml; checks for presence only.
@@ -168,7 +168,7 @@ class ValidateParams:
 
 
         # If any of the above parameters are None, exit program; else, proceed.
-        if None in [query, bearer_token, start_date, end_date, project, dataset]:
+        if None in [query, bearer_token, start_date, end_date, dataset] or (project is None and not local_json_only):
             print("""
             \n 
         Exiting...
@@ -180,7 +180,7 @@ class ValidateParams:
         Config input valid!
             \n""")
 
-            return query, bearer_token, start_date, end_date, project, dataset, local_json_only
+            return query, bearer_token, start_date, end_date, project, dataset
 
     def validate_project_parameters(self, project, dataset, bq, schematype):
         '''
