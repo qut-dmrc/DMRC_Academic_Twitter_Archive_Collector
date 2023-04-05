@@ -195,6 +195,8 @@ def process_json_data(a_file, csv_filepath, bq, project, dataset, subquery, star
     # Process json 50,000 lines at a time
     if schematype == 'TweetQuery':
         chunksize = 10000
+    # elif option == '2':
+    #     chunksize = 25000
     else:
         chunksize = 50000
 
@@ -702,7 +704,7 @@ def run_DATA():
             access_key = validate_params.validate_google_access_key(cwd, project)
 
             # Access BigQuery
-            os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = access_key[0]
+            os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = access_key
             bq = Client(project=project)
 
             # Init SchemaFuncs class
